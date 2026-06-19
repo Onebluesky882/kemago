@@ -1,0 +1,7 @@
+{
+  "extends": "@fullstack-builder/config/tsconfig/cloudflare.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo"
+  },
+  "include": ["src", "vitest.config.ts"]
+}

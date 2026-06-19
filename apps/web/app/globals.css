@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #080808;
+  --surface: #111111;
+  --surface-2: #161616;
+  --border: #222222;
+  --border-subtle: #1a1a1a;
+  --text: #ededed;
+  --text-muted: #888888;
+  --text-faint: #444444;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-dim: rgba(124, 58, 237, 0.1);
+  --green: #22c55e;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.5;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── Animations ───────────────────────────────── */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes orb-move {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(40px, -30px) scale(1.05); }
+  66%  { transform: translate(-20px, 20px) scale(0.97); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* ── Utility classes ──────────────────────────── */
+
+.anim-fade-up {
+  animation: fadeInUp 0.6s ease both;
+}
+
+.anim-fade-up-1 { animation: fadeInUp 0.6s 0.1s ease both; }
+.anim-fade-up-2 { animation: fadeInUp 0.6s 0.2s ease both; }
+.anim-fade-up-3 { animation: fadeInUp 0.6s 0.3s ease both; }
+.anim-fade-up-4 { animation: fadeInUp 0.6s 0.4s ease both; }
+
+.anim-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.card-hover {
+  transition: transform 200ms ease, border-color 200ms ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.4) !important;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+}
+
+/* ── Dot grid background ──────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── Shimmer text ─────────────────────────────── */
+.shimmer-text {
+  background: linear-gradient(90deg, var(--text) 0%, #a78bfa 40%, var(--text) 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}

@@ -27,3 +27,22 @@ target/
 vendor/
 __pycache__/
 .venv/
+
+# Turbo
+.turbo/
+
+# pnpm
+pnpm-lock.yaml
+
+# Cloudflare / Wrangler
+.wrangler/
+.open-next/
+.dev.vars
+
+# Vercel / Next.js
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test coverage
+coverage/
