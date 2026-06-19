@@ -1,5 +1,15 @@
 # Agent Rules
 
+## File Location Rules — NEVER VIOLATE
+
+**All governance files MUST live inside `agentic/`. Never create or modify governance files at the project root.**
+
+Files allowed at root: `CLAUDE.md`, `README.md`, and code directories (`apps/`, `packages/`, config files).
+
+If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `START_HERE.md`), do NOT use it — read from `agentic/` instead.
+
+---
+
 ## Before Starting Any Task
 
 **MANDATORY — Every agent must read `agentic/START_HERE.md` before doing anything else. No exceptions.**
