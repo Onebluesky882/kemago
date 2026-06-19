@@ -1,13 +1,13 @@
-name = "fullstack-builder-web"
+name = "YOUR_APP_NAME-web"
 main = ".open-next/worker.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
-account_id = "c40a6cc1eb575a43f79e9b4d9cc6a88d"
+account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
 
 [assets]
 directory = ".open-next/assets"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "fullstack-builder-db"
-database_id = "965e371a-0158-4ecf-9653-d7ab2f6ef7ef"
+database_name = "YOUR_D1_DATABASE_NAME"
+database_id = "YOUR_D1_DATABASE_ID"
