@@ -16,6 +16,35 @@ The Conductor orchestrates Workers according to direction set by Dev (see DEV.md
 
 PRE-FLIGHT CHECK — ทำก่อนทุกอย่าง
 
+ก่อน Conductor จะ dispatch หรือทำงานใดๆ ให้ตรวจสอบ 2 ขั้นตอนตามลำดับ:
+
+---
+
+**ขั้นที่ 1 — License Gate Check**
+
+ตรวจสอบ `license_status` ใน PROJECT.md:
+
+```
+grep "license_status" agentic/PROJECT.md
+```
+
+ถ้า `license_status` ไม่มีอยู่ หรือค่าไม่ใช่ `active`:
+
+```
+BLOCKED: LICENSE_NOT_ACTIVE
+```
+
+ห้ามทำสิ่งต่อไปนี้จนกว่า Dev จะอัปเดต `license_status: active` ใน PROJECT.md:
+- เขียน `tasks/stage-[N]-*.md` (Dispatch-In)
+- เขียน `gate-out/stage-[N]-*.md`
+- เขียน `merge-approval/stage-[N]-*.md`
+
+หมายเหตุ: ระบบ license (ตาราง DB, middleware) ยังไม่มีใน template ณ ตอนนี้ — gate นี้คือการควบคุมระดับ governance ก่อนที่ระบบจริงจะถูกสร้าง
+
+---
+
+**ขั้นที่ 2 — Conductor Branch Check**
+
 ก่อน Conductor จะ dispatch หรือทำงานใดๆ ให้ตรวจสอบ:
 
 ```
@@ -90,54 +119,68 @@ Responsibilities
 * Review `gate-out/stage-[N]-<domain>.md` submitted by Workers
 * Verify acceptance criteria, tests, dependencies, and SECURITY_RULES.md compliance
 
-5. Database Migration — MANDATORY on first setup and when schema changes
+5. Fullstack Infrastructure Setup — Database & Schema — MANDATORY on first setup and when schema changes
 
-When setting up a new project OR adding new tables, the Conductor MUST run migrations against D1 before deploying:
+This template ships with Cloudflare D1 (SQLite) as the database and Drizzle ORM for schema management.
+The Conductor MUST run migrations before any deploy that depends on DB-backed features (auth, license, storage, payment).
 
 ```bash
-# Apply auth tables (run once on first setup)
-wrangler d1 execute fullstack-builder-db --remote --file packages/db/migrations/auth.sql
+# Replace <db-name> with the database_name in apps/api/wrangler.toml
+wrangler d1 execute <db-name> --remote --file packages/db/migrations/auth.sql
 
 # Verify tables were created
-wrangler d1 execute fullstack-builder-db --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
+wrangler d1 execute <db-name> --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
 ```
 
+Fullstack feature → DB dependency map:
+| Feature | Requires migration |
+|---------|-------------------|
+| Auth (Better Auth) | `auth.sql` — user, session, account, verification tables |
+| License Gate | `license.sql` — license table (when license stage is built) |
+| Payment (Stripe) | No DB migration required (Stripe manages state) |
+| Storage (R2) | No DB migration required (R2 manages state) |
+
 Rules:
-- If table list shows only `_cf_KV` → migrations have NOT been run → run them before deploying
+- If table list shows only `_cf_KV` → migrations have NOT been run → run before deploying
 - Never skip migration on a fresh D1 database
-- When adding a new domain with a new table: write the SQL to `packages/db/migrations/[domain].sql` then apply with wrangler
-- Always verify tables exist before testing auth or any DB-dependent feature
+- New domain with new table → write SQL to `packages/db/migrations/[domain].sql`, apply with wrangler, verify
+- Always verify tables exist before testing any DB-dependent feature
 
-Migration SQL file to keep in repo: `packages/db/migrations/auth.sql`
+6. Fullstack Edge Deployment — Cloudflare Workers & Pages — MANDATORY after every feature completion
 
-6. Deploy Verification — MANDATORY after every feature completion
+This template deploys three apps to Cloudflare's edge network. All three must succeed before merge-approval is written.
 
-After gate validation passes, the Conductor MUST run the following before writing merge-approval:
+After gate validation passes, the Conductor MUST run in order:
 
 ```bash
-# Step 1 — Run tests (all apps)
+# Step 1 — Run full test suite
 pnpm test
 
-# Step 2 — Deploy all apps to Cloudflare
+# Step 2 — Deploy API (Hono on Cloudflare Workers)
 cd apps/api && wrangler deploy
+
+# Step 3 — Deploy public web app (Next.js via OpenNext on Cloudflare)
 cd apps/web && opennextjs-cloudflare build && wrangler deploy
+
+# Step 4 — Deploy admin dashboard (Next.js via OpenNext on Cloudflare)
 cd apps/admin && opennextjs-cloudflare build && wrangler deploy
 ```
 
 Rules:
-- If `pnpm test` fails → write rejection, do NOT deploy
-- If any `wrangler deploy` fails → write rejection with deploy error details
-- All three apps must deploy successfully before merge-approval is written
+- `pnpm test` fails → write rejection, do NOT deploy
+- Any `wrangler deploy` fails → write rejection with deploy error details
 - Log deploy URLs and Version IDs in `merge-approval/stage-[N]-<domain>.md`
 
-6. Merge / Rejection
+7. Merge Control & Quality Gate
 
 * If validation + tests + deploy all pass: write `merge-approval/stage-[N]-<domain>.md` and trigger PR merge
 * If any step fails: write `rejection/stage-[N]-<domain>.md` with reasons and required fixes
+* Squash merge strategy — one commit per stage on main branch
 
-6. Worker Creation
+8. Worker Orchestration
 
 * Only the Conductor may create or dispatch Workers (see AGENT_RULES.md, Sub-Agent Restriction)
+* Parallel dispatch is allowed for stages with no overlapping dependencies (see PIPELINE.md)
 
 ⸻
 

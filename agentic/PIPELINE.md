@@ -15,13 +15,14 @@ Conductor Branch: main
 | stage-3-api-core | Hono domain structure, user/auth/email/storage routes | stage-2-auth | COMPLETE |
 | stage-4-email | Resend, email templates, notification system | stage-3-api-core | COMPLETE |
 | stage-5-storage | Cloudflare R2 presigned URL, upload/download/delete | stage-3-api-core | COMPLETE |
-| stage-6-web-ui | Next.js public site, landing page, onboarding setup page | stage-3-api-core | COMPLETE |
-| stage-7-admin-ui | Admin dashboard with real data, protected routes | stage-2-auth, stage-5-storage, stage-4-email | COMPLETE |
-| stage-8-customer | CUSTOMER_SETUP flow wired into Conductor | stage-6-web-ui, stage-7-admin-ui | PENDING |
-| stage-9-tests | Vitest unit + integration tests all apps | stage-8-customer | PENDING |
-| stage-10-docs | README, customer guide, how to use with Conductor | stage-9-tests | PENDING |
+| stage-6-payment | Stripe payment intent, checkout session, webhook | stage-3-api-core | COMPLETE |
+| stage-7-web-ui | Next.js public site, landing page, onboarding setup page | stage-3-api-core | COMPLETE |
+| stage-8-admin-ui | Admin dashboard with real data, protected routes | stage-2-auth, stage-5-storage, stage-4-email | COMPLETE |
+| stage-9-customer | CUSTOMER_SETUP flow wired into Conductor | stage-7-web-ui, stage-8-admin-ui | PENDING |
+| stage-10-tests | Vitest unit + integration tests all apps | stage-9-customer | PENDING |
+| stage-11-docs | README, customer guide, how to use with Conductor | stage-10-tests | PENDING |
 
-**Parallel stages:** stage-6-web-ui, stage-7-admin-ui can run in parallel (no overlapping dependencies)
+**Parallel stages:** stage-7-web-ui, stage-8-admin-ui can run in parallel (no overlapping dependencies)
 
 ---
 
@@ -129,50 +130,71 @@ Conductor Branch: main
 
 ---
 
-### stage-6-web-ui — Public Website UI
+### stage-6-payment — Stripe Payment Integration
+
+**Domain:** apps/api/src/domains/payment
+**Depends On:** stage-3-api-core
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Stripe SDK installed (stripe package)
+- [x] POST /api/payment/intent — create PaymentIntent, returns clientSecret
+- [x] POST /api/payment/checkout — create hosted Checkout Session, returns URL
+- [x] POST /api/payment/webhook — verify Stripe signature, handle payment_intent.succeeded + checkout.session.completed
+- [x] GET /api/payment/config — return publishable key (safe for frontend)
+- [x] STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET via .dev.vars
+- [x] wrangler.toml vars include Stripe key placeholders
+
+**Dispatch-In:** `tasks/stage-6-payment.md`
+**Gate-Out:** `gate-out/stage-6-payment.md`
+**Merge-Approval:** `merge-approval/stage-6-payment.md`
+
+---
+
+### stage-7-web-ui — Public Website UI
 
 **Domain:** apps/web
 **Depends On:** stage-3-api-core
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
-- [ ] Landing page — explains what the starter kit is, CTA button
-- [ ] Onboarding setup page — interactive CUSTOMER_SETUP questions (go-blueprint.dev style)
-- [ ] Login page — functional, connected to /api/auth
-- [ ] Register page — functional, connected to /api/auth
-- [ ] Responsive layout
-- [ ] SEO metadata configured
+- [x] Landing page — explains what the starter kit is, CTA button
+- [x] Onboarding setup page — interactive CUSTOMER_SETUP questions (go-blueprint.dev style)
+- [x] Login page — functional, connected to /api/auth
+- [x] Register page — functional, connected to /api/auth
+- [x] Responsive layout
+- [x] SEO metadata configured
 
-**Dispatch-In:** `tasks/stage-6-web-ui.md`
-**Gate-Out:** `gate-out/stage-6-web-ui.md`
-**Merge-Approval:** `merge-approval/stage-6-web-ui.md`
+**Dispatch-In:** `tasks/stage-7-web-ui.md`
+**Gate-Out:** `gate-out/stage-7-web-ui.md`
+**Merge-Approval:** `merge-approval/stage-7-web-ui.md`
 
 ---
 
-### stage-7-admin-ui — Admin Dashboard (Real Data)
+### stage-8-admin-ui — Admin Dashboard (Real Data)
 
 **Domain:** apps/admin
 **Depends On:** stage-2-auth, stage-4-email, stage-5-storage
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
-- [ ] Dashboard protected — redirect to /login if no session
-- [ ] Users page — real data from /api/user
-- [ ] Storage page — list files from /api/storage/files, upload via presigned URL
-- [ ] Emails page — email send log (real data)
-- [ ] Settings page — update user profile, change password
-- [ ] Sidebar navigation functional with ui.store (open/close)
+- [x] Dashboard protected — redirect to /login if no session
+- [x] Users page — real data from /api/user
+- [x] Storage page — list files from /api/storage/files, upload via presigned URL
+- [x] Emails page — email send log (real data)
+- [x] Settings page — update user profile, change password
+- [x] Sidebar navigation functional with ui.store (open/close)
 
-**Dispatch-In:** `tasks/stage-7-admin-ui.md`
-**Gate-Out:** `gate-out/stage-7-admin-ui.md`
-**Merge-Approval:** `merge-approval/stage-7-admin-ui.md`
+**Dispatch-In:** `tasks/stage-8-admin-ui.md`
+**Gate-Out:** `gate-out/stage-8-admin-ui.md`
+**Merge-Approval:** `merge-approval/stage-8-admin-ui.md`
 
 ---
 
-### stage-8-customer — Customer Onboarding Flow
+### stage-9-customer — Customer Onboarding Flow
 
 **Domain:** agentic/CUSTOMER_SETUP.md, apps/web onboarding page
-**Depends On:** stage-6-web-ui, stage-7-admin-ui
+**Depends On:** stage-7-web-ui, stage-8-admin-ui
 **Status:** `PENDING`
 
 **Acceptance Criteria:**
@@ -183,35 +205,35 @@ Conductor Branch: main
 - [ ] Onboarding setup page (apps/web) matches CUSTOMER_SETUP.md questions
 - [ ] Conductor maps customer answers to PIPELINE.md stages
 
-**Dispatch-In:** `tasks/stage-8-customer.md`
-**Gate-Out:** `gate-out/stage-8-customer.md`
-**Merge-Approval:** `merge-approval/stage-8-customer.md`
+**Dispatch-In:** `tasks/stage-9-customer.md`
+**Gate-Out:** `gate-out/stage-9-customer.md`
+**Merge-Approval:** `merge-approval/stage-9-customer.md`
 
 ---
 
-### stage-9-tests — Test Suite
+### stage-10-tests — Test Suite
 
 **Domain:** apps/*, packages/*
-**Depends On:** stage-8-customer
+**Depends On:** stage-9-customer
 **Status:** `PENDING`
 
 **Acceptance Criteria:**
 - [ ] Vitest configured in all apps and packages
-- [ ] Unit tests: auth handlers, storage handlers, email handlers
+- [ ] Unit tests: auth handlers, storage handlers, email handlers, payment handlers
 - [ ] Integration test: /health endpoint returns 200
 - [ ] Integration test: /api/auth/sign-up creates user in D1
 - [ ] All tests pass: pnpm test exits 0
 
-**Dispatch-In:** `tasks/stage-9-tests.md`
-**Gate-Out:** `gate-out/stage-9-tests.md`
-**Merge-Approval:** `merge-approval/stage-9-tests.md`
+**Dispatch-In:** `tasks/stage-10-tests.md`
+**Gate-Out:** `gate-out/stage-10-tests.md`
+**Merge-Approval:** `merge-approval/stage-10-tests.md`
 
 ---
 
-### stage-10-docs — Documentation
+### stage-11-docs — Documentation
 
 **Domain:** README.md, agentic/
-**Depends On:** stage-9-tests
+**Depends On:** stage-10-tests
 **Status:** `PENDING`
 
 **Acceptance Criteria:**
@@ -221,9 +243,9 @@ Conductor Branch: main
 - [ ] Environment variables documented (.dev.vars.example)
 - [ ] Deployed URLs documented
 
-**Dispatch-In:** `tasks/stage-10-docs.md`
-**Gate-Out:** `gate-out/stage-10-docs.md`
-**Merge-Approval:** `merge-approval/stage-10-docs.md`
+**Dispatch-In:** `tasks/stage-11-docs.md`
+**Gate-Out:** `gate-out/stage-11-docs.md`
+**Merge-Approval:** `merge-approval/stage-11-docs.md`
 
 ---
 

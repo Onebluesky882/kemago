@@ -23,8 +23,6 @@ export function createAuth(db: Db, trustedOrigins?: string[]) {
     trustedOrigins: trustedOrigins ?? [
       'http://localhost:3000',
       'http://localhost:3001',
-      'https://fullstack-builder-web.onebluesky882.workers.dev',
-      'https://fullstack-builder-admin.onebluesky882.workers.dev',
     ],
   })
 }

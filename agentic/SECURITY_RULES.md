@@ -56,6 +56,12 @@ Workers may NOT:
 
 Authentication and authorization must follow ARCHITECTURE.md, CONTRACTS.md, and DECISIONS.md. Authorization must remain enforceable and auditable.
 
+**License Gate — mandatory before any task dispatch:**
+
+The license system is not yet implemented in this template. Until it is, enforcement is at the governance level: the Conductor must confirm `license_status: active` in PROJECT.md before writing any Dispatch-In task, gate-out, or merge-approval. See CONDUCTOR.md — License Gate Check and AGENT_RULES.md — License Gate Rule.
+
+When the license system is built: protected routes must verify license status from DB on every request via `licenseGuard` middleware. Workers may NOT skip or mock this check. Accepting a request without a confirmed `active` license record in the DB is a security violation.
+
 ⸻
 
 API Surface Protection

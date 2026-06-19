@@ -102,6 +102,28 @@ Applications must fail gracefully. Return structured errors. Never intentionally
 
 ⸻
 
+License Gate Rule — MANDATORY
+
+The license system does not exist yet in this template. It will be implemented in a future stage.
+
+**Governance gate (enforced now):**
+
+Workers may NOT begin work on any stage unless the Conductor has verified `license_status: active` in PROJECT.md before dispatch. If a Worker receives a Dispatch-In task without that confirmation → output `BLOCKED: LICENSE_NOT_ACTIVE` and STOP.
+
+**Future implementation requirement (enforced when license stage is built):**
+
+When the license system is implemented, all protected API routes must validate license status from the DB on every request via a `licenseGuard` Hono middleware. Requirements at that time:
+- Session must be valid (authenticated via Better Auth)
+- `license` table record must exist for the user with `status = "active"`
+- `license.key` must match the key on record — checked against DB, never cached in session
+- Failure returns `403 { error: "license_inactive" }` — never 401
+- Exempt routes: `/health`, `/api/auth/*`, `/api/payment/webhook`
+- DB schema minimum: `id`, `user_id`, `key`, `status`, `expires_at`, `created_at`
+
+Violation → Status: FAIL, Ready For Next Stage: NO.
+
+⸻
+
 Sub-Agent Restriction
 
 Workers may NOT create, dispatch, or generate new workers or autonomous agents, delegate tasks, or create recursive execution chains. Only the Conductor may create workers.
