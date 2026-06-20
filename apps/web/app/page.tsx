@@ -8,13 +8,36 @@ const ROLES = [
 ]
 
 const DELIVERABLES = [
-  { label: 'Website', desc: 'Public-facing pages, SEO-ready' },
-  { label: 'Admin Dashboard', desc: 'Full control panel for your business' },
-  { label: 'Database', desc: 'Cloudflare D1 — serverless SQL' },
-  { label: 'Authentication', desc: 'Login, register, session management' },
-  { label: 'REST API', desc: 'Secure endpoints for every feature' },
-  { label: 'AI Agent', desc: 'Conductor that builds and maintains your app' },
-  { label: 'Deployment', desc: 'Live on Cloudflare Edge in minutes' },
+  {
+    label: 'Website',
+    desc: 'Public-facing pages, SEO-ready',
+    svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  },
+  {
+    label: 'Admin Dashboard',
+    desc: 'Full control panel for your business',
+    svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+  },
+  {
+    label: 'Authentication',
+    desc: 'Login, register, session management',
+    svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+  },
+  {
+    label: 'REST API',
+    desc: 'Secure endpoints for every feature',
+    svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+  },
+  {
+    label: 'AI Agent',
+    desc: 'Conductor that builds and maintains your app',
+    svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="12" cy="10" r="3"/><path d="M9.5 7.5L7 5M14.5 7.5L17 5"/></svg>,
+  },
+  {
+    label: 'Deployment',
+    desc: 'Live on Cloudflare Edge in minutes',
+    svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>,
+  },
 ]
 
 const REASONS = [
@@ -192,14 +215,14 @@ export default function HomePage() {
           <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Everything included</p>
           <h2 style={{ fontSize: 'clamp(22px, 5vw, 36px)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.2 }}>AI builds the full system.<br /><span style={{ color: 'var(--text-muted)' }}>Automatically.</span></h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 1, background: 'var(--border)', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 1, background: 'var(--border)', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
           {DELIVERABLES.map((item) => (
-            <div key={item.label} style={{ background: 'var(--surface)', padding: '24px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, background: 'var(--accent-dim)', marginBottom: 12 }}>
-                <span style={{ color: '#a78bfa', fontSize: 12 }}>◆</span>
+            <div key={item.label} style={{ background: 'var(--surface)', padding: '28px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, background: 'var(--accent-dim)', marginBottom: 14, color: '#a78bfa' }}>
+                {item.svg}
               </div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{item.label}</h3>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{item.desc}</p>
+              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{item.label}</h3>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{item.desc}</p>
             </div>
           ))}
         </div>
