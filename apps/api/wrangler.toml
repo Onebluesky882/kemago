@@ -8,17 +8,16 @@ RESEND_API_KEY = ""
 STRIPE_SECRET_KEY = ""
 STRIPE_PUBLISHABLE_KEY = ""
 STRIPE_WEBHOOK_SECRET = ""
-R2_ACCOUNT_ID = "YOUR_R2_ACCOUNT_ID"
-R2_BUCKET_NAME = "gover-agent-storage"
-GITHUB_TOKEN = ""
+R2_ACCOUNT_ID = "c40a6cc1eb575a43f79e9b4d9cc6a88d"
+R2_BUCKET_NAME = "fullstack-builder-storage"
 GITHUB_REPO_OWNER = "Onebluesky882"
 GITHUB_TEMPLATE_REPO = "goveragent-template"
 
 [[r2_buckets]]
 binding = "BUCKET"
-bucket_name = "gover-agent-storage"
+bucket_name = "fullstack-builder-storage"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "gover-agent-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_name = "fullstack-builder-db"
+database_id = "965e371a-0158-4ecf-9653-d7ab2f6ef7ef"

@@ -120,11 +120,12 @@ paymentRouter.post('/github-invite', async (c) => {
   )
 
   if (!res.ok && res.status !== 201 && res.status !== 204) {
+    const ghError = await res.json().catch(() => ({}))
     await db
       .update(purchases)
       .set({ status: 'failed', githubUsername })
       .where(eq(purchases.stripeSessionId, sessionId))
-    return c.json({ error: 'GitHub invite failed' }, 500)
+    return c.json({ error: 'GitHub invite failed', status: res.status, detail: ghError }, 500)
   }
 
   await db
