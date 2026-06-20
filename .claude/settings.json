@@ -6,15 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/license-check.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
             "command": "bash .claude/hooks/gate-out-typecheck.sh"
           }
         ]

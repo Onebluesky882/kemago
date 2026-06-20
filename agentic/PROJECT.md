@@ -20,6 +20,3 @@
 ## Status
 <!-- ACTIVE | PAUSED | COMPLETE -->
 
-## License
-license_status: active
-<!-- Set to "active" before Conductor can dispatch any stage. See CONDUCTOR.md — License Gate Check -->
