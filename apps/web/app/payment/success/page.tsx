@@ -131,8 +131,27 @@ function PaymentSuccessContent() {
           </button>
         </form>
 
+        <div style={{ marginTop: 28, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px' }}>
+          <p style={{ fontSize: 11, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>How to find your GitHub username</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { step: '1', text: 'Go to github.com and sign in' },
+              { step: '2', text: 'Click your profile photo (top right)' },
+              { step: '3', text: 'Your username appears below your name — it starts without @' },
+            ].map(({ step, text }) => (
+              <div key={step} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', minWidth: 16 }}>{step}.</span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{text}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 14, padding: '8px 12px', background: 'var(--surface-2)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--text-muted)' }}>
+            github.com/<span style={{ color: 'var(--text)' }}>yourname</span>
+          </div>
+        </div>
+
         <p style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 20, lineHeight: 1.6 }}>
-          You'll receive a GitHub invitation email. Questions?{' '}
+          Questions?{' '}
           <a href="mailto:wansing05@gmail.com" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>
             wansing05@gmail.com
           </a>
