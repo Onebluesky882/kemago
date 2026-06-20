@@ -106,9 +106,13 @@ License Gate Rule — MANDATORY
 
 The license system does not exist yet in this template. It will be implemented in a future stage.
 
-**Governance gate (enforced now):**
+**Governance gate (enforced now — via hook):**
 
-Workers may NOT begin work on any stage unless the Conductor has verified `license_status: active` in PROJECT.md before dispatch. If a Worker receives a Dispatch-In task without that confirmation → output `BLOCKED: LICENSE_NOT_ACTIVE` and STOP.
+`license_status: active` must be set in `agentic/PROJECT.md` before any file can be written or edited. This is enforced automatically by `.claude/hooks/license-check.sh` — not prompt-based. The hook blocks `Write` and `Edit` tool calls at the harness level and exits with code 2 if license is not active.
+
+Exempt from hook: `agentic/PROJECT.md`, `agentic/GOVERNANCE_CORE.md`, `agentic/DEV.md`, `agentic/DEV_LOG.md`, `.claude/*`, `.gitkeep`, `.example` files.
+
+Only Dev may set `license_status: active` in PROJECT.md. Workers may NOT modify PROJECT.md.
 
 **Future implementation requirement (enforced when license stage is built):**
 
@@ -119,6 +123,23 @@ When the license system is implemented, all protected API routes must validate l
 - Failure returns `403 { error: "license_inactive" }` — never 401
 - Exempt routes: `/health`, `/api/auth/*`, `/api/payment/webhook`
 - DB schema minimum: `id`, `user_id`, `key`, `status`, `expires_at`, `created_at`
+
+Violation → Status: FAIL, Ready For Next Stage: NO.
+
+⸻
+
+Worktree Isolation Rule — MANDATORY
+
+Each stage must be executed in a dedicated git worktree on its own branch. Workers may NOT work directly on `main`.
+
+**Branch naming:** `stage/stage-[N]-<domain>`
+Examples: `stage/stage-9-customer`, `stage/stage-10-tests`
+
+**Worktree path:** `.claude/worktrees/stage-[N]-<domain>/`
+
+The Conductor creates the worktree before dispatch. Workers operate only within their assigned worktree path. After merge-approval, the Conductor removes the worktree and deletes the branch.
+
+If a Worker finds itself on `main` → output `BLOCKED: WRONG_BRANCH` and STOP.
 
 Violation → Status: FAIL, Ready For Next Stage: NO.
 
@@ -143,6 +164,10 @@ Never commit: `node_modules/`, `dist/`, `build/`, `.next/`, `target/`, `vendor/`
 ⸻
 
 Stage Completion
+
+**Pre-condition — MANDATORY before writing gate-out:**
+
+`pnpm type-check` must exit 0 in the project root before gate-out can be written. This is enforced automatically by `.claude/hooks/gate-out-typecheck.sh` — not self-reported. The hook runs `pnpm type-check` and blocks the Write if it fails. Workers may NOT claim "type-check passed" without the hook confirming it.
 
 Worker must create `gate-out/stage-[N]-<domain>.md` using this template:
 

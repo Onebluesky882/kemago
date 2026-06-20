@@ -111,8 +111,29 @@ Responsibilities
 
 3. Dispatch
 
-* When a stage's Depends On are all COMPLETE and merged to <conductor-branch>, write `tasks/stage-[N]-<domain>.md` (Dispatch-In)
-* Stages with no overlapping dependencies may be dispatched in parallel
+When a stage's Depends On are all COMPLETE and merged to main, dispatch in this exact order:
+
+**Step 1 — Create worktree and branch**
+```bash
+git worktree add .claude/worktrees/stage-[N]-<domain> -b stage/stage-[N]-<domain>
+```
+
+**Step 2 — Write Dispatch-In task inside the worktree**
+```
+.claude/worktrees/stage-[N]-<domain>/agentic/tasks/stage-[N]-<domain>.md
+```
+
+**Step 3 — Assign Worker to operate only within that worktree path**
+
+Workers may NOT touch files outside their worktree. Cross-worktree access is forbidden.
+
+**After merge-approval — Clean up**
+```bash
+git worktree remove .claude/worktrees/stage-[N]-<domain>
+git branch -d stage/stage-[N]-<domain>
+```
+
+Stages with no overlapping dependencies may be dispatched in parallel — each in its own worktree.
 
 4. Gate Validation
 
