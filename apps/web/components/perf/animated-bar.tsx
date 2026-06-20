@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type Props = {
   label: string
@@ -8,33 +8,23 @@ type Props = {
   display: string
   color: string
   delay?: number
+  triggered: boolean
 }
 
-export function AnimatedBar({ label, value, max, display, color, delay = 0 }: Props) {
+export function AnimatedBar({ label, value, max, display, color, delay = 0, triggered }: Props) {
   const [width, setWidth] = useState(0)
-  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          const t = setTimeout(() => setWidth((value / max) * 100), delay)
-          observer.disconnect()
-          return () => clearTimeout(t)
-        }
-      },
-      { threshold: 0.3 },
-    )
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [value, max, delay])
+    if (triggered) {
+      const t = setTimeout(() => setWidth((value / max) * 100), delay)
+      return () => clearTimeout(t)
+    } else {
+      setWidth(0)
+    }
+  }, [triggered, value, max, delay])
 
   return (
-    <div ref={ref}>
+    <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{label}</span>
         <span style={{ fontSize: 13, fontWeight: 700, color, minWidth: 48, textAlign: 'right' }}>{display}</span>
@@ -46,7 +36,7 @@ export function AnimatedBar({ label, value, max, display, color, delay = 0 }: Pr
           background: color,
           borderRadius: 3,
           opacity: color === '#22c55e' ? 1 : 0.7,
-          transition: width > 0 ? `width 1s cubic-bezier(0.16,1,0.3,1)` : 'none',
+          transition: triggered ? `width 1s cubic-bezier(0.16,1,0.3,1)` : 'width 0.3s ease',
         }} />
       </div>
     </div>
