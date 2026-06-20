@@ -380,23 +380,46 @@ export default function HomePage() {
         </div>
 
         {/* Free tier highlight */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 40 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 40 }}>
           {[
-            { value: '$0', label: 'Hosting cost to start', sub: 'Cloudflare free tier' },
-            { value: '100ms', label: 'Average page load', sub: 'vs 2–6s on WordPress' },
-            { value: '300+', label: 'Edge locations worldwide', sub: 'Global by default' },
-            { value: '∞', label: 'Custom features', sub: 'No plugin limits' },
+            {
+              value: '$0',
+              label: 'Hosting cost to start',
+              sub: 'Cloudflare free tier',
+              svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+            },
+            {
+              value: '100ms',
+              label: 'Average page load',
+              sub: 'vs 2–6s on WordPress',
+              svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            },
+            {
+              value: '300+',
+              label: 'Edge locations worldwide',
+              sub: 'Global by default',
+              svg: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+            },
           ].map((stat) => (
             <div key={stat.value} style={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
-              borderRadius: 10,
-              padding: '20px',
+              borderRadius: 12,
+              padding: '28px 20px',
               textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 10,
             }}>
-              <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--accent)', marginBottom: 4 }}>{stat.value}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{stat.label}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>{stat.sub}</div>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa' }}>
+                {stat.svg}
+              </div>
+              <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--accent)', lineHeight: 1 }}>{stat.value}</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{stat.label}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>{stat.sub}</div>
+              </div>
             </div>
           ))}
         </div>
