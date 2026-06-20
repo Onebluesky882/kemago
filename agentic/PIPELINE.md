@@ -116,7 +116,7 @@ Conductor Branch: main
 **Status:** `COMPLETE`
 
 **Acceptance Criteria:**
-- [x] Cloudflare R2 bucket created (fullstack-builder-storage)
+- [x] Cloudflare R2 bucket created (gover-agent-storage)
 - [x] Presigned URL upload — client uploads directly to R2, server never handles file data
 - [x] Presigned URL download — client downloads directly from R2
 - [x] DELETE /api/storage/file — delete file from R2

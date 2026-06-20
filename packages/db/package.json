@@ -1,5 +1,5 @@
 {
-  "name": "@fullstack-builder/db",
+  "name": "@gover-agent/db",
   "version": "0.0.1",
   "private": true,
   "exports": {
@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
-    "@fullstack-builder/config": "workspace:*",
+    "@gover-agent/config": "workspace:*",
     "drizzle-kit": "latest",
     "typescript": "latest"
   }

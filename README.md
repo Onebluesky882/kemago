@@ -1,15 +1,15 @@
-# FullstackAgent — AI Software Factory
+# GoverAgent — AI Software Factory
 
 > **Your private AI software company.**
 > Build production-ready software by chatting with AI. No coding. No hiring. No setup.
 
-Live: [fullstack-builder-web.onebluesky882.workers.dev](https://fullstack-builder-web.onebluesky882.workers.dev)
+Live: [gover-agent-web.onebluesky882.workers.dev](https://gover-agent-web.onebluesky882.workers.dev)
 
 ---
 
-## What is FullstackAgent?
+## What is GoverAgent?
 
-FullstackAgent is not a starter kit — it is an **AI Software Factory**.
+GoverAgent is not a starter kit — it is an **AI Software Factory**.
 
 Instead of hiring a team, you have one AI that plays every role:
 
@@ -118,8 +118,8 @@ app/page.tsx  Orchestrates hook + components, passes props
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/Onebluesky882/fullstackagent.git
-cd fullstackagent
+git clone https://github.com/Onebluesky882/goveragent.git
+cd goveragent
 pnpm install
 ```
 
@@ -133,22 +133,22 @@ wrangler whoami   # verify
 ### 3. Create D1 database
 
 ```bash
-wrangler d1 create fullstack-builder-db
+wrangler d1 create gover-agent-db
 # Copy the database_id into apps/api/wrangler.toml
 ```
 
 ### 4. Run database migration
 
 ```bash
-wrangler d1 execute fullstack-builder-db --remote --file packages/db/migrations/auth.sql
+wrangler d1 execute gover-agent-db --remote --file packages/db/migrations/auth.sql
 # Verify:
-wrangler d1 execute fullstack-builder-db --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
+wrangler d1 execute gover-agent-db --remote --command "SELECT name FROM sqlite_master WHERE type='table'"
 ```
 
 ### 5. Create R2 bucket
 
 ```bash
-wrangler r2 bucket create fullstack-builder-storage
+wrangler r2 bucket create gover-agent-storage
 ```
 
 ### 6. Set environment variables
@@ -163,7 +163,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 R2_ACCOUNT_ID=your_cloudflare_account_id
 R2_ACCESS_KEY_ID=your_r2_access_key_id
 R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
-R2_BUCKET_NAME=fullstack-builder-storage
+R2_BUCKET_NAME=gover-agent-storage
 ```
 
 Set R2 credentials as Wrangler secrets (production):
@@ -200,7 +200,7 @@ cd apps/admin && pnpm cf-build && wrangler deploy
 
 ## Agentic Workflow
 
-FullstackAgent uses a **Conductor / Worker** multi-agent system.
+GoverAgent uses a **Conductor / Worker** multi-agent system.
 
 ```
 Dev  →  sets project direction
@@ -244,7 +244,7 @@ All three deploys must succeed before merge-approval is written.
 
 ## Customer Onboarding
 
-When a customer purchases FullstackAgent, the Conductor guides them through:
+When a customer purchases GoverAgent, the Conductor guides them through:
 
 1. **Wrangler login** — verify Cloudflare account before any deploy
 2. **GitHub account** — required to receive their customized app
@@ -282,9 +282,9 @@ All governance files live in `agentic/`. Workers read them but cannot modify the
 
 | App | URL |
 |-----|-----|
-| Web | https://fullstack-builder-web.onebluesky882.workers.dev |
-| Admin | https://fullstack-builder-admin.onebluesky882.workers.dev |
-| API | https://fullstack-builder-api.onebluesky882.workers.dev |
+| Web | https://gover-agent-web.onebluesky882.workers.dev |
+| Admin | https://gover-agent-admin.onebluesky882.workers.dev |
+| API | https://gover-agent-api.onebluesky882.workers.dev |
 
 ---
 
@@ -298,4 +298,4 @@ All governance files live in `agentic/`. Workers read them but cannot modify the
 
 Free hosting on Cloudflare — 100,000 req/day · 5GB D1 · 10GB R2.
 
-Developer consultation available at $100/hr → [contact](https://fullstack-builder-web.onebluesky882.workers.dev/contact)
+Developer consultation available at $100/hr → [contact](https://gover-agent-web.onebluesky882.workers.dev/contact)

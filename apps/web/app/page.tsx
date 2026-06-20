@@ -92,7 +92,7 @@ export default function HomePage() {
 
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>FullstackAgent</span>
+        <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>GoverAgent</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Link href="/how-it-works" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>How it works</Link>
           <Link href="/why" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Why us</Link>
@@ -191,7 +191,7 @@ export default function HomePage() {
       {/* Why us */}
       <section id="why" style={{ maxWidth: 960, margin: '0 auto', padding: '80px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Why FullstackAgent</p>
+          <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Why GoverAgent</p>
           <h2 style={{ fontSize: 'clamp(22px, 5vw, 36px)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.2 }}>Not just a tool.<br /><span style={{ color: 'var(--text-muted)' }}>A software company that works for you.</span></h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
@@ -210,13 +210,13 @@ export default function HomePage() {
       {/* Comparison */}
       <section style={{ maxWidth: 680, margin: '0 auto', padding: '80px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <h2 style={{ fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Doing it yourself vs.<br /><span style={{ color: 'var(--accent)' }}>FullstackAgent</span></h2>
+          <h2 style={{ fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, letterSpacing: '-0.03em' }}>Doing it yourself vs.<br /><span style={{ color: 'var(--accent)' }}>GoverAgent</span></h2>
         </div>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 140px', padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
             <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.05em' }}>TASK</span>
             <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>DIY</span>
-            <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>FULLSTACKAGENT</span>
+            <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>GOVERAGENT</span>
           </div>
           {COMPARE.map((label, i) => (
             <div key={label} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 140px', padding: '14px 20px', borderBottom: i < COMPARE.length - 1 ? '1px solid var(--border-subtle)' : 'none', alignItems: 'center' }}>
@@ -252,7 +252,7 @@ export default function HomePage() {
 
       <div style={{ borderTop: '1px solid var(--border-subtle)' }} />
 
-      {/* WordPress vs FullstackAgent */}
+      {/* WordPress vs GoverAgent */}
       <section style={{ maxWidth: 800, margin: '0 auto', padding: '80px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Moving from WordPress?</p>
@@ -262,7 +262,7 @@ export default function HomePage() {
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-muted)', maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
             WordPress charges you monthly, loads slowly, and locks you into plugins you can&apos;t customize.
-            FullstackAgent runs on Cloudflare Edge — free tier covers most small businesses, and you own every line of code.
+            GoverAgent runs on Cloudflare Edge — free tier covers most small businesses, and you own every line of code.
           </p>
         </div>
 
@@ -321,7 +321,7 @@ export default function HomePage() {
           }}>
             <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.05em' }}>FEATURE</span>
             <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>WORDPRESS</span>
-            <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>FULLSTACKAGENT</span>
+            <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>GOVERAGENT</span>
           </div>
           {WP_COMPARE.map((row, i) => (
             <div key={row.label} style={{
@@ -366,7 +366,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '28px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 960, margin: '0 auto' }}>
-        <span style={{ fontSize: 14, fontWeight: 700 }}>FullstackAgent</span>
+        <span style={{ fontSize: 14, fontWeight: 700 }}>GoverAgent</span>
         <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>© 2025 · Built on Cloudflare Edge</span>
       </footer>
 

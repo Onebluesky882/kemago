@@ -1,5 +1,5 @@
 {
-  "name": "@fullstack-builder/api",
+  "name": "@gover-agent/api",
   "version": "0.0.1",
   "private": true,
   "main": "src/index.ts",
@@ -13,9 +13,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1071.0",
     "@aws-sdk/s3-request-presigner": "^3.1071.0",
-    "@fullstack-builder/auth": "workspace:*",
-    "@fullstack-builder/db": "workspace:*",
-    "@fullstack-builder/email": "workspace:*",
+    "@gover-agent/auth": "workspace:*",
+    "@gover-agent/db": "workspace:*",
+    "@gover-agent/email": "workspace:*",
     "better-auth": "^1.6.19",
     "hono": "latest",
     "stripe": "^22.2.1",
@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
-    "@fullstack-builder/config": "workspace:*",
+    "@gover-agent/config": "workspace:*",
     "typescript": "latest",
     "vitest": "latest",
     "wrangler": "latest"

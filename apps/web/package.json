@@ -1,5 +1,5 @@
 {
-  "name": "@fullstack-builder/web",
+  "name": "@gover-agent/web",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fullstack-builder/ui": "workspace:*",
+    "@gover-agent/ui": "workspace:*",
     "@tailwindcss/typography": "^0.5.20",
     "@tanstack/react-query": "^5.101.0",
     "autoprefixer": "^10.5.0",
@@ -22,7 +22,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@fullstack-builder/config": "workspace:*",
+    "@gover-agent/config": "workspace:*",
     "@opennextjs/cloudflare": "latest",
     "@types/node": "latest",
     "@types/react": "latest",

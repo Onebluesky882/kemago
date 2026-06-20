@@ -94,7 +94,7 @@ export default function HowItWorksPage() {
 
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>FullstackAgent</Link>
+        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Link href="/why" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Why us</Link>
           <Link href="/pricing" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Pricing</Link>
@@ -123,7 +123,7 @@ export default function HowItWorksPage() {
           </h1>
 
           <p className="anim-fade-up-2" style={{ fontSize: 18, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
-            FullstackAgent isn&apos;t one AI answering questions.
+            GoverAgent isn&apos;t one AI answering questions.
             It&apos;s a structured system where each AI has a specific role,
             strict limits, and quality checks at every step.
           </p>
@@ -253,7 +253,7 @@ export default function HowItWorksPage() {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '28px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 960, margin: '0 auto' }}>
-        <span style={{ fontSize: 14, fontWeight: 700 }}>FullstackAgent</span>
+        <span style={{ fontSize: 14, fontWeight: 700 }}>GoverAgent</span>
         <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>© 2025 · Built on Cloudflare Edge</span>
       </footer>
 

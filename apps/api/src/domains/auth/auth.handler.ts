@@ -1,4 +1,4 @@
-import type { Auth } from '@fullstack-builder/auth'
+import type { Auth } from '@gover-agent/auth'
 import type { Context } from 'hono'
 
 export async function handleAuth(c: Context, auth: Auth) {

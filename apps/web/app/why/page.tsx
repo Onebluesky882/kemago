@@ -32,7 +32,7 @@ const TRUTHS = [
   {
     n: '02',
     heading: 'Claude forgets you the moment you close the tab.',
-    body: 'Every conversation starts from zero. No memory of what you\'ve built, what problems you\'ve solved, or what direction you\'re going. FullstackAgent remembers everything.',
+    body: 'Every conversation starts from zero. No memory of what you\'ve built, what problems you\'ve solved, or what direction you\'re going. GoverAgent remembers everything.',
   },
   {
     n: '03',
@@ -63,7 +63,7 @@ export default function WhyPage() {
 
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>FullstackAgent</Link>
+        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Link href="/pricing" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Pricing</Link>
           <Link href="/contact" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Consult Dev</Link>
@@ -88,7 +88,7 @@ export default function WhyPage() {
           </h1>
 
           <p className="anim-fade-up-2" style={{ fontSize: 18, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 520, margin: '0 auto' }}>
-            Claude is a brilliant assistant. FullstackAgent is a system that ships software.
+            Claude is a brilliant assistant. GoverAgent is a system that ships software.
             They solve completely different problems.
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function WhyPage() {
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Real situations</p>
           <h2 style={{ fontSize: 'clamp(22px, 4vw, 36px)', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-            What actually happens<br /><span style={{ color: 'var(--text-muted)' }}>when you use Claude vs FullstackAgent</span>
+            What actually happens<br /><span style={{ color: 'var(--text-muted)' }}>when you use Claude vs GoverAgent</span>
           </h2>
         </div>
 
@@ -112,7 +112,7 @@ export default function WhyPage() {
               <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-faint)', letterSpacing: '0.08em' }}>WITH CLAUDE</span>
             </div>
             <div style={{ padding: '14px 24px' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.08em' }}>WITH FULLSTACKAGENT</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', letterSpacing: '0.08em' }}>WITH GOVERAGENT</span>
             </div>
           </div>
 
@@ -172,7 +172,7 @@ export default function WhyPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 160px', padding: '10px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
             <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.05em' }}></span>
             <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>CLAUDE</span>
-            <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>FULLSTACKAGENT</span>
+            <span style={{ fontSize: 11, color: '#a78bfa', fontWeight: 600, textAlign: 'center', letterSpacing: '0.05em' }}>GOVERAGENT</span>
           </div>
 
           {COMPARE_ROWS.map((row, i) => (
@@ -199,11 +199,11 @@ export default function WhyPage() {
         <p style={{ fontSize: 14, color: 'var(--text-faint)', marginBottom: 24, letterSpacing: '0.02em' }}>The bottom line</p>
         <h2 style={{ fontSize: 'clamp(22px, 5vw, 38px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: 24 }}>
           Use Claude when you have a question.<br />
-          <span style={{ color: 'var(--accent)' }}>Use FullstackAgent when you have a business.</span>
+          <span style={{ color: 'var(--accent)' }}>Use GoverAgent when you have a business.</span>
         </h2>
         <p style={{ fontSize: 16, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 48, maxWidth: 480, margin: '0 auto 48px' }}>
           Claude is an incredible tool. It&apos;s in our product too. But a tool isn&apos;t the same as a system.
-          FullstackAgent is the system that takes what you want and turns it into software that runs.
+          GoverAgent is the system that takes what you want and turns it into software that runs.
         </p>
         <Link href="/setup" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em' }}>
           Start building →
@@ -213,7 +213,7 @@ export default function WhyPage() {
 
       {/* Footer */}
       <footer style={{ borderTop: '1px solid var(--border)', padding: '28px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 960, margin: '0 auto' }}>
-        <span style={{ fontSize: 14, fontWeight: 700 }}>FullstackAgent</span>
+        <span style={{ fontSize: 14, fontWeight: 700 }}>GoverAgent</span>
         <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>© 2025 · Built on Cloudflare Edge</span>
       </footer>
 

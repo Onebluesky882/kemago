@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import type { Db } from '@fullstack-builder/db'
-import * as schema from '@fullstack-builder/db/schema'
+import type { Db } from '@gover-agent/db'
+import * as schema from '@gover-agent/db/schema'
 
 export function createAuth(db: Db, trustedOrigins?: string[]) {
   return betterAuth({

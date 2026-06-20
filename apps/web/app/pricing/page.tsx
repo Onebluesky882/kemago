@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Pricing — FullstackAgent',
+  title: 'Pricing — GoverAgent',
   description: 'Simple, transparent pricing. One AI software company — pick the plan that fits.',
 }
 
@@ -105,7 +105,7 @@ export default function PricingPage() {
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
 
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>FullstackAgent</Link>
+        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <Link href="/contact" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Consult Dev</Link>
           <Link href="/setup" style={{ background: 'var(--text)', color: '#000', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Get started</Link>
@@ -235,7 +235,7 @@ export default function PricingPage() {
       </section>
 
       <footer style={{ borderTop: '1px solid var(--border)', padding: '28px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 960, margin: '0 auto' }}>
-        <Link href="/" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', textDecoration: 'none' }}>FullstackAgent</Link>
+        <Link href="/" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
         <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>2025 · Built on Cloudflare Edge</span>
       </footer>
 

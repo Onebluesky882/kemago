@@ -36,7 +36,7 @@ export function LoginForm({ onSubmit, isLoading, error }: Props) {
 
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <Link href="/" style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none', display: 'block', marginBottom: 28 }}>
-            FullstackAgent
+            GoverAgent
           </Link>
           <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 8 }}>Welcome back</h1>
           <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Sign in to your account</p>

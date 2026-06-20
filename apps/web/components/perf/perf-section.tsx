@@ -6,7 +6,7 @@ import { LighthouseCircle } from './lighthouse-circle'
 const LIGHTHOUSE = [
   { label: 'WordPress (shared)', score: 42, color: '#ef4444' },
   { label: 'WordPress (managed)', score: 68, color: '#f97316' },
-  { label: 'FullstackAgent', score: 97, color: '#22c55e' },
+  { label: 'GoverAgent', score: 97, color: '#22c55e' },
 ]
 
 type PerfRow = { label: string; value: number; max: number; color: string }
@@ -20,7 +20,7 @@ const PERF_BARS: PerfChart[] = [
     rows: [
       { label: 'WordPress (shared hosting)', value: 820, max: 1000, color: '#ef4444' },
       { label: 'WordPress (managed hosting)', value: 310, max: 1000, color: '#f97316' },
-      { label: 'FullstackAgent (Cloudflare Edge)', value: 18, max: 1000, color: '#22c55e' },
+      { label: 'GoverAgent (Cloudflare Edge)', value: 18, max: 1000, color: '#22c55e' },
     ],
   },
   {
@@ -30,7 +30,7 @@ const PERF_BARS: PerfChart[] = [
     rows: [
       { label: 'WordPress (shared hosting)', value: 3.2, max: 4, color: '#ef4444' },
       { label: 'WordPress (managed hosting)', value: 1.6, max: 4, color: '#f97316' },
-      { label: 'FullstackAgent (Cloudflare Edge)', value: 0.28, max: 4, color: '#22c55e' },
+      { label: 'GoverAgent (Cloudflare Edge)', value: 0.28, max: 4, color: '#22c55e' },
     ],
   },
   {
@@ -40,7 +40,7 @@ const PERF_BARS: PerfChart[] = [
     rows: [
       { label: 'WordPress (shared hosting)', value: 5.8, max: 7, color: '#ef4444' },
       { label: 'WordPress (managed hosting)', value: 2.4, max: 7, color: '#f97316' },
-      { label: 'FullstackAgent (Cloudflare Edge)', value: 0.55, max: 7, color: '#22c55e' },
+      { label: 'GoverAgent (Cloudflare Edge)', value: 0.55, max: 7, color: '#22c55e' },
     ],
   },
 ]
@@ -131,7 +131,7 @@ export function PerfSection() {
 
       <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-faint)', marginTop: 20, lineHeight: 1.6 }}>
         Data based on GTmetrix, WebPageTest, and Cloudflare public benchmarks · Shared hosting: 1 vCPU / 1GB RAM ·
-        Managed hosting: WP Engine Startup plan · FullstackAgent: Cloudflare Workers + Edge network
+        Managed hosting: WP Engine Startup plan · GoverAgent: Cloudflare Workers + Edge network
       </p>
     </section>
   )

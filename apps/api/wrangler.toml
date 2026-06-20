@@ -1,4 +1,4 @@
-name = "fullstack-builder-api"
+name = "gover-agent-api"
 main = "src/index.ts"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
@@ -9,13 +9,13 @@ STRIPE_SECRET_KEY = ""
 STRIPE_PUBLISHABLE_KEY = ""
 STRIPE_WEBHOOK_SECRET = ""
 R2_ACCOUNT_ID = "YOUR_R2_ACCOUNT_ID"
-R2_BUCKET_NAME = "fullstack-builder-storage"
+R2_BUCKET_NAME = "gover-agent-storage"
 
 [[r2_buckets]]
 binding = "BUCKET"
-bucket_name = "fullstack-builder-storage"
+bucket_name = "gover-agent-storage"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "fullstack-builder-db"
+database_name = "gover-agent-db"
 database_id = "YOUR_D1_DATABASE_ID"

@@ -1,5 +1,5 @@
 import type { Context } from 'hono'
-import type { Auth } from '@fullstack-builder/auth'
+import type { Auth } from '@gover-agent/auth'
 
 export async function getMe(c: Context, auth: Auth) {
   const session = await auth.api.getSession({ headers: c.req.raw.headers })

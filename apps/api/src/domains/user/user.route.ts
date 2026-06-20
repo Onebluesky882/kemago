@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { createAuth } from '@fullstack-builder/auth'
-import { createDb } from '@fullstack-builder/db'
+import { createAuth } from '@gover-agent/auth'
+import { createDb } from '@gover-agent/db'
 import { getMe } from './user.handler'
 
 const userRouter = new Hono<{ Bindings: { DB: D1Database } }>()

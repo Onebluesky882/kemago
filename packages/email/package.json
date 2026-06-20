@@ -1,5 +1,5 @@
 {
-  "name": "@fullstack-builder/email",
+  "name": "@gover-agent/email",
   "version": "0.0.1",
   "private": true,
   "exports": {
@@ -9,7 +9,7 @@
     "resend": "latest"
   },
   "devDependencies": {
-    "@fullstack-builder/config": "workspace:*",
+    "@gover-agent/config": "workspace:*",
     "@types/react": "latest",
     "typescript": "latest"
   },

@@ -1,4 +1,4 @@
-import { createResend, sendEmail } from '@fullstack-builder/email'
+import { createResend, sendEmail } from '@gover-agent/email'
 
 type SendWelcomeParams = { to: string; name: string; resendApiKey: string }
 type SendNotificationParams = { to: string; name: string; subject: string; message: string; resendApiKey: string }
@@ -7,7 +7,7 @@ function welcomeHtml(name: string) {
   return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
     <h1>Welcome, ${name}!</h1>
     <p>Your account has been created successfully.</p>
-    <a href="https://fullstack-builder.dev/login" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px">Sign in to your account</a>
+    <a href="https://gover-agent.dev/login" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px">Sign in to your account</a>
     <p style="color:#6b7280;font-size:14px;margin-top:24px">If you did not create this account, you can safely ignore this email.</p>
   </div>`
 }
