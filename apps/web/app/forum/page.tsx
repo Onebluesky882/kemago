@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { Navbar } from '@/components/navbar'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
@@ -45,10 +46,7 @@ export default function ForumPage() {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
-        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Community</span>
-      </nav>
+      <Navbar />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
         <div style={{ marginBottom: 40 }}>
