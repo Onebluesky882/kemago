@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { createPaymentIntentSchema, createCheckoutSessionSchema } from './payment.schema'
 import { createPaymentIntent, createCheckoutSession, handleWebhook } from './payment.handler'
+import { createDb, purchases, eq } from '@gover-agent/db'
 
 type Bindings = {
   DB: D1Database
@@ -12,6 +13,9 @@ type Bindings = {
   STRIPE_SECRET_KEY: string
   STRIPE_PUBLISHABLE_KEY: string
   STRIPE_WEBHOOK_SECRET: string
+  GITHUB_TOKEN: string
+  GITHUB_REPO_OWNER: string
+  GITHUB_TEMPLATE_REPO: string
 }
 
 const paymentRouter = new Hono<{ Bindings: Bindings }>()
@@ -59,18 +63,76 @@ paymentRouter.post('/webhook', async (c) => {
       body,
       signature,
     )
-    switch (event.type) {
-      case 'payment_intent.succeeded':
-        // TODO: fulfill order, update DB
-        break
-      case 'checkout.session.completed':
-        // TODO: activate subscription or deliver product
-        break
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as {
+        id: string
+        customer_email?: string | null
+        customer_details?: { email?: string | null }
+      }
+      const email = session.customer_email ?? session.customer_details?.email ?? ''
+      if (email) {
+        const db = createDb(c.env.DB)
+        await db.insert(purchases).values({
+          id: crypto.randomUUID(),
+          email,
+          stripeSessionId: session.id,
+          status: 'pending',
+          createdAt: new Date(),
+        })
+      }
     }
+
     return c.json({ received: true })
   } catch {
     return c.json({ error: 'Webhook verification failed' }, 400)
   }
+})
+
+// Buyer submits GitHub username after payment — sends invite
+paymentRouter.post('/github-invite', async (c) => {
+  const body = await c.req.json<{ sessionId: string; githubUsername: string }>()
+  const { sessionId, githubUsername } = body
+  if (!sessionId || !githubUsername) return c.json({ error: 'Missing fields' }, 400)
+
+  const db = createDb(c.env.DB)
+  const [purchase] = await db
+    .select()
+    .from(purchases)
+    .where(eq(purchases.stripeSessionId, sessionId))
+    .limit(1)
+
+  if (!purchase) return c.json({ error: 'Purchase not found' }, 404)
+  if (purchase.status === 'invited') return c.json({ message: 'Already invited' })
+
+  // Call GitHub API to invite collaborator (read-only pull access)
+  const res = await fetch(
+    `https://api.github.com/repos/${c.env.GITHUB_REPO_OWNER}/${c.env.GITHUB_TEMPLATE_REPO}/collaborators/${githubUsername}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${c.env.GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'GoverAgent',
+      },
+      body: JSON.stringify({ permission: 'pull' }),
+    },
+  )
+
+  if (!res.ok && res.status !== 201 && res.status !== 204) {
+    await db
+      .update(purchases)
+      .set({ status: 'failed', githubUsername })
+      .where(eq(purchases.stripeSessionId, sessionId))
+    return c.json({ error: 'GitHub invite failed' }, 500)
+  }
+
+  await db
+    .update(purchases)
+    .set({ status: 'invited', githubUsername, invitedAt: new Date() })
+    .where(eq(purchases.stripeSessionId, sessionId))
+
+  return c.json({ success: true, message: `Invited ${githubUsername} to the template repo` })
 })
 
 export { paymentRouter }

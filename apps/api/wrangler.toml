@@ -10,6 +10,9 @@ STRIPE_PUBLISHABLE_KEY = ""
 STRIPE_WEBHOOK_SECRET = ""
 R2_ACCOUNT_ID = "YOUR_R2_ACCOUNT_ID"
 R2_BUCKET_NAME = "gover-agent-storage"
+GITHUB_TOKEN = ""
+GITHUB_REPO_OWNER = "Onebluesky882"
+GITHUB_TEMPLATE_REPO = "goveragent-template"
 
 [[r2_buckets]]
 binding = "BUCKET"
