@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { PerfSection } from '@/components/perf/perf-section'
+import { Navbar } from '@/components/navbar'
 
 const ROLES = [
   'Product Manager', 'UI Designer', 'Frontend Developer',
@@ -90,18 +91,7 @@ export default function HomePage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
 
-      {/* Nav */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em' }}>GoverAgent</span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link href="/how-it-works" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>How it works</Link>
-          <Link href="/why" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Why us</Link>
-          <Link href="/pricing" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Pricing</Link>
-          <Link href="/contact" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Consult Dev</Link>
-          <Link href="/login" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Sign in</Link>
-          <Link href="/setup" style={{ background: 'var(--text)', color: '#000', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Get started</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section style={{ position: 'relative', overflow: 'hidden' }}>
