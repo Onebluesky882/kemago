@@ -6,21 +6,94 @@ import { Navbar } from '@/components/navbar'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
-type Reply = { id: string; body: string; createdAt: string; user: { id: string; name: string } }
-type Post = { id: string; title: string; body: string; createdAt: string; user: { id: string; name: string }; forumReplies: Reply[] }
+type Reply = {
+  id: string; body: string; createdAt: string
+  parentReplyId: string | null
+  user: { id: string; name: string }
+}
+type Post = {
+  id: string; title: string; body: string; createdAt: string
+  user: { id: string; name: string }
+  forumReplies: Reply[]
+}
 
-function Avatar({ name }: { name: string }) {
+function Avatar({ name, size = 28 }: { name: string; size?: number }) {
   return (
-    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.43, color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>
       {name[0].toUpperCase()}
     </div>
   )
+}
+
+function ReplyCard({
+  reply, depth = 0, onReply,
+}: {
+  reply: Reply & { children?: Reply[] }
+  depth?: number
+  onReply: (replyId: string, username: string) => void
+}) {
+  return (
+    <div style={{ marginLeft: depth > 0 ? 36 : 0 }}>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <Avatar name={reply.user.name} size={depth > 0 ? 22 : 28} />
+        <div style={{ flex: 1, background: depth > 0 ? 'var(--surface-2)' : 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: depth > 0 ? 12 : 13, fontWeight: 600, color: 'var(--text)' }}>{reply.user.name}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+              {new Date(reply.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+            </span>
+            <button
+              onClick={() => onReply(reply.id, reply.user.name)}
+              style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-faint)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, transition: 'color 150ms' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-faint)')}
+            >
+              ↩ Reply
+            </button>
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+            {reply.body.startsWith('@') ? (
+              <>
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{reply.body.split(' ')[0]}</span>
+                {' ' + reply.body.split(' ').slice(1).join(' ')}
+              </>
+            ) : reply.body}
+          </p>
+        </div>
+      </div>
+
+      {/* Nested children */}
+      {reply.children && reply.children.length > 0 && (
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {reply.children.map(child => (
+            <ReplyCard key={child.id} reply={child} depth={depth + 1} onReply={onReply} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function buildTree(replies: Reply[]): (Reply & { children: Reply[] })[] {
+  const map = new Map<string, Reply & { children: Reply[] }>()
+  replies.forEach(r => map.set(r.id, { ...r, children: [] }))
+  const roots: (Reply & { children: Reply[] })[] = []
+  map.forEach(r => {
+    if (r.parentReplyId && map.has(r.parentReplyId)) {
+      map.get(r.parentReplyId)!.children.push(r)
+    } else {
+      roots.push(r)
+    }
+  })
+  return roots
 }
 
 export default function ForumPostPage() {
   const { id } = useParams<{ id: string }>()
   const [post, setPost] = useState<Post | null>(null)
   const [body, setBody] = useState('')
+  const [parentReplyId, setParentReplyId] = useState<string | null>(null)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replying, setReplying] = useState(false)
   const [error, setError] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -32,10 +105,20 @@ export default function ForumPostPage() {
 
   useEffect(() => { if (id) load() }, [id])
 
-  function handleReplyTo(username: string) {
-    setBody(prev => `@${username} ${prev}`)
-    textareaRef.current?.focus()
-    textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  function handleReplyTo(replyId: string, username: string) {
+    setParentReplyId(replyId)
+    setReplyingTo(username)
+    setBody(`@${username} `)
+    setTimeout(() => {
+      textareaRef.current?.focus()
+      textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+  }
+
+  function clearReplyTo() {
+    setParentReplyId(null)
+    setReplyingTo(null)
+    setBody('')
   }
 
   async function handleReply(e: React.FormEvent) {
@@ -48,11 +131,10 @@ export default function ForumPostPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ body }),
+        body: JSON.stringify({ body, parentReplyId }),
       })
       if (res.ok) {
-        setBody('')
-        load()
+        setBody(''); setParentReplyId(null); setReplyingTo(null); load()
       } else {
         const d = await res.json() as { error?: string }
         setError(d.error === 'Unauthorized' ? 'Please sign in to reply.' : (d.error ?? 'Failed'))
@@ -66,6 +148,8 @@ export default function ForumPostPage() {
 
   if (!post) return <div style={{ background: 'var(--bg)', minHeight: '100vh' }} />
 
+  const tree = buildTree(post.forumReplies)
+
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
       <Navbar />
@@ -74,7 +158,7 @@ export default function ForumPostPage() {
 
         {/* Back */}
         <div style={{ marginBottom: 24 }}>
-          <a onClick={() => history.back()} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'none' }}>← Back to Forum</a>
+          <span onClick={() => history.back()} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>← Back to Forum</span>
         </div>
 
         {/* Post */}
@@ -86,10 +170,7 @@ export default function ForumPostPage() {
             <span style={{ fontSize: 12, color: 'var(--text-faint)', marginLeft: 4 }}>
               {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
-            <button
-              onClick={() => handleReplyTo(post.user.name)}
-              style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}
-            >
+            <button onClick={() => handleReplyTo('', post.user.name)} style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
               Reply
             </button>
           </div>
@@ -98,47 +179,30 @@ export default function ForumPostPage() {
 
         <div style={{ borderTop: '1px solid var(--border-subtle)', marginBottom: 32 }} />
 
-        {/* Replies */}
+        {/* Replies tree */}
         <div style={{ marginBottom: 32 }}>
           <p style={{ fontSize: 12, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 20 }}>
             {post.forumReplies.length} {post.forumReplies.length === 1 ? 'reply' : 'replies'}
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {post.forumReplies.map((reply) => (
-              <div key={reply.id} style={{ display: 'flex', gap: 12 }}>
-                <Avatar name={reply.user.name} />
-                <div style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{reply.user.name}</span>
-                    <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>
-                      {new Date(reply.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                    </span>
-                    <button
-                      onClick={() => handleReplyTo(reply.user.name)}
-                      style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-faint)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', borderRadius: 4, transition: 'color 150ms' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-faint)')}
-                    >
-                      ↩ Reply
-                    </button>
-                  </div>
-                  <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                    {reply.body.startsWith('@') ? (
-                      <>
-                        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{reply.body.split(' ')[0]}</span>
-                        {' ' + reply.body.split(' ').slice(1).join(' ')}
-                      </>
-                    ) : reply.body}
-                  </p>
-                </div>
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {tree.map(reply => (
+              <ReplyCard key={reply.id} reply={reply} onReply={handleReplyTo} />
             ))}
           </div>
         </div>
 
         {/* Reply form */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Write a reply</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <p style={{ fontSize: 13, fontWeight: 600 }}>
+              {replyingTo ? `Replying to @${replyingTo}` : 'Write a reply'}
+            </p>
+            {replyingTo && (
+              <button onClick={clearReplyTo} style={{ fontSize: 12, color: 'var(--text-faint)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                Cancel reply
+              </button>
+            )}
+          </div>
           <form onSubmit={handleReply} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <textarea
               ref={textareaRef}

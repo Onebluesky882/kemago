@@ -19,6 +19,7 @@ export const forumReplies = sqliteTable('forum_replies', {
   id: text('id').primaryKey(),
   body: text('body').notNull(),
   postId: text('post_id').notNull().references(() => forumPosts.id, { onDelete: 'cascade' }),
+  parentReplyId: text('parent_reply_id'),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })

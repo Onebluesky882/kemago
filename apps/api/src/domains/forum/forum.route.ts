@@ -74,7 +74,7 @@ forumRouter.post('/:id/reply', async (c) => {
   const session = await getSession(c)
   if (!session) return c.json({ error: 'Unauthorized' }, 401)
 
-  const { body } = await c.req.json<{ body: string }>()
+  const { body, parentReplyId } = await c.req.json<{ body: string; parentReplyId?: string }>()
   if (!body?.trim()) return c.json({ error: 'Missing body' }, 400)
 
   const postId = c.req.param('id')
@@ -85,6 +85,7 @@ forumRouter.post('/:id/reply', async (c) => {
     id: crypto.randomUUID(),
     body: body.trim(),
     postId,
+    parentReplyId: parentReplyId ?? null,
     userId: session.user.id,
     createdAt: new Date(),
   }
