@@ -21,6 +21,10 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'auth',
       partialize: (state) => ({ user: state.user }),
+      onRehydrateStorage: () => (state) => {
+        // after rehydrate from localStorage — user is known, stop loading
+        if (state) state.setLoading(false)
+      },
     },
   ),
 )
