@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { uploadForumImage } from '@/hooks/use-image-upload'
 import { useAuthStore } from '@/store/auth.store'
@@ -94,6 +94,7 @@ function buildTree(replies: Reply[]): (Reply & { children: Reply[] })[] {
 
 export default function ForumPostPage() {
   const { id } = useParams<{ id: string }>()
+  const router = useRouter()
   const { user } = useAuthStore()
   const [post, setPost] = useState<Post | null>(null)
   const [body, setBody] = useState('')
@@ -153,7 +154,13 @@ export default function ForumPostPage() {
       credentials: 'include',
       body: JSON.stringify({ status }),
     })
-    if (res.ok) load()
+    if (res.ok) {
+      if (status === 'closed') {
+        router.push('/forum')
+      } else {
+        load()
+      }
+    }
   }
 
   async function handleReply(e: React.FormEvent) {
