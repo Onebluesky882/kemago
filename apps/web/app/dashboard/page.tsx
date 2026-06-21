@@ -42,9 +42,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return
-    fetch(`${API}/api/forum`, { credentials: 'include' })
+    fetch(`${API}/api/forum/mine`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : [])
-      .then((posts: Post[]) => setMyPosts(posts.filter(p => p.user.id === user.id)))
+      .then((posts: Post[]) => setMyPosts(posts))
       .catch(() => {})
   }, [user])
 
