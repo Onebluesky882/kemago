@@ -10,6 +10,22 @@ If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `
 
 ---
 
+## Frontend Navigation Rules — NEVER VIOLATE
+
+**NEVER use `<a href>` for internal links in `apps/web` or `apps/admin`.**
+
+Internal navigation must use:
+- `<Link href="...">` from `next/link` — for static links in JSX
+- `router.push("...")` from `useRouter` — for programmatic navigation
+
+`<a>` tags are ONLY allowed for:
+- External URLs (`https://...`)
+- Email links (`mailto:...`)
+
+Reason: `<a>` causes full page reload which resets global auth state and causes header flash.
+
+---
+
 ## Before Starting Any Task
 
 **MANDATORY — Every agent must read `agentic/START_HERE.md` before doing anything else. No exceptions.**
