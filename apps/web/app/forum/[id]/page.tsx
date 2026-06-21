@@ -154,6 +154,7 @@ export default function ForumPostPage() {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     })
+    const responseText = await res.text()
     if (res.ok) {
       if (status === 'closed') {
         router.push('/forum')
@@ -161,8 +162,7 @@ export default function ForumPostPage() {
         load()
       }
     } else {
-      const d = await res.json().catch(() => ({})) as { error?: string }
-      setError(`Close failed: ${d.error ?? res.status}`)
+      setError(`Close failed [${res.status}]: ${responseText}`)
     }
   }
 
