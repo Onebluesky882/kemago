@@ -10,6 +10,39 @@ If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `
 
 ---
 
+## Secret Environment Variables — MUST SET BEFORE DEPLOY
+
+**Every time you add a new env var that contains a secret (API key, token, password), you MUST instruct the client to run `wrangler secret put` before deploying.**
+
+Never leave secrets as empty strings in `wrangler.toml`. Empty strings in `wrangler.toml` are placeholders only — the real value must be set as a Cloudflare secret.
+
+### Required secrets for this project
+
+| Secret name | Service | Command |
+|------------|---------|---------|
+| `RESEND_API_KEY` | Resend email | `wrangler secret put RESEND_API_KEY` |
+| `STRIPE_SECRET_KEY` | Stripe payments | `wrangler secret put STRIPE_SECRET_KEY` |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhooks | `wrangler secret put STRIPE_WEBHOOK_SECRET` |
+| `GITHUB_TOKEN` | GitHub invite | `wrangler secret put GITHUB_TOKEN` |
+| `R2_ACCESS_KEY_ID` | R2 storage | `wrangler secret put R2_ACCESS_KEY_ID` |
+| `R2_SECRET_ACCESS_KEY` | R2 storage | `wrangler secret put R2_SECRET_ACCESS_KEY` |
+
+### Rule — when adding a new secret
+
+1. Add placeholder `""` in `wrangler.toml` for documentation only
+2. Add to the table above
+3. Tell the client exactly which command to run:
+
+```bash
+cd apps/api && wrangler secret put YOUR_SECRET_NAME
+```
+
+4. Verify it's set — after deploy, check the binding list. A secret set correctly shows the name without `("")`.
+
+**If `wrangler deploy` output shows `env.SOME_KEY ("")` → the secret is NOT set. Tell the client to run `wrangler secret put SOME_KEY` immediately.**
+
+---
+
 ## Frontend Navigation Rules — NEVER VIOLATE
 
 **NEVER use `<a href>` for internal links in `apps/web` or `apps/admin`.**
