@@ -160,6 +160,9 @@ export default function ForumPostPage() {
       } else {
         load()
       }
+    } else {
+      const d = await res.json().catch(() => ({})) as { error?: string }
+      setError(`Close failed: ${d.error ?? res.status}`)
     }
   }
 
@@ -284,7 +287,8 @@ export default function ForumPostPage() {
 
         {/* Owner controls — close / reopen */}
         {user?.id === post.user.id && (
-          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            {error.startsWith('Close failed') && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
             {post.status === 'open' ? (
               <button
                 onClick={() => handleStatusChange('closed')}
