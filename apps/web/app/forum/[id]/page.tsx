@@ -204,7 +204,7 @@ export default function ForumPostPage() {
           </div>
           {post.status === 'closed' && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(136,136,136,0.08)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 8, padding: '6px 12px', marginBottom: 16 }}>
-              <span style={{ fontSize: 12, color: '#888' }}>🔒 This post is closed — no new replies accepted.</span>
+              <span style={{ fontSize: 12, color: '#888' }}>This post is closed — no new replies accepted.</span>
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
