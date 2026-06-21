@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { createDb, forumPosts, forumReplies, eq, desc } from '@gover-agent/db'
+import { createDb, forumPosts, forumReplies, eq, desc, asc } from '@gover-agent/db'
 import { createAuth } from '@gover-agent/auth'
 
 type Bindings = { DB: D1Database }
@@ -16,7 +16,7 @@ async function getSession(c: { env: Bindings; req: { raw: Request } }) {
 forumRouter.get('/', async (c) => {
   const db = createDb(c.env.DB)
   const posts = await db.query.forumPosts.findMany({
-    orderBy: [desc(forumPosts.createdAt)],
+    orderBy: [desc(forumPosts.isPinned), desc(forumPosts.createdAt)],
     with: { user: { columns: { id: true, name: true } } },
   })
   return c.json(posts)
