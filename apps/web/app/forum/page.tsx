@@ -58,6 +58,7 @@ function PostCard({ post }: { post: Post }) {
         border: post.isPinned ? '1px solid rgba(124,58,237,0.25)' : '1px solid var(--border)',
         borderRadius: 10, padding: '16px 20px', transition: 'border-color 150ms',
       }}>
+        {/* Top row — pinned + category */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           {post.isPinned && (
             <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 100, padding: '2px 8px', letterSpacing: '0.06em' }}>
@@ -65,27 +66,32 @@ function PostCard({ post }: { post: Post }) {
             </span>
           )}
           <CategoryBadge category={post.category} />
-          {post.status === 'closed' ? (
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#888', background: 'rgba(136,136,136,0.1)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 100, padding: '2px 8px' }}>Closed</span>
-          ) : isToday(post.createdAt) ? (
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '2px 8px' }}>New</span>
-          ) : (
-            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.15)', borderRadius: 100, padding: '2px 8px' }}>Open</span>
-          )}
         </div>
+
         <h2 style={{ fontSize: 15, fontWeight: 600, color: post.status === 'closed' ? 'var(--text-muted)' : 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>
           {post.title}
           <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 400, marginLeft: 8 }}>#{post.postNumber}</span>
         </h2>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: post.imageUrl ? 10 : 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.body}</p>
         {post.imageUrl && <img src={post.imageUrl} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 6, marginBottom: 10 }} />}
+
+        {/* Bottom row — author + date + status badge */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--accent)', fontWeight: 700 }}>
             {post.user.name[0].toUpperCase()}
           </div>
           <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>{post.user.name}</span>
-          <span style={{ fontSize: 12, color: 'var(--text-faint)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>
             {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+          </span>
+          <span style={{ marginLeft: 'auto' }}>
+            {post.status === 'closed' ? (
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#888', background: 'rgba(136,136,136,0.1)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 100, padding: '2px 8px' }}>Closed</span>
+            ) : isToday(post.createdAt) ? (
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '2px 8px' }}>New</span>
+            ) : (
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.15)', borderRadius: 100, padding: '2px 8px' }}>Open</span>
+            )}
           </span>
         </div>
       </div>
