@@ -99,6 +99,7 @@ export default function ForumPostPage() {
   const { user } = useAuthStore()
   const { apiFetch, API: BASE } = useApi()
   const [post, setPost] = useState<Post | null>(null)
+  const [isClosed, setIsClosed] = useState(false)
   const [body, setBody] = useState('')
   const [parentReplyId, setParentReplyId] = useState<string | null>(null)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
@@ -112,7 +113,11 @@ export default function ForumPostPage() {
 
   async function load() {
     const res = await fetch(`${API}/api/forum/${id}`, { credentials: 'include' })
-    if (res.ok) setPost(await res.json())
+    if (res.ok) {
+      const data = await res.json()
+      setPost(data)
+      setIsClosed(data.status === 'closed')
+    }
   }
 
   useEffect(() => { if (id) load() }, [id])
@@ -149,25 +154,13 @@ export default function ForumPostPage() {
     }
   }
 
-  async function handleStatusChange(status: 'open' | 'closed') {
-    if (status === 'closed') {
-      // Redirect first, then update in background
-      router.push('/forum')
-      apiFetch(`/api/forum/${id}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      }).catch(() => {})
-    } else {
-      const res = await apiFetch(`/api/forum/${id}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      })
-      if (res.ok) load()
-      else {
-        const t = await res.text()
-        setError(`Failed [${res.status}]: ${t}`)
-      }
-    }
+  function handleClose() {
+    setIsClosed(true)
+    router.push('/forum')
+    apiFetch(`/api/forum/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'closed' }),
+    }).catch(() => {})
   }
 
   async function handleReply(e: React.FormEvent) {
@@ -291,9 +284,9 @@ export default function ForumPostPage() {
         {user?.id === post.user.id && (
           <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
             {error.startsWith('Close failed') && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
-            {post.status === 'open' ? (
+            {!isClosed ? (
               <button
-                onClick={() => handleStatusChange('closed')}
+                onClick={handleClose}
                 onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-faint)'; e.currentTarget.style.borderColor = 'var(--border)' }}
                 style={{ fontSize: 13, fontWeight: 500, cursor: 'pointer', borderRadius: 8, padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-faint)', transition: 'all 150ms' }}
