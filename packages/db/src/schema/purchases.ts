@@ -9,3 +9,5 @@ export const purchases = sqliteTable('purchases', {
   status: text('status', { enum: ['pending', 'invited', 'failed'] }).notNull().default('pending'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
+
+
