@@ -9,6 +9,7 @@ export const forumPosts = sqliteTable('forum_posts', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
   body: text('body').notNull(),
+  postNumber: integer('post_number').notNull(),
   category: text('category', { enum: FORUM_CATEGORIES }).notNull().default('general'),
   isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
   imageUrl: text('image_url'),

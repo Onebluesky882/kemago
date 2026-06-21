@@ -13,7 +13,7 @@ type Reply = {
   user: { id: string; name: string }
 }
 type Post = {
-  id: string; title: string; body: string; imageUrl?: string | null; createdAt: string
+  id: string; postNumber: number; title: string; body: string; imageUrl?: string | null; createdAt: string
   user: { id: string; name: string }
   forumReplies: Reply[]
 }
@@ -185,7 +185,10 @@ export default function ForumPostPage() {
 
         {/* Post */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 16 }}>{post.title}</h1>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
+            <h1 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3 }}>{post.title}</h1>
+            <span style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 400, whiteSpace: 'nowrap' }}>#{post.postNumber}</span>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Avatar name={post.user.name} />
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{post.user.name}</span>

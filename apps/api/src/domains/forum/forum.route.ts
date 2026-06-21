@@ -56,8 +56,10 @@ forumRouter.post('/', async (c) => {
     : 'general'
 
   const db = createDb(c.env.DB)
+  const postNumber = 1000000 + Math.floor(Math.random() * 9000000)
   const post = {
     id: crypto.randomUUID(),
+    postNumber,
     title: title.trim(),
     body: body.trim(),
     category: safeCategory,

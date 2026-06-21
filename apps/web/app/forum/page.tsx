@@ -9,7 +9,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.on
 
 type Category = 'all' | 'general' | 'problem' | 'feature' | 'howto'
 type Post = {
-  id: string; title: string; body: string
+  id: string; postNumber: number; title: string; body: string
   category: Exclude<Category, 'all'>
   isPinned: boolean; imageUrl?: string | null; createdAt: string
   user: { id: string; name: string }
@@ -59,7 +59,10 @@ function PostCard({ post }: { post: Post }) {
           )}
           <CategoryBadge category={post.category} />
         </div>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>{post.title}</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>
+          {post.title}
+          <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 400, marginLeft: 8 }}>#{post.postNumber}</span>
+        </h2>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: post.imageUrl ? 10 : 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.body}</p>
         {post.imageUrl && <img src={post.imageUrl} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 6, marginBottom: 10 }} />}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
