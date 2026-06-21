@@ -22,6 +22,9 @@ export function Navbar() {
       </Link>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <Link href="/showcase" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>
+          Showcase
+        </Link>
         <Link href="/forum" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>
           Forum
         </Link>
