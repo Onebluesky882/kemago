@@ -3,16 +3,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
+import { uploadForumImage } from '@/hooks/use-image-upload'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
 type Reply = {
-  id: string; body: string; createdAt: string
+  id: string; body: string; imageUrl?: string | null; createdAt: string
   parentReplyId: string | null
   user: { id: string; name: string }
 }
 type Post = {
-  id: string; title: string; body: string; createdAt: string
+  id: string; title: string; body: string; imageUrl?: string | null; createdAt: string
   user: { id: string; name: string }
   forumReplies: Reply[]
 }
@@ -59,6 +60,7 @@ function ReplyCard({
               </>
             ) : reply.body}
           </p>
+          {reply.imageUrl && <img src={reply.imageUrl} alt="" style={{ maxWidth: '100%', borderRadius: 6, marginTop: 8, maxHeight: 300, objectFit: 'cover' }} />}
         </div>
       </div>
 
@@ -96,7 +98,11 @@ export default function ForumPostPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replying, setReplying] = useState(false)
   const [error, setError] = useState('')
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   async function load() {
     const res = await fetch(`${API}/api/forum/${id}`, { credentials: 'include' })
@@ -121,6 +127,22 @@ export default function ForumPostPage() {
     setBody('')
   }
 
+  async function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImagePreview(URL.createObjectURL(file))
+    setUploading(true)
+    try {
+      const url = await uploadForumImage(file, 'forum/replies')
+      setImageUrl(url)
+    } catch {
+      setError('Image upload failed')
+      setImagePreview(null)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   async function handleReply(e: React.FormEvent) {
     e.preventDefault()
     if (!body.trim()) return
@@ -131,10 +153,10 @@ export default function ForumPostPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ body, parentReplyId }),
+        body: JSON.stringify({ body, parentReplyId, imageUrl }),
       })
       if (res.ok) {
-        setBody(''); setParentReplyId(null); setReplyingTo(null); load()
+        setBody(''); setParentReplyId(null); setReplyingTo(null); setImageUrl(null); setImagePreview(null); load()
       } else {
         const d = await res.json() as { error?: string }
         setError(d.error === 'Unauthorized' ? 'Please sign in to reply.' : (d.error ?? 'Failed'))
@@ -175,6 +197,7 @@ export default function ForumPostPage() {
             </button>
           </div>
           <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{post.body}</p>
+          {post.imageUrl && <img src={post.imageUrl} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginTop: 16, maxHeight: 400, objectFit: 'cover' }} />}
         </div>
 
         <div style={{ borderTop: '1px solid var(--border-subtle)', marginBottom: 32 }} />
@@ -212,14 +235,22 @@ export default function ForumPostPage() {
               rows={4}
               style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
             />
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImagePick} />
+            {imagePreview && (
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <img src={imagePreview} alt="" style={{ maxHeight: 120, borderRadius: 6, objectFit: 'cover' }} />
+                <button type="button" onClick={() => { setImageUrl(null); setImagePreview(null) }} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, fontSize: 12, cursor: 'pointer' }}>×</button>
+              </div>
+            )}
             {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
-            <button
-              type="submit"
-              disabled={replying}
-              style={{ alignSelf: 'flex-end', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 14, fontWeight: 600, cursor: replying ? 'not-allowed' : 'pointer', opacity: replying ? 0.6 : 1 }}
-            >
-              {replying ? 'Posting…' : 'Post reply'}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                {uploading ? 'Uploading…' : '📎 Add image'}
+              </button>
+              <button type="submit" disabled={replying || uploading} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 14, fontWeight: 600, cursor: (replying || uploading) ? 'not-allowed' : 'pointer', opacity: (replying || uploading) ? 0.6 : 1 }}>
+                {replying ? 'Posting…' : 'Post reply'}
+              </button>
+            </div>
           </form>
         </div>
 

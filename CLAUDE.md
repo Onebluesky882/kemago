@@ -88,6 +88,37 @@ export default function SomePage() {
 
 ---
 
+## R2 Bucket Setup Rules — MUST DO BEFORE IMAGE UPLOAD WORKS
+
+**Before image upload can work in production, the client MUST set these secrets:**
+
+```bash
+cd apps/api
+wrangler secret put R2_ACCESS_KEY_ID
+wrangler secret put R2_SECRET_ACCESS_KEY
+```
+
+**How to get R2 API credentials:**
+1. Cloudflare Dashboard → R2 → Manage R2 API Tokens
+2. Create token with **Object Read & Write** permission on bucket `fullstack-builder-storage`
+3. Copy Access Key ID → `wrangler secret put R2_ACCESS_KEY_ID`
+4. Copy Secret Access Key → `wrangler secret put R2_SECRET_ACCESS_KEY`
+
+**Image URL storage pattern:**
+- Images are stored in R2, URL saved in `image_url` column of the content table
+- Upload flow: Client → `POST /api/storage/presign/upload` → PUT to R2 → `POST /api/storage/presign/download` → save URL
+- Current download URL expires in 7 days (604800 seconds)
+- For permanent URLs: enable R2 public bucket access in Cloudflare Dashboard
+
+**R2 key naming convention:**
+```
+forum/{uuid}.webp          ← post images
+forum/replies/{uuid}.webp  ← reply images
+admin/{uuid}.webp          ← admin uploads
+```
+
+---
+
 ## Image / Media Attachment Rules
 
 **Any content table (forum_posts, forum_replies, or future content tables) MUST have an `image_url TEXT` column ready.**

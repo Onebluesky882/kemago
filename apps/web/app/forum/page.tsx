@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
+import { uploadForumImage } from '@/hooks/use-image-upload'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
@@ -10,7 +11,7 @@ type Category = 'all' | 'general' | 'problem' | 'feature' | 'howto'
 type Post = {
   id: string; title: string; body: string
   category: Exclude<Category, 'all'>
-  isPinned: boolean; createdAt: string
+  isPinned: boolean; imageUrl?: string | null; createdAt: string
   user: { id: string; name: string }
 }
 
@@ -59,7 +60,8 @@ function PostCard({ post }: { post: Post }) {
           <CategoryBadge category={post.category} />
         </div>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>{post.title}</h2>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.body}</p>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: post.imageUrl ? 10 : 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.body}</p>
+        {post.imageUrl && <img src={post.imageUrl} alt="" style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 6, marginBottom: 10 }} />}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--accent)', fontWeight: 700 }}>
             {post.user.name[0].toUpperCase()}
@@ -83,7 +85,11 @@ export default function ForumPage() {
   const [category, setCategory] = useState<Exclude<Category, 'all'>>('general')
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   async function load(cat: Category) {
     const url = cat === 'all' ? `${API}/api/forum` : `${API}/api/forum?category=${cat}`
@@ -97,6 +103,22 @@ export default function ForumPage() {
     if (open) setTimeout(() => titleRef.current?.focus(), 100)
   }, [open])
 
+  async function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImagePreview(URL.createObjectURL(file))
+    setUploading(true)
+    try {
+      const url = await uploadForumImage(file)
+      setImageUrl(url)
+    } catch {
+      setError('Image upload failed')
+      setImagePreview(null)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim() || !body.trim()) return
@@ -107,10 +129,10 @@ export default function ForumPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ title, body, category }),
+        body: JSON.stringify({ title, body, category, imageUrl }),
       })
       if (res.ok) {
-        setTitle(''); setBody(''); setOpen(false); load(tab)
+        setTitle(''); setBody(''); setImageUrl(null); setImagePreview(null); setOpen(false); load(tab)
       } else {
         const d = await res.json() as { error?: string }
         setError(d.error === 'Unauthorized' ? 'Please sign in to post.' : (d.error ?? 'Failed'))
@@ -236,14 +258,27 @@ export default function ForumPage() {
                 rows={3}
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', resize: 'none', fontFamily: 'inherit' }}
               />
+              {/* Image upload */}
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImagePick} />
+              {imagePreview && (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <img src={imagePreview} alt="" style={{ maxHeight: 120, borderRadius: 6, objectFit: 'cover' }} />
+                  <button type="button" onClick={() => { setImageUrl(null); setImagePreview(null) }} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, fontSize: 12, cursor: 'pointer', lineHeight: 1 }}>×</button>
+                </div>
+              )}
               {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                <button type="button" onClick={() => { setOpen(false); setError('') }} style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 16px', fontSize: 13, cursor: 'pointer' }}>
-                  Cancel
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} style={{ fontSize: 12, color: uploading ? 'var(--text-faint)' : 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                  {uploading ? 'Uploading…' : '📎 Add image'}
                 </button>
-                <button type="submit" disabled={posting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.6 : 1 }}>
-                  {posting ? 'Posting…' : 'Post question'}
-                </button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={() => { setOpen(false); setError(''); setImageUrl(null); setImagePreview(null) }} style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 16px', fontSize: 13, cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={posting || uploading} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: (posting || uploading) ? 'not-allowed' : 'pointer', opacity: (posting || uploading) ? 0.6 : 1 }}>
+                    {posting ? 'Posting…' : 'Post question'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

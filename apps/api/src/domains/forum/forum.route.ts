@@ -48,7 +48,7 @@ forumRouter.post('/', async (c) => {
   const session = await getSession(c)
   if (!session) return c.json({ error: 'Unauthorized' }, 401)
 
-  const { title, body, category } = await c.req.json<{ title: string; body: string; category?: string }>()
+  const { title, body, category, imageUrl } = await c.req.json<{ title: string; body: string; category?: string; imageUrl?: string }>()
   if (!title?.trim() || !body?.trim()) return c.json({ error: 'Missing fields' }, 400)
 
   const safeCategory: ForumCategory = FORUM_CATEGORIES.includes(category as ForumCategory)
@@ -62,6 +62,7 @@ forumRouter.post('/', async (c) => {
     body: body.trim(),
     category: safeCategory,
     isPinned: false,
+    imageUrl: imageUrl ?? null,
     userId: session.user.id,
     createdAt: new Date(),
   }
@@ -74,7 +75,7 @@ forumRouter.post('/:id/reply', async (c) => {
   const session = await getSession(c)
   if (!session) return c.json({ error: 'Unauthorized' }, 401)
 
-  const { body, parentReplyId } = await c.req.json<{ body: string; parentReplyId?: string }>()
+  const { body, parentReplyId, imageUrl } = await c.req.json<{ body: string; parentReplyId?: string; imageUrl?: string }>()
   if (!body?.trim()) return c.json({ error: 'Missing body' }, 400)
 
   const postId = c.req.param('id')
@@ -86,6 +87,7 @@ forumRouter.post('/:id/reply', async (c) => {
     body: body.trim(),
     postId,
     parentReplyId: parentReplyId ?? null,
+    imageUrl: imageUrl ?? null,
     userId: session.user.id,
     createdAt: new Date(),
   }
