@@ -10,6 +10,30 @@ If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `
 
 ---
 
+## WebSocket / Realtime — When Client Needs It
+
+WebSocket on Cloudflare Workers requires **Durable Objects** which is NOT on the free tier ($5/month minimum).
+
+**Do NOT add WebSocket by default.** Only add when client explicitly needs realtime features like:
+- Live chat
+- Realtime notifications (badge count updates)
+- Live score / sensor data stream
+- Collaborative editing
+
+### When client requests WebSocket:
+
+1. Upgrade Cloudflare plan to Paid ($5/mo)
+2. Create a Durable Object class in `apps/api/src/domains/realtime/`
+3. Add `[[durable_objects]]` binding in `wrangler.toml`
+4. Connect from client via native `WebSocket` API
+
+### Alternative — No WebSocket needed for:
+- Forum new post notifications → use **email** (Resend) ✅
+- Dashboard data refresh → use **polling** every 30s ✅
+- Order status update → use **email/webhook** ✅
+
+---
+
 ## Cross-Domain Auth — NEVER USE credentials: 'include' for Mutation Requests
 
 **`workers.dev` is in the Public Suffix List — cross-subdomain cookies DO NOT WORK between `fullstack-builder-web.workers.dev` and `fullstack-builder-api.workers.dev`.**
