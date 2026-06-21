@@ -6,15 +6,52 @@ import { Navbar } from '@/components/navbar'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
-type Post = { id: string; title: string; body: string; isPinned: boolean; createdAt: string; user: { id: string; name: string } }
+type Category = 'all' | 'general' | 'problem' | 'feature' | 'howto'
+type Post = {
+  id: string; title: string; body: string
+  category: Exclude<Category, 'all'>
+  isPinned: boolean; createdAt: string
+  user: { id: string; name: string }
+}
+
+const TABS: { key: Category; label: string }[] = [
+  { key: 'all',     label: 'All' },
+  { key: 'general', label: 'General' },
+  { key: 'problem', label: 'Problem' },
+  { key: 'feature', label: 'Feature' },
+  { key: 'howto',   label: 'How To' },
+]
+
+const CATEGORY_COLORS: Record<Exclude<Category, 'all'>, { bg: string; text: string }> = {
+  general: { bg: 'rgba(99,102,241,0.12)', text: '#818cf8' },
+  problem: { bg: 'rgba(239,68,68,0.10)',  text: '#f87171' },
+  feature: { bg: 'rgba(34,197,94,0.10)',  text: '#4ade80' },
+  howto:   { bg: 'rgba(234,179,8,0.10)',  text: '#facc15' },
+}
+
+const CATEGORY_LABELS: Record<Exclude<Category, 'all'>, string> = {
+  general: 'General',
+  problem: 'Problem',
+  feature: 'Feature',
+  howto:   'How To',
+}
+
+function CategoryBadge({ category }: { category: Exclude<Category, 'all'> }) {
+  const c = CATEGORY_COLORS[category]
+  return (
+    <span style={{ fontSize: 10, fontWeight: 700, background: c.bg, color: c.text, borderRadius: 100, padding: '2px 9px', letterSpacing: '0.05em' }}>
+      {CATEGORY_LABELS[category]}
+    </span>
+  )
+}
 
 function PostCard({ post }: { post: Post }) {
   return (
-    <Link href={`/forum/${post.id}`} style={{ textDecoration: 'none' }}>
+    <Link href={`/forum/${post.id}`} style={{ textDecoration: 'none', display: 'block', marginBottom: 8 }}>
       <div className="card-hover" style={{
         background: post.isPinned ? 'rgba(124,58,237,0.04)' : 'var(--surface)',
-        border: post.isPinned ? '1px solid rgba(124,58,237,0.3)' : '1px solid var(--border)',
-        borderRadius: 10, padding: '18px 20px', marginBottom: 8, transition: 'border-color 150ms',
+        border: post.isPinned ? '1px solid rgba(124,58,237,0.25)' : '1px solid var(--border)',
+        borderRadius: 10, padding: '16px 20px', transition: 'border-color 150ms',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           {post.isPinned && (
@@ -22,11 +59,12 @@ function PostCard({ post }: { post: Post }) {
               📌 PINNED
             </span>
           )}
+          <CategoryBadge category={post.category} />
         </div>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>{post.title}</h2>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{post.body}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--accent)', fontWeight: 700 }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--accent)', fontWeight: 700 }}>
             {post.user.name[0].toUpperCase()}
           </div>
           <span style={{ fontSize: 12, color: 'var(--text-faint)' }}>{post.user.name}</span>
@@ -41,17 +79,20 @@ function PostCard({ post }: { post: Post }) {
 
 export default function ForumPage() {
   const [posts, setPosts] = useState<Post[]>([])
+  const [tab, setTab] = useState<Category>('all')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [category, setCategory] = useState<Exclude<Category, 'all'>>('general')
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
 
-  async function load() {
-    const res = await fetch(`${API}/api/forum`, { credentials: 'include' })
+  async function load(cat: Category) {
+    const url = cat === 'all' ? `${API}/api/forum` : `${API}/api/forum?category=${cat}`
+    const res = await fetch(url, { credentials: 'include' })
     if (res.ok) setPosts(await res.json())
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load(tab) }, [tab])
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
@@ -62,12 +103,12 @@ export default function ForumPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ title, body }),
+      body: JSON.stringify({ title, body, category }),
     })
     if (res.ok) {
       setTitle('')
       setBody('')
-      load()
+      load(tab)
     } else {
       const d = await res.json() as { error?: string }
       setError(d.error === 'Unauthorized' ? 'Please sign in to post.' : (d.error ?? 'Failed'))
@@ -75,62 +116,106 @@ export default function ForumPage() {
     setPosting(false)
   }
 
-  const pinned = posts.filter(p => p.isPinned)
-  const regular = posts.filter(p => !p.isPinned)
-
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
       <Navbar />
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
-        <div style={{ marginBottom: 40 }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
           <p style={{ fontSize: 11, color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, fontWeight: 600 }}>Forum</p>
           <h1 style={{ fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Community Q&A</h1>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Ask questions, share what you've built, get help.</p>
+          <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Ask questions, share what you built, get help from the community.</p>
         </div>
 
-        {/* Pinned posts */}
-        {pinned.length > 0 && (
-          <div style={{ marginBottom: 32 }}>
-            <p style={{ fontSize: 11, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Start here</p>
-            {pinned.map(post => <PostCard key={post.id} post={post} />)}
-          </div>
-        )}
-
-        {/* New post form */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '24px', marginBottom: 32 }}>
-          <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 16 }}>Ask a question</p>
-          <form onSubmit={handlePost} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <input
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="Title — what's your question?"
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none' }}
-            />
-            <textarea
-              value={body}
-              onChange={e => setBody(e.target.value)}
-              placeholder="Describe your question in detail…"
-              rows={4}
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
-            />
-            {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
+        {/* Category tabs */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 28, flexWrap: 'wrap' }}>
+          {TABS.map(t => (
             <button
-              type="submit"
-              disabled={posting}
-              style={{ alignSelf: 'flex-end', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 14, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.6 : 1 }}
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                fontSize: 13, fontWeight: tab === t.key ? 600 : 400,
+                color: tab === t.key ? 'var(--text)' : 'var(--text-muted)',
+                background: tab === t.key ? 'var(--surface)' : 'transparent',
+                border: tab === t.key ? '1px solid var(--border)' : '1px solid transparent',
+                borderRadius: 8, padding: '6px 14px', cursor: 'pointer', transition: 'all 150ms',
+              }}
             >
-              {posting ? 'Posting…' : 'Post question'}
+              {t.label}
             </button>
-          </form>
+          ))}
         </div>
 
-        {/* Regular posts */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {regular.length === 0 && pinned.length === 0 && (
-            <p style={{ fontSize: 14, color: 'var(--text-faint)', textAlign: 'center', padding: '40px 0' }}>No posts yet — be the first to ask.</p>
-          )}
-          {regular.map(post => <PostCard key={post.id} post={post} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
+
+          {/* Post list */}
+          <div>
+            {posts.length === 0 ? (
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '40px 24px', textAlign: 'center' }}>
+                <p style={{ fontSize: 14, color: 'var(--text-faint)' }}>No posts yet in this category.</p>
+              </div>
+            ) : (
+              posts.map(post => <PostCard key={post.id} post={post} />)
+            )}
+          </div>
+
+          {/* Sidebar — create form */}
+          <div style={{ position: 'sticky', top: 72 }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 16 }}>Post a question</p>
+              <form onSubmit={handlePost} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+                {/* Category selector */}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {(Object.keys(CATEGORY_LABELS) as Exclude<Category, 'all'>[]).map(cat => {
+                    const c = CATEGORY_COLORS[cat]
+                    const active = category === cat
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setCategory(cat)}
+                        style={{
+                          fontSize: 11, fontWeight: 600,
+                          background: active ? c.bg : 'transparent',
+                          color: active ? c.text : 'var(--text-faint)',
+                          border: active ? `1px solid ${c.text}33` : '1px solid var(--border)',
+                          borderRadius: 100, padding: '3px 10px', cursor: 'pointer', transition: 'all 150ms',
+                        }}
+                      >
+                        {CATEGORY_LABELS[cat]}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <input
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  placeholder="Title"
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--text)', outline: 'none' }}
+                />
+                <textarea
+                  value={body}
+                  onChange={e => setBody(e.target.value)}
+                  placeholder="Describe your question…"
+                  rows={5}
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--text)', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
+                />
+                {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
+                <button
+                  type="submit"
+                  disabled={posting}
+                  style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', fontSize: 13, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.6 : 1 }}
+                >
+                  {posting ? 'Posting…' : 'Post question'}
+                </button>
+              </form>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

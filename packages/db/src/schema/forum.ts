@@ -2,10 +2,14 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { relations } from 'drizzle-orm'
 import { user } from './auth'
 
+export const FORUM_CATEGORIES = ['general', 'problem', 'feature', 'howto'] as const
+export type ForumCategory = typeof FORUM_CATEGORIES[number]
+
 export const forumPosts = sqliteTable('forum_posts', {
   id: text('id').primaryKey(),
   title: text('title').notNull(),
   body: text('body').notNull(),
+  category: text('category', { enum: FORUM_CATEGORIES }).notNull().default('general'),
   isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
