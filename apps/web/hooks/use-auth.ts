@@ -18,7 +18,7 @@ export function useAuth() {
     if (!res.ok) throw new Error('Invalid credentials')
     const data = await res.json()
     setUser(data.user)
-    router.push('/')
+    router.push('/dashboard')
   }
 
   async function signUp(name: string, email: string, password: string) {
@@ -31,7 +31,7 @@ export function useAuth() {
     if (!res.ok) throw new Error('Sign up failed')
     const data = await res.json()
     setUser(data.user)
-    router.push('/')
+    router.push('/dashboard')
   }
 
   async function signOut() {
