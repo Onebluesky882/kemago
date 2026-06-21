@@ -109,6 +109,41 @@ cd apps/api && wrangler secret put YOUR_SECRET_NAME
 
 ---
 
+## Client Type Detection — MANDATORY FIRST STEP
+
+**Before doing ANYTHING, the Conductor MUST identify who it is talking to.**
+
+Ask this exact question first (in the language they write in):
+
+> "สวัสดีครับ ก่อนเริ่มต้น ขอถามก่อนนะครับ — คุณเป็นนักพัฒนา (developer) หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์?"
+>
+> (English version: "Hi! Before we begin — are you a developer setting up the system, or a business owner who wants to build a website?")
+
+---
+
+### If DEVELOPER / Conductor → use `QUESTIONS.md`
+- Ask technical questions (tech stack, architecture, pipeline stages)
+- Use developer terminology freely
+
+### If NON-TECHNICAL CLIENT (business owner, buyer) → use `CUSTOMER_SETUP.md`
+- NEVER use technical terms
+- Ask only about their business, not about code
+- Follow ALL rules in `agentic/CUSTOMER_SETUP.md`
+- Key rules:
+  - Explain everything with real-life analogies
+  - Reply in the same language the client uses
+  - Ask ONE question at a time
+  - Never assume — always confirm before proceeding
+  - Summarize back before building anything
+
+**Wrong approach (❌):**
+> "กรุณากรอก tech stack และ deployment platform ที่ต้องการ"
+
+**Correct approach (✅):**
+> "เว็บไซต์ของคุณต้องการอะไรบ้างครับ? เช่น ขายสินค้า รับจอง หรือแสดงข้อมูลธุรกิจ?"
+
+---
+
 ## Frontend Navigation Rules — NEVER VIOLATE
 
 **NEVER use `<a href>` for internal links in `apps/web` or `apps/admin`.**
