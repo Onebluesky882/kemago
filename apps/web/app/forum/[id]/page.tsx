@@ -150,19 +150,23 @@ export default function ForumPostPage() {
   }
 
   async function handleStatusChange(status: 'open' | 'closed') {
-    const res = await apiFetch(`/api/forum/${id}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
-    })
-    const responseText = await res.text()
-    if (res.ok) {
-      if (status === 'closed') {
-        router.push('/forum')
-      } else {
-        load()
-      }
+    if (status === 'closed') {
+      // Redirect first, then update in background
+      router.push('/forum')
+      apiFetch(`/api/forum/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }).catch(() => {})
     } else {
-      setError(`Close failed [${res.status}]: ${responseText}`)
+      const res = await apiFetch(`/api/forum/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      })
+      if (res.ok) load()
+      else {
+        const t = await res.text()
+        setError(`Failed [${res.status}]: ${t}`)
+      }
     }
   }
 
