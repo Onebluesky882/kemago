@@ -1,27 +1,52 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth.store'
 import { useAuth } from '@/hooks/use-auth'
 import { Navbar } from '@/components/navbar'
 import { BackButton } from '@/components/back-button'
 
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
+
+type Post = {
+  id: string; title: string; postNumber: number
+  status: 'open' | 'closed'; createdAt: string
+  category: string; user: { id: string; name: string }
+}
+
 const QUICK_LINKS = [
-  { label: 'Forum', desc: 'Ask questions & get help', href: '/forum', icon: '💬' },
-  { label: 'Showcase', desc: 'See what others built', href: '/showcase', icon: '🚀' },
-  { label: 'Pricing', desc: 'Upgrade your plan', href: '/pricing', icon: '💳' },
+  { label: 'Forum', desc: 'Ask questions & get help', href: '/forum' },
+  { label: 'Showcase', desc: 'See what others built', href: '/showcase' },
+  { label: 'Pricing', desc: 'Upgrade your plan', href: '/pricing' },
 ]
+
+function isToday(dateStr: string) {
+  const d = new Date(dateStr)
+  const now = new Date()
+  return d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+}
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuthStore()
   const { signOut } = useAuth()
   const router = useRouter()
+  const [myPosts, setMyPosts] = useState<Post[]>([])
 
   useEffect(() => {
     if (!isLoading && !user) router.push('/login')
   }, [user, isLoading, router])
+
+  useEffect(() => {
+    if (!user) return
+    fetch(`${API}/api/forum`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : [])
+      .then((posts: Post[]) => setMyPosts(posts.filter(p => p.user.id === user.id)))
+      .catch(() => {})
+  }, [user])
 
   if (isLoading || !user) {
     return <div style={{ background: 'var(--bg)', minHeight: '100vh' }} />
@@ -35,7 +60,7 @@ export default function DashboardPage() {
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 24px' }}>
 
         {/* Welcome */}
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 32 }}>
           <p style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 8 }}>Welcome back</p>
           <h1 style={{ fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: 800, letterSpacing: '-0.03em' }}>
             {user.name}
@@ -43,7 +68,7 @@ export default function DashboardPage() {
           <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>{user.email}</p>
         </div>
 
-        {/* Access template card */}
+        {/* Template access */}
         <div style={{ background: 'var(--surface)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 14, padding: '24px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, right: 0, width: 200, height: 200, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
           <p style={{ fontSize: 11, color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 10 }}>Template Access</p>
@@ -52,29 +77,66 @@ export default function DashboardPage() {
             Clone the private repo and start building your product with AI.
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <a
-              href="https://github.com/Onebluesky882/goveragent-template"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}
-            >
+            <a href="https://github.com/Onebluesky882/goveragent-template" target="_blank" rel="noopener noreferrer"
+              style={{ background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
               Open on GitHub →
             </a>
-            <Link
-              href="/forum"
-              style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', fontSize: 13, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}
-            >
+            <Link href="/forum"
+              style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', fontSize: 13, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
               Ask a question
             </Link>
           </div>
         </div>
 
+        {/* My Forum Posts */}
+        {myPosts.length > 0 && (
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>My posts</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {myPosts.slice(0, 5).map(post => {
+                const isNew = isToday(post.createdAt)
+                const isClosed = post.status === 'closed'
+                return (
+                  <Link key={post.id} href={`/forum/${post.id}`} style={{ textDecoration: 'none' }}>
+                    <div className="card-hover" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      {/* Status badge top-left */}
+                      <div style={{ flexShrink: 0 }}>
+                        {isClosed ? (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#888', background: 'rgba(136,136,136,0.1)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 100, padding: '2px 8px', whiteSpace: 'nowrap' }}>
+                            Closed
+                          </span>
+                        ) : isNew ? (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '2px 8px', whiteSpace: 'nowrap' }}>
+                            New
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 100, padding: '2px 8px', whiteSpace: 'nowrap' }}>
+                            Open
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ fontSize: 14, color: isClosed ? 'var(--text-muted)' : 'var(--text)', fontWeight: 500, flex: 1, lineHeight: 1.3 }}>
+                        {post.title}
+                      </p>
+                      <span style={{ fontSize: 11, color: 'var(--text-faint)', whiteSpace: 'nowrap' }}>#{post.postNumber}</span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+            {myPosts.length > 5 && (
+              <Link href="/forum" style={{ fontSize: 13, color: 'var(--accent)', textDecoration: 'none', display: 'block', marginTop: 10 }}>
+                View all {myPosts.length} posts →
+              </Link>
+            )}
+          </div>
+        )}
+
         {/* Quick links */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 40 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 40 }}>
           {QUICK_LINKS.map((link) => (
             <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
               <div className="card-hover" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 18px' }}>
-                <span style={{ fontSize: 20, display: 'block', marginBottom: 8 }}>{link.icon}</span>
                 <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{link.label}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-faint)' }}>{link.desc}</p>
               </div>
@@ -83,10 +145,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Sign out */}
-        <button
-          onClick={signOut}
-          style={{ fontSize: 13, color: 'var(--text-faint)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
+        <button onClick={signOut} style={{ fontSize: 13, color: 'var(--text-faint)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           Sign out
         </button>
 
