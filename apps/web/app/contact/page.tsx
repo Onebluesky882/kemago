@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { Navbar } from '@/components/navbar'
+import { BackButton } from '@/components/back-button'
 
 export const metadata = {
   title: 'Talk to a Developer — GoverAgent',
@@ -18,14 +20,11 @@ export default function ContactPage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
 
-      {/* Nav */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
-        <Link href="/setup" style={{ background: 'var(--text)', color: '#000', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Get started</Link>
-      </nav>
+      <Navbar />
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 24px 0' }}><BackButton /></div>
 
       {/* Hero */}
-      <section style={{ maxWidth: 680, margin: '0 auto', padding: '80px 24px 64px', textAlign: 'center' }}>
+      <section style={{ maxWidth: 680, margin: '0 auto', padding: '40px 24px 64px', textAlign: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '4px 12px', fontSize: 12, color: 'var(--green)', fontWeight: 500, marginBottom: 28, letterSpacing: '0.02em' }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
           Available for consultation

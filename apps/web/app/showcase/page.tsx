@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
+import { BackButton } from '@/components/back-button'
 
 export const metadata = {
   title: 'Showcase — GoverAgent',
@@ -27,6 +28,7 @@ export default function ShowcasePage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
       <Navbar />
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 24px 0' }}><BackButton /></div>
 
       {/* Hero */}
       <section style={{ position: 'relative', overflow: 'hidden' }}>

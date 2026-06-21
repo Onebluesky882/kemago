@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { Navbar } from '@/components/navbar'
+import { BackButton } from '@/components/back-button'
 
 const STEPS = [
   {
@@ -92,16 +94,8 @@ export default function HowItWorksPage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
 
-      {/* Nav */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid var(--border)', background: 'rgba(8,8,8,0.85)', backdropFilter: 'blur(12px)', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>GoverAgent</Link>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link href="/why" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Why us</Link>
-          <Link href="/pricing" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Pricing</Link>
-          <Link href="/login" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Sign in</Link>
-          <Link href="/setup" style={{ background: 'var(--text)', color: '#000', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Get started</Link>
-        </div>
-      </nav>
+      <Navbar />
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 24px 0' }}><BackButton /></div>
 
       {/* Hero */}
       <section style={{ position: 'relative', overflow: 'hidden' }}>

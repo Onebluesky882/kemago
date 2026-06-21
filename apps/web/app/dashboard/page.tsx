@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth.store'
 import { useAuth } from '@/hooks/use-auth'
 import { Navbar } from '@/components/navbar'
+import { BackButton } from '@/components/back-button'
 
 const QUICK_LINKS = [
   { label: 'Forum', desc: 'Ask questions & get help', href: '/forum', icon: '💬' },
@@ -30,7 +31,8 @@ export default function DashboardPage() {
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
       <Navbar />
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 24px 0' }}><BackButton href="/" /></div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 24px' }}>
 
         {/* Welcome */}
         <div style={{ marginBottom: 40 }}>
