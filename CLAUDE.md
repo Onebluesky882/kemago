@@ -88,6 +88,38 @@ export default function SomePage() {
 
 ---
 
+## Image / Media Attachment Rules
+
+**Any content table (forum_posts, forum_replies, or future content tables) MUST have an `image_url TEXT` column ready.**
+
+This column stores the R2 public URL of an uploaded image. It is nullable — no image = NULL.
+
+### Upload flow (presigned URL pattern)
+1. Client requests presigned upload URL: `POST /api/storage/upload-url` → `{ url, key, publicUrl }`
+2. Client uploads directly to R2: `PUT presignedUrl` with the file blob
+3. Client saves `publicUrl` to the content record on submit
+
+### Render rule
+When rendering content body, check `imageUrl`:
+```tsx
+{post.imageUrl && (
+  <img src={post.imageUrl} alt="" style={{ maxWidth: '100%', borderRadius: 8, marginTop: 12 }} />
+)}
+```
+
+### Naming convention
+- DB column: `image_url TEXT`
+- API field: `imageUrl`
+- R2 key pattern: `forum/{postId}/{uuid}.webp`
+
+### Image optimization (client-side before upload)
+Convert to WebP and resize using Canvas before uploading to R2:
+- Max width: 1200px
+- Quality: 0.85
+- Format: WebP
+
+---
+
 ## Notification Service Rules
 
 **`sendNotificationEmail` is ready in `@gover-agent/email` — use it whenever a domain needs to notify users.**

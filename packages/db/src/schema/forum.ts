@@ -11,6 +11,7 @@ export const forumPosts = sqliteTable('forum_posts', {
   body: text('body').notNull(),
   category: text('category', { enum: FORUM_CATEGORIES }).notNull().default('general'),
   isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
+  imageUrl: text('image_url'),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
@@ -20,6 +21,7 @@ export const forumReplies = sqliteTable('forum_replies', {
   body: text('body').notNull(),
   postId: text('post_id').notNull().references(() => forumPosts.id, { onDelete: 'cascade' }),
   parentReplyId: text('parent_reply_id'),
+  imageUrl: text('image_url'),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
