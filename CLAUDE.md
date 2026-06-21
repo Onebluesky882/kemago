@@ -98,6 +98,21 @@ wrangler secret put R2_ACCESS_KEY_ID
 wrangler secret put R2_SECRET_ACCESS_KEY
 ```
 
+**After setting R2 secrets, client MUST also configure R2 CORS for browser uploads:**
+
+Go to Cloudflare Dashboard → R2 → `fullstack-builder-storage` → Settings → CORS Policy → add:
+```json
+[
+  {
+    "AllowedOrigins": ["https://fullstack-builder-web.onebluesky882.workers.dev", "http://localhost:3000"],
+    "AllowedMethods": ["PUT", "GET"],
+    "AllowedHeaders": ["Content-Type", "x-amz-checksum-crc32", "x-amz-sdk-checksum-algorithm"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+Without this, browser uploads fail with "Image upload failed" even though API keys are correct.
+
 **How to get R2 API credentials:**
 1. Cloudflare Dashboard → R2 → Manage R2 API Tokens
 2. Create token with **Object Read & Write** permission on bucket `fullstack-builder-storage`
