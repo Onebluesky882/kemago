@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 
@@ -30,10 +30,7 @@ const CATEGORY_COLORS: Record<Exclude<Category, 'all'>, { bg: string; text: stri
 }
 
 const CATEGORY_LABELS: Record<Exclude<Category, 'all'>, string> = {
-  general: 'General',
-  problem: 'Problem',
-  feature: 'Feature',
-  howto:   'How To',
+  general: 'General', problem: 'Problem', feature: 'Feature', howto: 'How To',
 }
 
 function CategoryBadge({ category }: { category: Exclude<Category, 'all'> }) {
@@ -80,11 +77,13 @@ function PostCard({ post }: { post: Post }) {
 export default function ForumPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [tab, setTab] = useState<Category>('all')
+  const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [category, setCategory] = useState<Exclude<Category, 'all'>>('general')
   const [posting, setPosting] = useState(false)
   const [error, setError] = useState('')
+  const titleRef = useRef<HTMLInputElement>(null)
 
   async function load(cat: Category) {
     const url = cat === 'all' ? `${API}/api/forum` : `${API}/api/forum?category=${cat}`
@@ -93,6 +92,10 @@ export default function ForumPage() {
   }
 
   useEffect(() => { load(tab) }, [tab])
+
+  useEffect(() => {
+    if (open) setTimeout(() => titleRef.current?.focus(), 100)
+  }, [open])
 
   async function handlePost(e: React.FormEvent) {
     e.preventDefault()
@@ -106,9 +109,7 @@ export default function ForumPage() {
       body: JSON.stringify({ title, body, category }),
     })
     if (res.ok) {
-      setTitle('')
-      setBody('')
-      load(tab)
+      setTitle(''); setBody(''); setOpen(false); load(tab)
     } else {
       const d = await res.json() as { error?: string }
       setError(d.error === 'Unauthorized' ? 'Please sign in to post.' : (d.error ?? 'Failed'))
@@ -117,10 +118,10 @@ export default function ForumPage() {
   }
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)', paddingBottom: 80 }}>
       <Navbar />
 
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 24px 24px' }}>
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
@@ -132,91 +133,116 @@ export default function ForumPage() {
         {/* Category tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 28, flexWrap: 'wrap' }}>
           {TABS.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              style={{
-                fontSize: 13, fontWeight: tab === t.key ? 600 : 400,
-                color: tab === t.key ? 'var(--text)' : 'var(--text-muted)',
-                background: tab === t.key ? 'var(--surface)' : 'transparent',
-                border: tab === t.key ? '1px solid var(--border)' : '1px solid transparent',
-                borderRadius: 8, padding: '6px 14px', cursor: 'pointer', transition: 'all 150ms',
-              }}
-            >
+            <button key={t.key} onClick={() => setTab(t.key)} style={{
+              fontSize: 13, fontWeight: tab === t.key ? 600 : 400,
+              color: tab === t.key ? 'var(--text)' : 'var(--text-muted)',
+              background: tab === t.key ? 'var(--surface)' : 'transparent',
+              border: tab === t.key ? '1px solid var(--border)' : '1px solid transparent',
+              borderRadius: 8, padding: '6px 14px', cursor: 'pointer', transition: 'all 150ms',
+            }}>
               {t.label}
             </button>
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
-
-          {/* Post list */}
-          <div>
-            {posts.length === 0 ? (
-              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '40px 24px', textAlign: 'center' }}>
-                <p style={{ fontSize: 14, color: 'var(--text-faint)' }}>No posts yet in this category.</p>
-              </div>
-            ) : (
-              posts.map(post => <PostCard key={post.id} post={post} />)
-            )}
+        {/* Post list */}
+        {posts.length === 0 ? (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '48px 24px', textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: 'var(--text-faint)' }}>No posts yet — be the first to ask.</p>
           </div>
+        ) : (
+          posts.map(post => <PostCard key={post.id} post={post} />)
+        )}
+      </div>
 
-          {/* Sidebar — create form */}
-          <div style={{ position: 'sticky', top: 72 }}>
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, marginBottom: 16 }}>Post a question</p>
-              <form onSubmit={handlePost} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Sticky bottom bar */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
+        borderTop: '1px solid var(--border)',
+        background: 'rgba(8,8,8,0.92)', backdropFilter: 'blur(16px)',
+        transition: 'all 250ms cubic-bezier(0.4,0,0.2,1)',
+      }}>
+        {/* Collapsed — just a trigger bar */}
+        {!open && (
+          <div style={{ maxWidth: 720, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              onClick={() => setOpen(true)}
+              style={{
+                flex: 1, textAlign: 'left', background: 'var(--surface)',
+                border: '1px solid var(--border)', borderRadius: 8,
+                padding: '10px 16px', fontSize: 14, color: 'var(--text-faint)',
+                cursor: 'pointer',
+              }}
+            >
+              Ask a question…
+            </button>
+            <button
+              onClick={() => setOpen(true)}
+              style={{
+                background: 'var(--accent)', color: '#fff', border: 'none',
+                borderRadius: 8, padding: '10px 20px', fontSize: 14,
+                fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              + Post
+            </button>
+          </div>
+        )}
 
-                {/* Category selector */}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {(Object.keys(CATEGORY_LABELS) as Exclude<Category, 'all'>[]).map(cat => {
-                    const c = CATEGORY_COLORS[cat]
-                    const active = category === cat
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setCategory(cat)}
-                        style={{
-                          fontSize: 11, fontWeight: 600,
-                          background: active ? c.bg : 'transparent',
-                          color: active ? c.text : 'var(--text-faint)',
-                          border: active ? `1px solid ${c.text}33` : '1px solid var(--border)',
-                          borderRadius: 100, padding: '3px 10px', cursor: 'pointer', transition: 'all 150ms',
-                        }}
-                      >
-                        {CATEGORY_LABELS[cat]}
-                      </button>
-                    )
-                  })}
-                </div>
+        {/* Expanded — full form */}
+        {open && (
+          <div style={{ maxWidth: 720, margin: '0 auto', padding: '16px 24px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <p style={{ fontSize: 13, fontWeight: 700 }}>New post</p>
+              <button onClick={() => { setOpen(false); setError('') }} style={{ background: 'none', border: 'none', color: 'var(--text-faint)', fontSize: 20, cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
 
-                <input
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  placeholder="Title"
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--text)', outline: 'none' }}
-                />
-                <textarea
-                  value={body}
-                  onChange={e => setBody(e.target.value)}
-                  placeholder="Describe your question…"
-                  rows={5}
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--text)', outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
-                />
-                {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
-                <button
-                  type="submit"
-                  disabled={posting}
-                  style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px', fontSize: 13, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.6 : 1 }}
-                >
+            {/* Category selector */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+              {(Object.keys(CATEGORY_LABELS) as Exclude<Category, 'all'>[]).map(cat => {
+                const c = CATEGORY_COLORS[cat]
+                const active = category === cat
+                return (
+                  <button key={cat} type="button" onClick={() => setCategory(cat)} style={{
+                    fontSize: 11, fontWeight: 600,
+                    background: active ? c.bg : 'transparent',
+                    color: active ? c.text : 'var(--text-faint)',
+                    border: active ? `1px solid ${c.text}44` : '1px solid var(--border)',
+                    borderRadius: 100, padding: '3px 12px', cursor: 'pointer', transition: 'all 150ms',
+                  }}>
+                    {CATEGORY_LABELS[cat]}
+                  </button>
+                )
+              })}
+            </div>
+
+            <form onSubmit={handlePost} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <input
+                ref={titleRef}
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="Title — what's your question?"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none' }}
+              />
+              <textarea
+                value={body}
+                onChange={e => setBody(e.target.value)}
+                placeholder="Describe in detail…"
+                rows={3}
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 14, color: 'var(--text)', outline: 'none', resize: 'none', fontFamily: 'inherit' }}
+              />
+              {error && <p style={{ fontSize: 12, color: '#ef4444' }}>{error}</p>}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                <button type="button" onClick={() => { setOpen(false); setError('') }} style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 16px', fontSize: 13, cursor: 'pointer' }}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={posting} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '9px 20px', fontSize: 13, fontWeight: 600, cursor: posting ? 'not-allowed' : 'pointer', opacity: posting ? 0.6 : 1 }}>
                   {posting ? 'Posting…' : 'Post question'}
                 </button>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
-
-        </div>
+        )}
       </div>
     </div>
   )
