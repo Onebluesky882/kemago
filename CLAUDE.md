@@ -55,6 +55,40 @@ export default function SomePage() {
 
 ---
 
+## CRUD Domain Testing Rules — NEVER SKIP
+
+**Every time you create or modify a CRUD domain (API route + DB table), you MUST:**
+
+### Step 1 — Insert test row
+```bash
+wrangler d1 execute fullstack-builder-db --remote --command="INSERT INTO <table> (...) VALUES (...)"
+```
+
+### Step 2 — Test each operation
+Test all operations that were implemented:
+- **CREATE** — POST endpoint returns `{ success: true }`
+- **READ** — GET endpoint returns the row
+- **UPDATE** — PUT/PATCH endpoint updates correctly
+- **DELETE** — DELETE endpoint removes the row
+
+### Step 3 — Report result
+Output a checklist before cleanup:
+```
+✅ CREATE — POST /api/forum → { success: true }
+✅ READ   — GET /api/forum → returns post with user
+✅ REPLY  — POST /api/forum/:id/reply → { success: true }
+```
+
+### Step 4 — Delete test rows (MANDATORY)
+After confirming success, delete ALL test data:
+```bash
+wrangler d1 execute fullstack-builder-db --remote --command="DELETE FROM <table> WHERE id='test-xxx'"
+```
+
+**Never leave test rows in the production database.**
+
+---
+
 ## Before Starting Any Task
 
 **MANDATORY — Every agent must read `agentic/START_HERE.md` before doing anything else. No exceptions.**

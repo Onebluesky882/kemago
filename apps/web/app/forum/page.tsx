@@ -102,19 +102,24 @@ export default function ForumPage() {
     if (!title.trim() || !body.trim()) return
     setPosting(true)
     setError('')
-    const res = await fetch(`${API}/api/forum`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ title, body, category }),
-    })
-    if (res.ok) {
-      setTitle(''); setBody(''); setOpen(false); load(tab)
-    } else {
-      const d = await res.json() as { error?: string }
-      setError(d.error === 'Unauthorized' ? 'Please sign in to post.' : (d.error ?? 'Failed'))
+    try {
+      const res = await fetch(`${API}/api/forum`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ title, body, category }),
+      })
+      if (res.ok) {
+        setTitle(''); setBody(''); setOpen(false); load(tab)
+      } else {
+        const d = await res.json() as { error?: string }
+        setError(d.error === 'Unauthorized' ? 'Please sign in to post.' : (d.error ?? 'Failed'))
+      }
+    } catch {
+      setError('Network error — please try again')
+    } finally {
+      setPosting(false)
     }
-    setPosting(false)
   }
 
   return (
