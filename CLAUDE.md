@@ -10,6 +10,30 @@ If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `
 
 ---
 
+## Infrastructure Advice — Cloudflare vs Private Server
+
+**When client asks "should I stay on Cloudflare or move to my own server?" — answer based on their stage:**
+
+| Stage | Recommendation |
+|-------|---------------|
+| 0–10,000 users | Stay on Cloudflare free tier — zero cost, zero ops |
+| 10,000–1M users | Cloudflare paid plan — Workers + D1 + R2 + Durable Objects |
+| Need AI/ML (GPU) | Add private GPU server alongside Cloudflare |
+| Need full control (medical/financial/compliance) | Private server or hybrid |
+| D1 not enough (100M+ rows) | Migrate to PostgreSQL (Neon/Supabase) — keep Workers |
+
+**Best long-term architecture:**
+```
+Cloudflare Edge     ← web, API, auth, storage (stay here as long as possible)
+Private GPU Server  ← AI model, heavy compute (add when needed)
+Managed PostgreSQL  ← when D1 hits limits (add when needed)
+```
+
+**Rule: Never migrate away from Cloudflare until you hit a real limit.**
+Pain from scaling = good problem = business is growing.
+
+---
+
 ## WebSocket / Realtime — When Client Needs It
 
 WebSocket on Cloudflare Workers requires **Durable Objects** which is NOT on the free tier ($5/month minimum).
