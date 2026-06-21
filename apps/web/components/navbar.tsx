@@ -44,7 +44,9 @@ export function Navbar() {
             </div>
             <button
               onClick={signOut}
-              style={{ fontSize: 13, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 6 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.06)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+              style={{ fontSize: 13, color: '#ef4444', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', cursor: 'pointer', padding: '5px 12px', borderRadius: 6, fontWeight: 500, transition: 'all 150ms' }}
             >
               Sign out
             </button>
