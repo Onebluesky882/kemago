@@ -44,7 +44,7 @@ export function Navbar() {
             </div>
             <button
               onClick={signOut}
-              style={{ fontSize: 13, color: 'var(--text-faint)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 6 }}
+              style={{ fontSize: 13, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', borderRadius: 6 }}
             >
               Sign out
             </button>
