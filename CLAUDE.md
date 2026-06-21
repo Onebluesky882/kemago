@@ -109,6 +109,26 @@ cd apps/api && wrangler secret put YOUR_SECRET_NAME
 
 ---
 
+## Client Type Detection — ENFORCED BY HOOK
+
+**A `.claude/hooks/client-type-check.sh` hook blocks ALL Write/Edit to source files until `agentic/CLIENT_TYPE.md` exists with a valid value.**
+
+### To create the file:
+
+After asking the client which type they are, create:
+
+```bash
+# For developer / conductor workflow:
+echo "DEVELOPER" > agentic/CLIENT_TYPE.md
+
+# For non-technical business owner:
+echo "CLIENT" > agentic/CLIENT_TYPE.md
+```
+
+Valid values: `DEVELOPER` or `CLIENT` (case-insensitive)
+
+---
+
 ## Client Type Detection — MANDATORY FIRST STEP
 
 **Before doing ANYTHING, the Conductor MUST identify who it is talking to.**

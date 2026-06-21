@@ -6,6 +6,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash .claude/hooks/client-type-check.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "bash .claude/hooks/gate-out-typecheck.sh"
           }
         ]
