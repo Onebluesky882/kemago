@@ -33,6 +33,19 @@ forumRouter.get('/', async (c) => {
   return c.json(posts)
 })
 
+// Get posts by authenticated user — MUST be before /:id
+forumRouter.get('/mine', async (c) => {
+  const session = await getSession(c)
+  if (!session) return c.json({ error: 'Unauthorized' }, 401)
+  const db = createDb(c.env.DB)
+  const posts = await db.query.forumPosts.findMany({
+    where: eq(forumPosts.userId, session.user.id),
+    orderBy: [desc(forumPosts.createdAt)],
+    with: { user: { columns: { id: true, name: true } } },
+  })
+  return c.json(posts)
+})
+
 // Get single post with replies
 forumRouter.get('/:id', async (c) => {
   const db = createDb(c.env.DB)
@@ -79,18 +92,6 @@ forumRouter.post('/', async (c) => {
   return c.json({ success: true, post })
 })
 
-// Get posts by authenticated user
-forumRouter.get('/mine', async (c) => {
-  const session = await getSession(c)
-  if (!session) return c.json({ error: 'Unauthorized' }, 401)
-  const db = createDb(c.env.DB)
-  const posts = await db.query.forumPosts.findMany({
-    where: eq(forumPosts.userId, session.user.id),
-    orderBy: [desc(forumPosts.createdAt)],
-    with: { user: { columns: { id: true, name: true } } },
-  })
-  return c.json(posts)
-})
 
 // Update post status (open/closed) — owner only
 forumRouter.patch('/:id/status', async (c) => {
