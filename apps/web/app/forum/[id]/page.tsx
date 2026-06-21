@@ -285,24 +285,20 @@ export default function ForumPostPage() {
         {/* Owner controls — close / reopen */}
         {user?.id === post.user.id && (
           <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => handleStatusChange(post.status === 'open' ? 'closed' : 'open')}
-              onMouseEnter={e => {
-                e.currentTarget.style.color = '#ef4444'
-                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.color = 'var(--text-faint)'
-                e.currentTarget.style.borderColor = 'var(--border)'
-              }}
-              style={{
-                fontSize: 13, fontWeight: 500, cursor: 'pointer', borderRadius: 8,
-                padding: '8px 16px', border: '1px solid var(--border)',
-                background: 'transparent', color: 'var(--text-faint)', transition: 'all 150ms',
-              }}
-            >
-              {post.status === 'open' ? 'Closed' : 'Reopen'}
-            </button>
+            {post.status === 'open' ? (
+              <button
+                onClick={() => handleStatusChange('closed')}
+                onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-faint)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+                style={{ fontSize: 13, fontWeight: 500, cursor: 'pointer', borderRadius: 8, padding: '8px 16px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-faint)', transition: 'all 150ms' }}
+              >
+                Close post
+              </button>
+            ) : (
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#888', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 8, padding: '8px 16px' }}>
+                Closed
+              </span>
+            )}
           </div>
         )}
 
