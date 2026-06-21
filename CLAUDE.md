@@ -26,6 +26,35 @@ Reason: `<a>` causes full page reload which resets global auth state and causes 
 
 ---
 
+## Auth Session Global Rules — NEVER VIOLATE
+
+**NEVER write a custom `<nav>` inside any page in `apps/web`.**
+
+Every page MUST use the shared `<Navbar>` component from `@/components/navbar`:
+
+```tsx
+import { Navbar } from '@/components/navbar'
+
+export default function SomePage() {
+  return (
+    <div>
+      <Navbar />
+      ...
+    </div>
+  )
+}
+```
+
+**Why:** Pages with their own hard-coded nav always show "Sign in" regardless of auth state — the shared `<Navbar>` reads from Zustand global store which persists across all pages.
+
+**Auth state rules:**
+- Global auth state lives in `useAuthStore` (Zustand + localStorage persist)
+- `AuthProvider` in `layout.tsx` verifies session with API once on app load
+- `onRehydrateStorage` sets `isLoading: false` immediately from localStorage — prevents flash
+- NEVER duplicate auth fetch logic inside individual pages or components
+
+---
+
 ## Before Starting Any Task
 
 **MANDATORY — Every agent must read `agentic/START_HERE.md` before doing anything else. No exceptions.**
