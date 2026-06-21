@@ -55,6 +55,39 @@ export default function SomePage() {
 
 ---
 
+## Notification Service Rules
+
+**`sendNotificationEmail` is ready in `@gover-agent/email` — use it whenever a domain needs to notify users.**
+
+```ts
+import { sendNotificationEmail } from '@gover-agent/email'
+
+await sendNotificationEmail({
+  to: user.email,
+  name: user.name,
+  subject: 'Subject here',
+  message: 'HTML message body here',
+  resendApiKey: c.env.RESEND_API_KEY,
+})
+```
+
+**Rules:**
+- Always run notifications via `c.executionCtx.waitUntil(...)` — never block the API response
+- Always wrap in `Promise.allSettled` when sending to multiple recipients — one failure must not block others
+- Never throw from the notification function — catch all errors silently so the main operation always succeeds
+- Deduplicate recipients by `userId` before sending
+- Exclude the actor (the person who triggered the event) from recipients
+
+**When to send notifications:**
+| Event | Recipients |
+|-------|-----------|
+| New reply on forum post | Post author + all previous repliers |
+| New forum post (future) | Subscribers of that category |
+| Payment success | Buyer |
+| Any domain event | Participants of that resource |
+
+---
+
 ## CRUD Domain Testing Rules — NEVER SKIP
 
 **Every time you create or modify a CRUD domain (API route + DB table), you MUST:**
