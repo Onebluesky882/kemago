@@ -276,18 +276,25 @@ export default function ForumPostPage() {
         </div>
 
         {/* Owner controls — close / reopen */}
-        {user && post.user.id === user.id && (
+        {user?.id === post.user.id && (
           <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
             <button
               onClick={() => handleStatusChange(post.status === 'open' ? 'closed' : 'open')}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = '#ef4444'
+                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = 'var(--text-faint)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+              }}
               style={{
-                fontSize: 13, fontWeight: 500, cursor: 'pointer', borderRadius: 8, padding: '8px 16px', border: '1px solid',
-                ...(post.status === 'open'
-                  ? { background: 'transparent', color: '#ef4444', borderColor: 'rgba(239,68,68,0.4)' }
-                  : { background: 'transparent', color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)' })
+                fontSize: 13, fontWeight: 500, cursor: 'pointer', borderRadius: 8,
+                padding: '8px 16px', border: '1px solid var(--border)',
+                background: 'transparent', color: 'var(--text-faint)', transition: 'all 150ms',
               }}
             >
-              {post.status === 'open' ? '🔒 Close post' : '🔓 Reopen post'}
+              {post.status === 'open' ? 'Close post' : 'Reopen post'}
             </button>
           </div>
         )}
