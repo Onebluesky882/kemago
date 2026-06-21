@@ -1,4 +1,5 @@
 import { betterAuth } from 'better-auth'
+import { bearer } from 'better-auth/plugins'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import type { Db } from '@gover-agent/db'
 import * as schema from '@gover-agent/db/schema'
@@ -14,6 +15,7 @@ export function createAuth(db: Db, trustedOrigins?: string[]) {
         verification: schema.verification,
       },
     }),
+    plugins: [bearer()],
     emailAndPassword: { enabled: true },
     session: {
       expiresIn: 60 * 60 * 24 * 7,
