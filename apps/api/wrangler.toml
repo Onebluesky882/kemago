@@ -4,14 +4,19 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-RESEND_API_KEY = ""
-STRIPE_SECRET_KEY = ""
 STRIPE_PUBLISHABLE_KEY = ""
-STRIPE_WEBHOOK_SECRET = ""
 R2_ACCOUNT_ID = "c40a6cc1eb575a43f79e9b4d9cc6a88d"
 R2_BUCKET_NAME = "fullstack-builder-storage"
 GITHUB_REPO_OWNER = "Onebluesky882"
 GITHUB_TEMPLATE_REPO = "goveragent-template"
+
+# Secrets — set via: wrangler secret put <NAME>
+# RESEND_API_KEY
+# STRIPE_SECRET_KEY
+# STRIPE_WEBHOOK_SECRET
+# GITHUB_TOKEN
+# R2_ACCESS_KEY_ID
+# R2_SECRET_ACCESS_KEY
 
 [[r2_buckets]]
 binding = "BUCKET"
