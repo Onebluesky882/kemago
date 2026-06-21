@@ -14,6 +14,21 @@ If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `
 
 **`workers.dev` is in the Public Suffix List — cross-subdomain cookies DO NOT WORK between `fullstack-builder-web.workers.dev` and `fullstack-builder-api.workers.dev`.**
 
+### Root cause
+Better Auth does NOT support `Authorization: Bearer` by default. Must enable the `bearer` plugin:
+
+```ts
+// packages/auth/src/auth.ts
+import { bearer } from 'better-auth/plugins'
+
+betterAuth({
+  plugins: [bearer()],  // ← REQUIRED for cross-domain token auth
+  ...
+})
+```
+
+Without `bearer()` plugin → `getSession()` ignores the Authorization header → always returns null → Forbidden/Unauthorized.
+
 ### Rule
 - `credentials: 'include'` works for GET requests (read-only) but NOT for POST/PATCH/DELETE that require auth
 - Always use `useApi()` hook from `@/hooks/use-api` for authenticated mutation requests — it sends `Authorization: Bearer <token>` automatically
