@@ -301,7 +301,7 @@ export default function ForumPostPage() {
                 background: 'transparent', color: 'var(--text-faint)', transition: 'all 150ms',
               }}
             >
-              {post.status === 'open' ? 'Close post' : 'Reopen post'}
+              {post.status === 'open' ? 'Closed' : 'Reopen'}
             </button>
           </div>
         )}
