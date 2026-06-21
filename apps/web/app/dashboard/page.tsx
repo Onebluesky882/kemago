@@ -42,7 +42,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return
-    fetch(`${API}/api/forum/mine`, { credentials: 'include' })
+    fetch(`${API}/api/forum`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : [])
       .then((posts: Post[]) => setMyPosts(posts))
       .catch(() => {})
@@ -91,7 +91,7 @@ export default function DashboardPage() {
         {/* My Forum Posts */}
         {myPosts.length > 0 && (
           <div style={{ marginBottom: 32 }}>
-            <p style={{ fontSize: 12, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>My posts</p>
+            <p style={{ fontSize: 12, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Recent posts</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {myPosts.slice(0, 5).map(post => {
                 const isNew = isToday(post.createdAt)
