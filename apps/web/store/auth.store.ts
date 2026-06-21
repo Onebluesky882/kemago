@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 type User = { id: string; name: string; email: string }
 
@@ -9,9 +10,17 @@ type AuthStore = {
   setLoading: (loading: boolean) => void
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  user: null,
-  isLoading: true,
-  setUser: (user) => set({ user }),
-  setLoading: (isLoading) => set({ isLoading }),
-}))
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      isLoading: true,
+      setUser: (user) => set({ user }),
+      setLoading: (isLoading) => set({ isLoading }),
+    }),
+    {
+      name: 'auth',
+      partialize: (state) => ({ user: state.user }),
+    },
+  ),
+)
