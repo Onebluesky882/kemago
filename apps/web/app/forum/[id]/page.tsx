@@ -174,8 +174,8 @@ export default function ForumPostPage() {
         const d = await res.json() as { error?: string }
         setError(d.error === 'Unauthorized' ? 'Please sign in to reply.' : (d.error ?? 'Failed'))
       }
-    } catch {
-      setError('Network error — please try again')
+    } catch (err) {
+      setError(`Error: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setReplying(false)
     }

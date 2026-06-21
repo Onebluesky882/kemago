@@ -115,11 +115,12 @@ export default function ForumPage() {
     if (!file) return
     setImagePreview(URL.createObjectURL(file))
     setUploading(true)
+    setError('')
     try {
       const url = await uploadForumImage(file)
       setImageUrl(url)
-    } catch {
-      setError('Image upload failed')
+    } catch (err) {
+      setError(`Upload error: ${err instanceof Error ? err.message : String(err)}`)
       setImagePreview(null)
     } finally {
       setUploading(false)
@@ -144,8 +145,8 @@ export default function ForumPage() {
         const d = await res.json() as { error?: string }
         setError(d.error === 'Unauthorized' ? 'Please sign in to post.' : (d.error ?? 'Failed'))
       }
-    } catch {
-      setError('Network error — please try again')
+    } catch (err) {
+      setError(`Error: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setPosting(false)
     }
