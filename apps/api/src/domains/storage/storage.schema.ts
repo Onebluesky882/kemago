@@ -8,7 +8,7 @@ export const presignUploadSchema = z.object({
 
 export const presignDownloadSchema = z.object({
   key: z.string().min(1),
-  expiresIn: z.number().int().min(60).max(3600).default(300),
+  expiresIn: z.number().int().min(60).max(604800).default(3600),
 })
 
 export const deleteFileSchema = z.object({
