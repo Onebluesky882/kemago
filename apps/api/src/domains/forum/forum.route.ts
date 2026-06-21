@@ -94,39 +94,47 @@ forumRouter.patch('/:id/status', async (c) => {
 
 // Reply to post — requires auth + notify participants
 forumRouter.post('/:id/reply', async (c) => {
-  const session = await getSession(c)
-  if (!session) return c.json({ error: 'Unauthorized' }, 401)
+  try {
+    const session = await getSession(c)
+    if (!session) return c.json({ error: 'Unauthorized' }, 401)
 
-  const { body, parentReplyId, imageUrl } = await c.req.json<{ body: string; parentReplyId?: string; imageUrl?: string }>()
-  if (!body?.trim()) return c.json({ error: 'Missing body' }, 400)
+    const { body, parentReplyId, imageUrl } = await c.req.json<{ body: string; parentReplyId?: string; imageUrl?: string }>()
+    if (!body?.trim()) return c.json({ error: 'Missing body' }, 400)
 
-  const postId = c.req.param('id')
-  const db = createDb(c.env.DB)
+    const postId = c.req.param('id')
+    const db = createDb(c.env.DB)
 
-  // Insert reply
-  const reply = {
-    id: crypto.randomUUID(),
-    body: body.trim(),
-    postId,
-    parentReplyId: parentReplyId ?? null,
-    imageUrl: imageUrl ?? null,
-    userId: session.user.id,
-    createdAt: new Date(),
-  }
-  await db.insert(forumReplies).values(reply)
-
-  // Notify participants in background (don't await — don't block response)
-  c.executionCtx.waitUntil(
-    notifyParticipants({
-      db: createDb(c.env.DB),
+    const reply = {
+      id: crypto.randomUUID(),
+      body: body.trim(),
       postId,
-      replierId: session.user.id,
-      replierName: session.user.name,
-      resendApiKey: c.env.RESEND_API_KEY,
-    })
-  )
+      parentReplyId: parentReplyId ?? null,
+      imageUrl: imageUrl ?? null,
+      userId: session.user.id,
+      createdAt: new Date(),
+    }
+    await db.insert(forumReplies).values(reply)
 
-  return c.json({ success: true, reply })
+    // Notify participants in background — defensive check for executionCtx
+    try {
+      c.executionCtx?.waitUntil(
+        notifyParticipants({
+          db: createDb(c.env.DB),
+          postId,
+          replierId: session.user.id,
+          replierName: session.user.name,
+          resendApiKey: c.env.RESEND_API_KEY,
+        })
+      )
+    } catch {
+      // notification failure must never break the reply
+    }
+
+    return c.json({ success: true, reply })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Unknown error'
+    return c.json({ error: msg }, 500)
+  }
 })
 
 async function notifyParticipants({
