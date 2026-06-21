@@ -7,6 +7,12 @@ import { uploadForumImage } from '@/hooks/use-image-upload'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
+function isToday(dateStr: string) {
+  const d = new Date(dateStr)
+  const now = new Date()
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()
+}
+
 type Category = 'all' | 'general' | 'problem' | 'feature' | 'howto'
 type Post = {
   id: string; postNumber: number; title: string; body: string
@@ -59,8 +65,12 @@ function PostCard({ post }: { post: Post }) {
             </span>
           )}
           <CategoryBadge category={post.category} />
-          {post.status === 'closed' && (
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#888', background: 'rgba(136,136,136,0.1)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 100, padding: '2px 8px' }}>CLOSED</span>
+          {post.status === 'closed' ? (
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#888', background: 'rgba(136,136,136,0.1)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 100, padding: '2px 8px' }}>Closed</span>
+          ) : isToday(post.createdAt) ? (
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#22c55e', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 100, padding: '2px 8px' }}>New</span>
+          ) : (
+            <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid rgba(124,58,237,0.15)', borderRadius: 100, padding: '2px 8px' }}>Open</span>
           )}
         </div>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: post.status === 'closed' ? 'var(--text-muted)' : 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>
