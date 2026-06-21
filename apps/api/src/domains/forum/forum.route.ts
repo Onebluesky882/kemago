@@ -8,9 +8,16 @@ type Bindings = { DB: D1Database; RESEND_API_KEY: string }
 
 const forumRouter = new Hono<{ Bindings: Bindings }>()
 
+const TRUSTED_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://fullstack-builder-web.onebluesky882.workers.dev',
+  'https://fullstack-builder-admin.onebluesky882.workers.dev',
+]
+
 async function getSession(c: { env: Bindings; req: { raw: Request } }) {
   const db = createDb(c.env.DB)
-  const auth = createAuth(db)
+  const auth = createAuth(db, TRUSTED_ORIGINS)
   return auth.api.getSession({ headers: c.req.raw.headers })
 }
 
