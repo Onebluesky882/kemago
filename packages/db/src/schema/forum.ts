@@ -11,6 +11,7 @@ export const forumPosts = sqliteTable('forum_posts', {
   body: text('body').notNull(),
   postNumber: integer('post_number').notNull(),
   category: text('category', { enum: FORUM_CATEGORIES }).notNull().default('general'),
+  status: text('status', { enum: ['open', 'closed'] }).notNull().default('open'),
   isPinned: integer('is_pinned', { mode: 'boolean' }).notNull().default(false),
   imageUrl: text('image_url'),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),

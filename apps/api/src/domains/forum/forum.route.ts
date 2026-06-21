@@ -72,6 +72,26 @@ forumRouter.post('/', async (c) => {
   return c.json({ success: true, post })
 })
 
+// Update post status (open/closed) — owner only
+forumRouter.patch('/:id/status', async (c) => {
+  const session = await getSession(c)
+  if (!session) return c.json({ error: 'Unauthorized' }, 401)
+
+  const { status } = await c.req.json<{ status: 'open' | 'closed' }>()
+  if (status !== 'open' && status !== 'closed') return c.json({ error: 'Invalid status' }, 400)
+
+  const db = createDb(c.env.DB)
+  const post = await db.query.forumPosts.findFirst({
+    where: eq(forumPosts.id, c.req.param('id')),
+    columns: { userId: true },
+  })
+  if (!post) return c.json({ error: 'Not found' }, 404)
+  if (post.userId !== session.user.id) return c.json({ error: 'Forbidden' }, 403)
+
+  await db.update(forumPosts).set({ status }).where(eq(forumPosts.id, c.req.param('id')))
+  return c.json({ success: true, status })
+})
+
 // Reply to post — requires auth + notify participants
 forumRouter.post('/:id/reply', async (c) => {
   const session = await getSession(c)

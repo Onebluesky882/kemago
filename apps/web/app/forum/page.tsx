@@ -11,6 +11,7 @@ type Category = 'all' | 'general' | 'problem' | 'feature' | 'howto'
 type Post = {
   id: string; postNumber: number; title: string; body: string
   category: Exclude<Category, 'all'>
+  status: 'open' | 'closed'
   isPinned: boolean; imageUrl?: string | null; createdAt: string
   user: { id: string; name: string }
 }
@@ -58,8 +59,11 @@ function PostCard({ post }: { post: Post }) {
             </span>
           )}
           <CategoryBadge category={post.category} />
+          {post.status === 'closed' && (
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#888', background: 'rgba(136,136,136,0.1)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 100, padding: '2px 8px' }}>CLOSED</span>
+          )}
         </div>
-        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: post.status === 'closed' ? 'var(--text-muted)' : 'var(--text)', marginBottom: 6, lineHeight: 1.4 }}>
           {post.title}
           <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 400, marginLeft: 8 }}>#{post.postNumber}</span>
         </h2>

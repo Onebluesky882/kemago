@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { uploadForumImage } from '@/hooks/use-image-upload'
+import { useAuthStore } from '@/store/auth.store'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
@@ -13,7 +14,8 @@ type Reply = {
   user: { id: string; name: string }
 }
 type Post = {
-  id: string; postNumber: number; title: string; body: string; imageUrl?: string | null; createdAt: string
+  id: string; postNumber: number; title: string; body: string; imageUrl?: string | null
+  status: 'open' | 'closed'; createdAt: string
   user: { id: string; name: string }
   forumReplies: Reply[]
 }
@@ -92,6 +94,7 @@ function buildTree(replies: Reply[]): (Reply & { children: Reply[] })[] {
 
 export default function ForumPostPage() {
   const { id } = useParams<{ id: string }>()
+  const { user } = useAuthStore()
   const [post, setPost] = useState<Post | null>(null)
   const [body, setBody] = useState('')
   const [parentReplyId, setParentReplyId] = useState<string | null>(null)
@@ -143,6 +146,16 @@ export default function ForumPostPage() {
     }
   }
 
+  async function handleStatusChange(status: 'open' | 'closed') {
+    const res = await fetch(`${API}/api/forum/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ status }),
+    })
+    if (res.ok) load()
+  }
+
   async function handleReply(e: React.FormEvent) {
     e.preventDefault()
     if (!body.trim()) return
@@ -185,10 +198,15 @@ export default function ForumPostPage() {
 
         {/* Post */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
             <h1 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3 }}>{post.title}</h1>
             <span style={{ fontSize: 12, color: 'var(--text-faint)', fontWeight: 400, whiteSpace: 'nowrap' }}>#{post.postNumber}</span>
           </div>
+          {post.status === 'closed' && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(136,136,136,0.08)', border: '1px solid rgba(136,136,136,0.2)', borderRadius: 8, padding: '6px 12px', marginBottom: 16 }}>
+              <span style={{ fontSize: 12, color: '#888' }}>🔒 This post is closed — no new replies accepted.</span>
+            </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Avatar name={post.user.name} />
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{post.user.name}</span>
@@ -217,8 +235,8 @@ export default function ForumPostPage() {
           </div>
         </div>
 
-        {/* Reply form */}
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px' }}>
+        {/* Reply form — hidden if closed */}
+        <div style={{ background: 'var(--surface)', border: `1px solid ${post.status === 'closed' ? 'rgba(136,136,136,0.2)' : 'var(--border)'}`, borderRadius: 12, padding: '20px', opacity: post.status === 'closed' ? 0.5 : 1, pointerEvents: post.status === 'closed' ? 'none' : 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <p style={{ fontSize: 13, fontWeight: 600 }}>
               {replyingTo ? `Replying to @${replyingTo}` : 'Write a reply'}
@@ -256,6 +274,23 @@ export default function ForumPostPage() {
             </div>
           </form>
         </div>
+
+        {/* Owner controls — close / reopen */}
+        {user && post.user.id === user.id && (
+          <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => handleStatusChange(post.status === 'open' ? 'closed' : 'open')}
+              style={{
+                fontSize: 13, fontWeight: 500, cursor: 'pointer', borderRadius: 8, padding: '8px 16px', border: '1px solid',
+                ...(post.status === 'open'
+                  ? { background: 'transparent', color: '#ef4444', borderColor: 'rgba(239,68,68,0.4)' }
+                  : { background: 'transparent', color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)' })
+              }}
+            >
+              {post.status === 'open' ? '🔒 Close post' : '🔓 Reopen post'}
+            </button>
+          </div>
+        )}
 
       </div>
     </div>
