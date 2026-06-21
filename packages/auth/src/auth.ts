@@ -24,6 +24,16 @@ export function createAuth(db: Db, trustedOrigins?: string[]) {
       'http://localhost:3000',
       'http://localhost:3001',
     ],
+    advanced: {
+      crossSubdomainCookies: {
+        enabled: true,
+        domain: '.onebluesky882.workers.dev',
+      },
+      defaultCookieAttributes: {
+        sameSite: 'none',
+        secure: true,
+      },
+    },
   })
 }
 
