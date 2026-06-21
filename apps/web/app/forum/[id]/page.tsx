@@ -156,7 +156,7 @@ export default function ForumPostPage() {
     })
     if (res.ok) {
       if (status === 'closed') {
-        router.push('/dashboard')
+        router.push('/forum')
       } else {
         load()
       }
