@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { uploadForumImage } from '@/hooks/use-image-upload'
+import { useApi } from '@/hooks/use-api'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
@@ -100,6 +101,7 @@ function PostCard({ post }: { post: Post }) {
 }
 
 export default function ForumPage() {
+  const { apiFetch, API: BASE } = useApi()
   const [posts, setPosts] = useState<Post[]>([])
   const [tab, setTab] = useState<Category>('all')
   const [open, setOpen] = useState(false)
@@ -149,10 +151,8 @@ export default function ForumPage() {
     setPosting(true)
     setError('')
     try {
-      const res = await fetch(`${API}/api/forum`, {
+      const res = await apiFetch(`/api/forum`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ title, body, category, imageUrl }),
       })
       if (res.ok) {

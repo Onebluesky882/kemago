@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { uploadForumImage } from '@/hooks/use-image-upload'
 import { useAuthStore } from '@/store/auth.store'
+import { useApi } from '@/hooks/use-api'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
@@ -96,6 +97,7 @@ export default function ForumPostPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { user } = useAuthStore()
+  const { apiFetch, API: BASE } = useApi()
   const [post, setPost] = useState<Post | null>(null)
   const [body, setBody] = useState('')
   const [parentReplyId, setParentReplyId] = useState<string | null>(null)
@@ -148,10 +150,8 @@ export default function ForumPostPage() {
   }
 
   async function handleStatusChange(status: 'open' | 'closed') {
-    const res = await fetch(`${API}/api/forum/${id}/status`, {
+    const res = await apiFetch(`/api/forum/${id}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ status }),
     })
     if (res.ok) {
@@ -172,10 +172,8 @@ export default function ForumPostPage() {
     setReplying(true)
     setError('')
     try {
-      const res = await fetch(`${API}/api/forum/${id}/reply`, {
+      const res = await apiFetch(`/api/forum/${id}/reply`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ body, parentReplyId, imageUrl }),
       })
       if (res.ok) {

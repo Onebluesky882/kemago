@@ -10,6 +10,33 @@ If you find any governance file at root (e.g. `PIPELINE.md`, `AGENT_RULES.md`, `
 
 ---
 
+## Cross-Domain Auth — NEVER USE credentials: 'include' for Mutation Requests
+
+**`workers.dev` is in the Public Suffix List — cross-subdomain cookies DO NOT WORK between `fullstack-builder-web.workers.dev` and `fullstack-builder-api.workers.dev`.**
+
+### Rule
+- `credentials: 'include'` works for GET requests (read-only) but NOT for POST/PATCH/DELETE that require auth
+- Always use `useApi()` hook from `@/hooks/use-api` for authenticated mutation requests — it sends `Authorization: Bearer <token>` automatically
+
+```ts
+// ❌ WRONG — cookie won't be sent cross-domain for mutations
+fetch(`${API}/api/forum`, {
+  method: 'POST',
+  credentials: 'include',
+  ...
+})
+
+// ✅ CORRECT — uses Bearer token
+const { apiFetch } = useApi()
+apiFetch('/api/forum', { method: 'POST', body: JSON.stringify({...}) })
+```
+
+- Token is stored in Zustand (`auth.token`) and persisted to localStorage
+- Token is set automatically on sign-in/sign-up in `useAuth()`
+- Better Auth validates `Authorization: Bearer <token>` header natively
+
+---
+
 ## Secret Environment Variables — MUST SET BEFORE DEPLOY
 
 **Every time you add a new env var that contains a secret (API key, token, password), you MUST instruct the client to run `wrangler secret put` before deploying.**

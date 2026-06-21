@@ -18,6 +18,7 @@ const TRUSTED_ORIGINS = [
 async function getSession(c: { env: Bindings; req: { raw: Request } }) {
   const db = createDb(c.env.DB)
   const auth = createAuth(db, TRUSTED_ORIGINS)
+  // Better Auth reads Authorization: Bearer <token> automatically
   return auth.api.getSession({ headers: c.req.raw.headers })
 }
 
