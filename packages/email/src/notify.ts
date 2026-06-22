@@ -7,9 +7,10 @@ type NotifyParams = {
   subject: string
   message: string
   resendApiKey: string
+  fromEmail?: string
 }
 
-export async function sendNotificationEmail({ to, name, subject, message, resendApiKey }: NotifyParams) {
+export async function sendNotificationEmail({ to, name, subject, message, resendApiKey, fromEmail }: NotifyParams) {
   const resend = createResend(resendApiKey)
   const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
     <p style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">GoverAgent Community</p>
@@ -19,5 +20,5 @@ export async function sendNotificationEmail({ to, name, subject, message, resend
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0" />
     <p style="color:#aaa;font-size:12px">You received this because you participated in a forum thread. <a href="https://fullstack-builder-web.onebluesky882.workers.dev/forum" style="color:#7c3aed">Visit Forum</a></p>
   </div>`
-  return sendEmail(resend, { to, subject, html })
+  return sendEmail(resend, { to, subject, html, from: fromEmail })
 }

@@ -238,13 +238,35 @@ Explain in plain language (in the customer's language):
 4. Click **Create API Key**, give it any name (e.g. "My App")
 5. Copy the API key and share it with me — keep it private, treat it like a password
 
-### Step 3 — Record
+### Step 3 — Ask about sender email address
+
+> "What email address do you want your customers to see when they receive emails from your website?"
+
+Give examples:
+- `noreply@yourcompany.com` — professional, customers cannot reply
+- `hello@yourcompany.com` — friendly, customers can reply
+- `support@yourcompany.com` — for support-style messages
+- `orders@yourcompany.com` — for order confirmations
+
+**Important:** The domain in this email (e.g. `yourcompany.com`) must be verified in Resend. Guide the customer:
+
+> "We need to verify that you own the domain. Do you have a website domain? For example, if your website is www.myshop.com, we will use @myshop.com as the sender."
+
+- If **Yes** → guide to verify domain in Resend Dashboard → Domains → Add Domain
+- If **No** → use Resend's shared domain for now: `onboarding@resend.dev` (for testing only, not for production)
+
+Once confirmed, save as `FROM_EMAIL` in `wrangler.toml`:
+```
+FROM_EMAIL = "noreply@yourcompany.com"
+```
+
+### Step 4 — Record
 
 Once the customer provides the API key:
 - Save it as `RESEND_API_KEY` in the project secrets (never commit to git)
-- Confirm which email address will send notifications (e.g. noreply@yourdomain.com)
+- Save sender email as `FROM_EMAIL` in `wrangler.toml`
 
-### Step 4 — Confirm which notifications are needed
+### Step 5 — Confirm which notifications are needed
 
 Ask:
 > "Which emails would you like to send automatically?"

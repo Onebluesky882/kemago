@@ -4,7 +4,7 @@ import type { ForumCategory } from '@gover-agent/db'
 import { createAuth } from '@gover-agent/auth'
 import { sendNotificationEmail } from '@gover-agent/email'
 
-type Bindings = { DB: D1Database; RESEND_API_KEY: string }
+type Bindings = { DB: D1Database; RESEND_API_KEY: string; FROM_EMAIL: string }
 
 const forumRouter = new Hono<{ Bindings: Bindings }>()
 
@@ -146,6 +146,7 @@ forumRouter.post('/:id/reply', async (c) => {
           replierId: session.user.id,
           replierName: session.user.name,
           resendApiKey: c.env.RESEND_API_KEY,
+          fromEmail: c.env.FROM_EMAIL,
         })
       )
     } catch {
@@ -160,13 +161,14 @@ forumRouter.post('/:id/reply', async (c) => {
 })
 
 async function notifyParticipants({
-  db, postId, replierId, replierName, resendApiKey,
+  db, postId, replierId, replierName, resendApiKey, fromEmail,
 }: {
   db: ReturnType<typeof createDb>
   postId: string
   replierId: string
   replierName: string
   resendApiKey: string
+  fromEmail?: string
 }) {
   try {
     // Get post with author
@@ -210,6 +212,7 @@ async function notifyParticipants({
           subject: `New reply in "${post.title}"`,
           message: `<b>${replierName}</b> replied to a post you participated in.<br><br><a href="${postUrl}" style="color:#7c3aed;font-weight:600">View the reply →</a>`,
           resendApiKey,
+          fromEmail,
         })
       )
     )
