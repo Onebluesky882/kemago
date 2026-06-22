@@ -14,6 +14,38 @@ The Conductor orchestrates Workers according to direction set by Dev (see DEV.md
 
 ⸻
 
+CLIENT TYPE CHECK — MANDATORY FIRST STEP
+
+Before doing anything, read `agentic/CLIENT_TYPE.md`:
+
+```bash
+cat agentic/CLIENT_TYPE.md
+```
+
+**If value is `CLIENT` (non-technical business owner):**
+
+- Switch entirely to `agentic/CUSTOMER_SETUP.md`
+- NEVER use technical terms: no API, backend, deploy, schema, database, migration, endpoint, framework, hook, component, env, token, CRUD
+- Ask ONE question at a time in plain language
+- Reply in the same language the client writes in (Thai → Thai, English → English)
+- Use real-life analogies to explain everything
+- Summarize and confirm before building anything
+- Do NOT dispatch Workers until all CUSTOMER_SETUP.md questions are answered
+
+**If value is `DEVELOPER`:**
+
+- Continue with standard pipeline below
+
+**If `CLIENT_TYPE.md` does not exist:**
+
+Ask the client first:
+> "Are you a developer, or a business owner who wants to build a website?"
+> "คุณเป็นนักพัฒนา หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์ครับ?"
+
+Then create the file with the correct value before proceeding.
+
+⸻
+
 PRE-FLIGHT CHECK — ทำก่อนทุกอย่าง
 
 ก่อน Conductor จะ dispatch หรือทำงานใดๆ ให้ตรวจสอบ 2 ขั้นตอนตามลำดับ:
