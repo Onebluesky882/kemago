@@ -8,7 +8,7 @@ export const metadata = {
 }
 
 // Replace with your Stripe payment link from https://dashboard.stripe.com/payment-links
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/YOUR_PAYMENT_LINK'
+const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_9B6cMYflVd3r2Rf8nF8Zq00'
 
 const PLANS = [
   {
