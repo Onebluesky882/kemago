@@ -22,7 +22,32 @@ Conductor uses these answers to customize the app to match the customer's busine
 > - Ask one question at a time, be patient
 > - If the answer is unclear, rephrase and ask again — never assume
 > - Never ask about code, frameworks, databases, or infrastructure
-> - **Reply in the same language the customer uses** — if they write in Thai, reply in Thai; Chinese, reply in Chinese; English, reply in English
+> - **Q0 must be the very first question asked** — before any other question
+> - **Reply in the language recorded in Q0 below, or in the language the client used in that specific message if different**
+
+---
+
+## Language Preference (recorded at first contact)
+
+```
+language: [TBD]
+```
+
+Conductor fills this field after Q0 is answered. Used as the default language for all future responses.
+
+Examples: `Thai`, `English`, `Japanese`, `Chinese`, `Korean`
+
+---
+
+## Q0 — Language (FIRST QUESTION — ask before anything else)
+
+Ask in a neutral, friendly way. The client may write in any language:
+
+> "What language would you like me to use? / คุณต้องการให้ฉันตอบเป็นภาษาอะไร? / どの言語でお答えしますか？"
+
+After they answer: record it in the `language:` field above, then switch entirely to that language for all remaining questions.
+
+Answer: [TBD]
 
 ---
 

@@ -14,6 +14,28 @@ The Conductor orchestrates Workers according to direction set by Dev (see DEV.md
 
 ⸻
 
+LANGUAGE RULE — MANDATORY ON EVERY RESPONSE
+
+The Conductor MUST respond in the same language the client used in their message.
+
+| Client writes in | Conductor replies in |
+|---|---|
+| Thai | Thai |
+| English | English |
+| Japanese | Japanese |
+| Any other language | That same language |
+
+Rules:
+- Detect the language from the client's message — do not assume
+- Never switch languages mid-conversation unless the client switches first
+- During first contact (starter setup): ask the client's preferred language explicitly (see CUSTOMER_SETUP.md Q0) and record it
+- Recorded language in CUSTOMER_SETUP.md is the default; override only when the client writes in a different language in that message
+- This rule applies to ALL client-facing output: questions, confirmations, notifications, deploy messages, error explanations
+
+This rule does NOT apply to governance files, gate-out, tasks, or any developer-facing content — those are always English (see GOVERNANCE_CORE.md Language Rule).
+
+⸻
+
 CLIENT TYPE CHECK — MANDATORY FIRST STEP
 
 Before doing anything, read `agentic/CLIENT_TYPE.md`:
@@ -40,57 +62,57 @@ cat agentic/CLIENT_TYPE.md
 
 Ask the client first:
 > "Are you a developer, or a business owner who wants to build a website?"
-> "คุณเป็นนักพัฒนา หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์ครับ?"
+> (Ask in the client's language. Example in Thai: "คุณเป็นนักพัฒนา หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์ครับ?")
 
 Then create the file with the correct value before proceeding.
 
 ⸻
 
-PRE-FLIGHT CHECK — ทำก่อนทุกอย่าง
+PRE-FLIGHT CHECK — Run before every action
 
-ก่อน Conductor จะ dispatch หรือทำงานใดๆ ให้ตรวจสอบ 2 ขั้นตอนตามลำดับ:
+Before the Conductor dispatches or performs any task, verify these two steps in order:
 
 ---
 
-**ขั้นที่ 1 — License Gate Check**
+**Step 1 — License Gate Check**
 
-ตรวจสอบ `license_status` ใน PROJECT.md:
+Check `license_status` in PROJECT.md:
 
 ```
 grep "license_status" agentic/PROJECT.md
 ```
 
-ถ้า `license_status` ไม่มีอยู่ หรือค่าไม่ใช่ `active`:
+If `license_status` is missing or not `active`:
 
 ```
 BLOCKED: LICENSE_NOT_ACTIVE
 ```
 
-ห้ามทำสิ่งต่อไปนี้จนกว่า Dev จะอัปเดต `license_status: active` ใน PROJECT.md:
-- เขียน `tasks/stage-[N]-*.md` (Dispatch-In)
-- เขียน `gate-out/stage-[N]-*.md`
-- เขียน `merge-approval/stage-[N]-*.md`
+Do NOT perform any of the following until Dev updates `license_status: active` in PROJECT.md:
+- Write `tasks/stage-[N]-*.md` (Dispatch-In)
+- Write `gate-out/stage-[N]-*.md`
+- Write `merge-approval/stage-[N]-*.md`
 
-หมายเหตุ: ระบบ license (ตาราง DB, middleware) ยังไม่มีใน template ณ ตอนนี้ — gate นี้คือการควบคุมระดับ governance ก่อนที่ระบบจริงจะถูกสร้าง
+Note: The license system (DB table, middleware) does not yet exist in this template — this gate is a governance-level control until the real system is built.
 
 ---
 
-**ขั้นที่ 2 — Conductor Branch Check**
+**Step 2 — Conductor Branch Check**
 
-ก่อน Conductor จะ dispatch หรือทำงานใดๆ ให้ตรวจสอบ:
+Before the Conductor dispatches or performs any task, verify:
 
 ```
 grep -r "<conductor-branch>" PIPELINE.md PROJECT.md AGENT_RULES.md README.md
 ```
 
-ถ้าพบ `<conductor-branch>` เป็น literal placeholder:
+If `<conductor-branch>` is found as a literal placeholder:
 
 BLOCKED: PROJECT NOT CONFIGURED
 
-1. อ่าน QUESTIONS.md
-2. แจ้ง Dev ให้ตอบคำถามทั้งหมดก่อน
-3. ห้าม dispatch worker ใดๆ จนกว่าคำถามทุกข้อใน QUESTIONS.md จะได้รับคำตอบ
-4. หลัง Dev ตอบครบ: อัพเดท governance files ตาม Conductor Instructions ใน QUESTIONS.md แล้วจึงเริ่ม pipeline
+1. Read QUESTIONS.md
+2. Notify Dev to answer all questions first
+3. Do NOT dispatch any worker until every question in QUESTIONS.md is answered
+4. After Dev answers all: update governance files per Conductor Instructions in QUESTIONS.md, then start the pipeline
 
 ⸻
 
@@ -165,7 +187,7 @@ git worktree remove .claude/worktrees/stage-[N]-<domain>
 git branch -d stage/stage-[N]-<domain>
 ```
 
-Stages with no overlapping dependencies may be dispatched in parallel — each in its own worktree.
+Stages with no overlapping dependencies MUST be dispatched in parallel — each in its own worktree. Sequential dispatch of parallelizable stages is a violation.
 
 4. Gate Validation
 
@@ -233,7 +255,76 @@ Rules:
 8. Worker Orchestration
 
 * Only the Conductor may create or dispatch Workers (see AGENT_RULES.md, Sub-Agent Restriction)
-* Parallel dispatch is allowed for stages with no overlapping dependencies (see PIPELINE.md)
+* Parallel dispatch is MANDATORY for stages with no overlapping dependencies (see PIPELINE.md and Parallel Dispatch Rule below)
+
+⸻
+
+Parallel Dispatch Rule — MANDATORY
+
+Before dispatching any stage, Conductor MUST scan PIPELINE.md for all stages where:
+- Status is `PENDING`
+- All `Depends On` stages are `COMPLETE`
+
+If two or more such stages exist simultaneously → dispatch ALL of them in parallel, each in its own worktree and branch.
+
+Sequential dispatch of parallelizable stages is a violation.
+
+**Decision process (run before every dispatch):**
+
+```
+1. List all PENDING stages
+2. For each: check if Depends On are all COMPLETE
+3. Collect all "ready" stages
+4. If count > 1 → dispatch all simultaneously
+5. If count = 1 → dispatch that one
+6. If count = 0 → BLOCKED: no stages ready
+```
+
+**Example — correct parallel dispatch:**
+```
+stage-7-web-ui    (depends: stage-3) ← COMPLETE → dispatch NOW
+stage-8-admin-ui  (depends: stage-2,4,5) ← all COMPLETE → dispatch NOW
+Both dispatched in same Conductor turn, each in own worktree.
+```
+
+**Example — violation:**
+```
+stage-7 dispatched → wait for it to finish → then dispatch stage-8
+← WRONG: these have no dependency between them
+```
+
+⸻
+
+7. Client Deployment — MANDATORY after every stage that changes code
+
+After gate validation passes and all tests pass, the Conductor MUST deploy to Cloudflare in this order:
+
+```bash
+pnpm test
+cd apps/api   && wrangler deploy
+cd apps/web   && opennextjs-cloudflare build && wrangler deploy
+cd apps/admin && opennextjs-cloudflare build && wrangler deploy
+```
+
+After deploy succeeds, the Conductor MUST notify the client:
+
+**If CLIENT_TYPE = CLIENT (non-technical business owner):**
+
+Notify in plain language — no technical terms:
+
+> Tell the client their site is updated and ask them to reload. Use the client's language.
+> Example (Thai): "เว็บของคุณอัพเดทแล้ว กรุณา reload หน้าเว็บเพื่อดูการเปลี่ยนแปลง"
+
+Include the site URL. Never say "deploy", "build", "push", "Workers", "wrangler".
+
+**If CLIENT_TYPE = DEVELOPER:**
+
+Standard deploy confirmation with URLs and version IDs.
+
+Rules:
+- Never skip the reload notification for CLIENT type
+- If deploy fails → notify client in plain language that there is an issue and it is being fixed. Do not notify "done" until deploy actually succeeds.
+- Log deploy URLs in merge-approval
 
 ⸻
 

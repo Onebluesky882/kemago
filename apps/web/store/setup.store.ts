@@ -1,14 +1,16 @@
 import { create } from 'zustand'
 
 export type SetupAnswers = {
+  language: string
   businessName: string
   businessDescription: string
   targetCustomers: string
-  language: string
   websiteFeatures: string[]
   needsAdminPanel: string
   onlinePayments: string
   preferredStyle: string
+  websitePages: string[]
+  timeline: string
 }
 
 type SetupStore = {
@@ -18,21 +20,21 @@ type SetupStore = {
 }
 
 const defaultAnswers: SetupAnswers = {
+  language: '',
   businessName: '',
   businessDescription: '',
   targetCustomers: '',
-  language: '',
   websiteFeatures: [],
   needsAdminPanel: '',
   onlinePayments: '',
   preferredStyle: '',
+  websitePages: [],
+  timeline: '',
 }
 
 export const useSetupStore = create<SetupStore>((set) => ({
   answers: { ...defaultAnswers },
   setAnswer: (key, value) =>
-    set((state) => ({
-      answers: { ...state.answers, [key]: value },
-    })),
+    set((state) => ({ answers: { ...state.answers, [key]: value } })),
   reset: () => set({ answers: { ...defaultAnswers } }),
 }))

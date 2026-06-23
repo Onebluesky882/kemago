@@ -14,6 +14,31 @@ Violation → Default Violation Rule in GOVERNANCE_CORE.md (Status: FAIL, Ready 
 
 ⸻
 
+Table of Contents
+
+| # | Rule | Enforcement |
+|---|---|---|
+| 1 | Governance Protection | Always |
+| 2 | Worker Scope | Always |
+| 3 | Main Branch Merge Authority | Always |
+| 4 | Domain Ownership | Always |
+| 5 | Technology Stack Authority | Always |
+| 6 | Version Policy | MANDATORY — before every install |
+| 7 | Dependencies | Always |
+| 8 | Testing Rules | MANDATORY — before gate-out |
+| 9 | Error Handling | Always |
+| 10 | License Gate | MANDATORY — enforced by hook |
+| 11 | Worktree Isolation | MANDATORY — enforced by hook |
+| 12 | Sub-Agent Restriction | Always |
+| 13 | Parallel Execution | MANDATORY |
+| 14 | Security Rules | See SECURITY_RULES.md |
+| 15 | Build Artifact Rules | Always |
+| 16 | Stage Completion | MANDATORY — before gate-out |
+| 17 | Agent Orchestration | MANDATORY for multi-agent stages |
+| 18 | Observability | MANDATORY for agent/API stages |
+
+⸻
+
 Governance Protection
 
 See GOVERNANCE_CORE.md for the governance file ownership table. Workers may NOT modify any governance file. Only Dev and Conductor may, per that table.
@@ -151,6 +176,30 @@ Workers may NOT create, dispatch, or generate new workers or autonomous agents, 
 
 ⸻
 
+Parallel Execution Rule — MANDATORY
+
+Workers MUST execute independent operations in parallel. Sequential execution of parallelizable operations is a violation.
+
+**Rule:** If two or more operations have no data dependency between them, they MUST be called simultaneously in a single message — not one after another.
+
+Examples of required parallel execution:
+- Reading multiple files → call all read tools at once
+- Writing multiple independent files → call all write tools at once
+- Running type-check and linting → run both at once
+- Fetching multiple API endpoints → call all at once
+- Creating multiple independent database records → insert in parallel
+
+Examples where sequential is correct (dependency exists):
+- Read file → then edit that file (must read first)
+- Create table → then insert into that table
+- Build → then deploy (build output required for deploy)
+
+**How to apply:** Before executing any set of operations, ask: "Do any of these depend on the output of another?" If NO → parallel. If YES → sequential only for the dependent pair, parallel for everything else.
+
+Violation → Status: FAIL, Ready For Next Stage: NO.
+
+⸻
+
 Security Rules
 
 See SECURITY_RULES.md for all security requirements (secrets, access control, data, network, APIs, dependencies, cryptography, infrastructure, CI/CD).
@@ -186,6 +235,159 @@ recommendations:
 ```
 
 All fields are required. Empty fields must be explicitly set to "none" or "N/A".
+
+⸻
+
+Agent Orchestration Rule — MANDATORY
+
+Every stage that involves multiple agent calls must follow the correct orchestration pattern. Choosing the wrong pattern causes race conditions, data corruption, or wasted tokens.
+
+---
+
+**Pattern 1 — Single Agent (default)**
+
+Use when: one task, one agent, one result. No routing needed.
+
+```
+User → Agent → Result
+```
+
+Apply this by default. Only move to a more complex pattern when there is a clear reason.
+
+---
+
+**Pattern 2 — Supervisor Pattern**
+
+Use when: the task type is unknown at request time and needs to be routed to a specialist.
+
+```
+User → Supervisor Agent
+         ├── if task = code change  → Code Agent
+         ├── if task = UI/design    → Design Agent
+         └── if task = data/content → Content Agent
+```
+
+Implementation: Managed Agents `multiagent: {type: "coordinator", agents: [...]}`. The coordinator reads the user request, decides which sub-agent to delegate to, and returns the result. Only one sub-agent runs per turn unless explicitly fanned out.
+
+Rules:
+- Supervisor must not execute the task itself — it only routes
+- Each sub-agent must be a separately defined Anthropic Agent with its own system prompt and tools
+- If the supervisor cannot determine the correct route → ask the user, do not guess
+
+---
+
+**Pattern 3 — Parallel Fan-out**
+
+Use when: multiple tasks are **fully independent** — no shared state, no output of one feeds into another.
+
+```
+Coordinator → dispatch simultaneously:
+  ├── Agent A: task A (independent)
+  ├── Agent B: task B (independent)
+  └── Agent C: task C (independent)
+        ↓ wait for all
+  Coordinator → merge results → User
+```
+
+Implementation: Managed Agents coordinator spawns sub-agents simultaneously using its tool. The coordinator waits for all threads to reach `session.thread_status_idle`, then merges.
+
+**SAFE MODE — when to block parallel:**
+
+Before choosing parallel, check every pair of tasks:
+- Does task B read output from task A? → **Sequential**
+- Do task A and B write to the same file? → **Sequential**
+- Do task A and B modify the same DB row? → **Sequential**
+- Is the order of results visible to the user? → **Sequential**
+
+If any check above is true → use Sequential (Pattern 4), not Parallel.
+
+If in doubt → use Sequential. Parallel is opt-in, never default.
+
+---
+
+**Pattern 4 — Sequential (Safe Mode)**
+
+Use when: tasks have any dependency between them — output of one feeds into another, same resource is modified, or order matters.
+
+```
+Coordinator → Agent A → wait → Agent B → wait → Agent C → Result
+```
+
+This is always safe. Use it when:
+- Agents share files
+- One agent's commit must be pushed before another reads it
+- The user's request has implied ordering ("first do X, then do Y")
+
+---
+
+**Decision flowchart (run before every multi-agent design):**
+
+```
+Is there only one task?
+  YES → Pattern 1 (Single)
+
+Is the task type unknown at request time?
+  YES → Pattern 2 (Supervisor)
+
+Are all tasks fully independent (no shared state, no dependency)?
+  YES → Pattern 3 (Parallel)
+  NO  → Pattern 4 (Sequential)
+
+If unsure → Pattern 4 (Sequential)
+```
+
+Violation: choosing Parallel when tasks have dependencies → Status: FAIL.
+
+⸻
+
+Observability Rule — MANDATORY
+
+Every stage that introduces or modifies an agent call, API route, or background task MUST implement structured logging. Shipping code without observability is a violation.
+
+**What observability means in this project:**
+
+Every agent call must produce a log row in D1 table `agent_logs` with these fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | TEXT | UUID for this log row |
+| `correlation_id` | TEXT | UUID linking all calls in one user request chain |
+| `user_id` | TEXT | Who initiated the request |
+| `session_id` | TEXT | Anthropic Managed Agents session ID |
+| `agent_id` | TEXT | Anthropic Agent ID used |
+| `input_preview` | TEXT | First 300 chars of user message (never full content) |
+| `output_preview` | TEXT | First 300 chars of agent response |
+| `tool_calls` | TEXT | JSON array of tool names called during the run |
+| `tokens_input` | INTEGER | From `span.model_request_end` usage |
+| `tokens_output` | INTEGER | From `span.model_request_end` usage |
+| `latency_ms` | INTEGER | ms from session.events.send to session.status_idle |
+| `status` | TEXT | `success` or `error` |
+| `error_message` | TEXT | Error detail if status = error |
+| `created_at` | INTEGER | Unix timestamp ms |
+
+**How to implement:**
+
+1. Generate `correlation_id` (UUID) at the start of each user request — attach to all downstream calls
+2. Record `start_time = Date.now()` before calling the agent
+3. Collect tool names from `agent.tool_use` events during SSE stream
+4. On `session.status_idle` (done): write the log row with `latency_ms = Date.now() - start_time`
+5. On `session.status_terminated` or error: write log row with `status = 'error'`
+
+**What workers must NOT do:**
+
+- Log full user messages or full agent responses (privacy — use 300-char preview only)
+- Log API keys, tokens, PATs, or secrets (never)
+- Skip logging when the agent call succeeds (logging is not optional on success)
+- Use `console.log` as the only observability (must write to D1)
+
+**Where to query logs:**
+
+Admin dashboard page `/admin/observability` (stage-15) shows:
+- Per-session latency and token usage
+- Error rate over time
+- Tool usage frequency
+
+Any stage that adds agent calls without `agent_logs` write → Status: FAIL.
 
 ⸻
 

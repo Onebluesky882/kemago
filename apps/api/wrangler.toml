@@ -17,6 +17,11 @@ GITHUB_TEMPLATE_REPO = "goveragent-template"
 # GITHUB_TOKEN
 # R2_ACCESS_KEY_ID
 # R2_SECRET_ACCESS_KEY
+# ANTHROPIC_API_KEY          ← your Anthropic API key
+# ANTHROPIC_AGENT_ID         ← output from: npx tsx scripts/setup-anthropic-agent.ts
+# ANTHROPIC_ENV_ID           ← output from: npx tsx scripts/setup-anthropic-agent.ts
+# DEPLOY_WEBHOOK_SECRET      ← random secret shared with GitHub Actions
+# SITE_URL                   ← client's live website URL e.g. https://client-web.workers.dev
 
 [[r2_buckets]]
 binding = "BUCKET"

@@ -59,6 +59,88 @@ Pinned Versions:
 
 ⸻
 
+## Decision: Agent Orchestration Patterns
+
+**Date:** 2026-06-23
+**Status:** ACCEPTED
+
+**Context:**
+The system needs to support four orchestration modes: single agent (current), supervisor routing, parallel fan-out, and sequential safe mode. Without a clear decision on which to use when, workers will either over-engineer simple tasks or choose parallel execution when tasks have hidden dependencies — causing race conditions or data corruption.
+
+**Decision:**
+Four patterns are supported, governed by a strict decision flowchart (see AGENT_RULES.md Orchestration Rule). Sequential is the default safe fallback. Parallel is opt-in and only allowed when all tasks are provably independent.
+
+**Technical implementation in this stack (Anthropic Managed Agents):**
+
+| Pattern | Managed Agents feature | When |
+|---|---|---|
+| Single | `sessions.create` + single agent | Default |
+| Supervisor | `multiagent: {type: "coordinator"}` + sub-agents roster | Unknown task type at request time |
+| Parallel fan-out | Coordinator dispatches to multiple sub-agents simultaneously; waits for all `thread_status_idle` | Tasks provably independent |
+| Sequential | Coordinator dispatches one sub-agent, waits for `thread_status_idle`, then next | Tasks have any dependency |
+
+**Retry + Fallback rules:**
+
+- If a sub-agent fails (`session.status_terminated` or `session.error`): retry once with the same agent
+- If retry also fails: fall back to Sequential Pattern — the coordinator handles the failed task itself using single-agent mode
+- Never silently discard a failed task — always surface the error to the user
+- Fallback model for Anthropic refusals: `claude-opus-4-8` (already wired in stage-12 via `fallbacks` param)
+
+**Safe mode enforcement:**
+
+Before dispatching parallel, the coordinator must check:
+1. Do any tasks write to the same file path?
+2. Does any task's output become another task's input?
+3. Do any tasks modify the same D1 row?
+
+If any check is true → block parallel, use sequential automatically.
+
+**Consequences:**
+- Orchestration pattern must be documented in every task file that uses multi-agent
+- Workers must not choose Parallel unless they have verified all tasks are independent
+- Sequential is always valid — workers must never choose Parallel to "look better"
+- Retry + fallback logic must be implemented in `agent.handler.ts` for any multi-agent stage
+
+⸻
+
+## Decision: Observability Strategy — D1 Structured Logging for Agent Calls
+
+**Date:** 2026-06-23
+**Status:** ACCEPTED
+
+**Context:**
+Without structured logging, debugging agent failures is impossible. When a client reports "Claude didn't do what I asked", there is no way to see what input was sent, what Claude responded, how long it took, how many tokens were used, or what tools were called. The system is a black box.
+
+**Decision:**
+Use **D1 as the observability store** via a `agent_logs` table. Every Anthropic Managed Agents call writes one structured row. A `correlation_id` UUID links all calls within one user request chain. Log previews only (300 chars) — never full content. Admin dashboard (stage-15) surfaces this data.
+
+No third-party observability service (Datadog, Axiom, etc.) — D1 is sufficient for this scale and keeps the stack simple.
+
+**What is logged per agent call:**
+- `correlation_id` — trace across chained calls
+- `user_id`, `session_id`, `agent_id` — who/what
+- `input_preview`, `output_preview` — 300-char truncations only
+- `tool_calls` — JSON array of tool names used
+- `tokens_input`, `tokens_output` — from `span.model_request_end` event
+- `latency_ms` — time from send to idle
+- `status` (success/error), `error_message`
+
+**What is NOT logged:**
+- Full user messages (privacy)
+- Full agent responses (privacy)
+- API keys, PATs, secrets (security)
+
+**How to add `correlation_id`:**
+Generate UUID in the Hono route handler at the start of each request. Pass it through to all downstream agent calls and log writes. Return it in the response header `X-Correlation-ID` for client-side debugging.
+
+**Consequences:**
+- Every stage with agent calls must implement `agent_logs` write (enforced in AGENT_RULES.md Observability Rule)
+- stage-15 adds: `packages/db/migrations/observability.sql`, log writes in `agent.route.ts`, and `/admin/observability` dashboard page
+- D1 `agent_logs` table must exist before any agent call goes to production
+- Workers that skip logging = Status: FAIL
+
+⸻
+
 ## Decision: [Title]
 
 **Date:** YYYY-MM-DD
@@ -72,6 +154,33 @@ Pinned Versions:
 
 **Consequences:**
 <!-- What this means for the project -->
+
+⸻
+
+## Decision: Anthropic Managed Agents for Web-Based Code Editing
+
+**Date:** 2026-06-23
+**Status:** ACCEPTED
+
+**Context:**
+Non-technical clients (business owners with no VSCode, no terminal) need to request code changes to their project via a web UI. The template is delivered via GitHub — clients fork it and own their repo. A web interface backed by Claude must be able to read and modify their codebase directly.
+
+**Decision:**
+Use **Anthropic Managed Agents** (`/v1/agents`, `/v1/sessions`) with a `github_repository` resource. Client's GitHub PAT is stored in an **Anthropic Vault** (never in D1 as plaintext). Each chat session mounts the client's repo at `/workspace`. Claude uses `agent_toolset_20260401` (bash, read, write, edit, glob, grep) to modify files, then commits and pushes. Cloudflare auto-deploys on push. All communication is HTTP — compatible with Cloudflare Workers.
+
+**Anthropic resource model:**
+- One shared Agent → `ANTHROPIC_AGENT_ID` secret (created once via setup script)
+- One shared Environment → `ANTHROPIC_ENV_ID` secret (created once via setup script)
+- Per-user Vault → `vault_id` stored in D1 `agent_sessions` table
+- Per-conversation Session → `session_id` stored in D1 `agent_sessions` table
+
+**Consequences:**
+- `@anthropic-ai/sdk` required in `apps/api`
+- Three new Cloudflare secrets: `ANTHROPIC_API_KEY`, `ANTHROPIC_AGENT_ID`, `ANTHROPIC_ENV_ID`
+- New D1 table: `agent_sessions` (migration in `packages/db/migrations/agent.sql`)
+- One-time setup script `scripts/setup-anthropic-agent.ts` must be run by Dev before deploying stage-12
+- GitHub PAT stored in Anthropic Vault only — never logged, never D1 plaintext
+- Beta header required on Managed Agents calls: `managed-agents-2026-04-01`
 
 ⸻
 

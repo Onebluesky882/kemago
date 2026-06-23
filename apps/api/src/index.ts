@@ -8,6 +8,8 @@ import { storageRouter } from './domains/storage/storage.route'
 import { paymentRouter } from './domains/payment/payment.route'
 import { forumRouter } from './domains/forum/forum.route'
 import { roadmapRouter } from './domains/roadmap/roadmap.route'
+import { agentRouter } from './domains/agent/agent.route'
+import { setupRouter } from './domains/setup/setup.route'
 
 type Bindings = {
   DB: D1Database
@@ -20,6 +22,9 @@ type Bindings = {
   STRIPE_SECRET_KEY: string
   STRIPE_PUBLISHABLE_KEY: string
   STRIPE_WEBHOOK_SECRET: string
+  ANTHROPIC_API_KEY: string
+  ANTHROPIC_AGENT_ID: string
+  ANTHROPIC_ENV_ID: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -44,5 +49,7 @@ app.route('/api/storage', storageRouter)
 app.route('/api/payment', paymentRouter)
 app.route('/api/forum', forumRouter)
 app.route('/api/roadmap', roadmapRouter)
+app.route('/api/agent', agentRouter)
+app.route('/api/setup', setupRouter)
 
 export default app

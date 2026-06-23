@@ -71,7 +71,7 @@ export function QuestionCard({
         />
       )}
 
-      {(step.type === 'single' || step.type === 'swatches') && step.options && (
+      {step.type === 'single' && step.options && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {step.options.map((opt) => (
             <OptionButton
@@ -79,7 +79,6 @@ export function QuestionCard({
               label={opt.label}
               value={opt.value}
               selected={currentValue === opt.value}
-              color={opt.color}
               onClick={(val) => onSingleSelect(step.id, val)}
             />
           ))}

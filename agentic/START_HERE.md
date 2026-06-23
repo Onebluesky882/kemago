@@ -12,17 +12,17 @@ Mandatory entry point for all workers. Read and follow before performing any tas
 
 ⸻
 
-PRE-FLIGHT CHECK — ทำก่อนทุกอย่าง
+PRE-FLIGHT CHECK — Run before everything
 
-ตรวจสอบว่า PIPELINE.md และ PROJECT.md มีคำว่า `<conductor-branch>` เป็น literal placeholder หรือไม่
+Check whether PIPELINE.md and PROJECT.md contain `<conductor-branch>` as a literal placeholder.
 
-ถ้ายังเป็น placeholder:
+If still a placeholder:
 
 BLOCKED: PROJECT NOT CONFIGURED
 
-อ่าน QUESTIONS.md และตอบทุกคำถามให้ครบก่อน
+Read QUESTIONS.md and answer every question before proceeding.
 
-ห้ามเริ่มงานใดๆ จนกว่า `<conductor-branch>` จะถูกแทนด้วยชื่อ branch จริง
+Do not start any task until `<conductor-branch>` is replaced with a real branch name.
 
 ⸻
 

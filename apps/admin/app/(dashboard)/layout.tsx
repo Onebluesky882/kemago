@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/users', label: 'Users' },
   { href: '/storage', label: 'Storage' },
   { href: '/emails', label: 'Emails' },
+  { href: '/agent', label: 'AI Agent' },
   { href: '/settings', label: 'Settings' },
 ]
 

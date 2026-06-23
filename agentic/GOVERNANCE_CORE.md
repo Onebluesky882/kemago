@@ -55,6 +55,23 @@ All workers must read, in order:
 
 ⸻
 
+Language Rule — MANDATORY
+
+All governance files must be written in English only.
+
+This applies to: GOVERNANCE_CORE.md, CONDUCTOR.md, AGENT_RULES.md, SECURITY_RULES.md, PIPELINE.md, ARCHITECTURE.md, CONTRACTS.md, DECISIONS.md, PROJECT.md, ROADMAP.md, START_HERE.md, DEV.md, DEV_LOG.md, DESIGN_SYSTEM.md, and all files under agentic/tasks/, agentic/gate-out/, agentic/merge-approval/, agentic/rejection/.
+
+Thai is allowed only in:
+- Direct chat/conversation with the client or Dev
+- CUSTOMER_SETUP.md and QUESTIONS.md (client-facing guides)
+- Inline example strings that demonstrate what to say to a client (e.g. quoted notify messages)
+
+Workers and Conductor must write gate-out, tasks, and all governance content in English regardless of the language the client uses.
+
+Violation → Status: FAIL, Ready For Next Stage: NO.
+
+⸻
+
 Default Violation Rule
 
 Unless a rule states otherwise, any violation of AGENT_RULES.md or SECURITY_RULES.md results in:
