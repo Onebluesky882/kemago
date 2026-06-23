@@ -7,6 +7,7 @@ import { emailRouter } from './domains/email/email.route'
 import { storageRouter } from './domains/storage/storage.route'
 import { paymentRouter } from './domains/payment/payment.route'
 import { forumRouter } from './domains/forum/forum.route'
+import { roadmapRouter } from './domains/roadmap/roadmap.route'
 
 type Bindings = {
   DB: D1Database
@@ -42,5 +43,6 @@ app.route('/api/email', emailRouter)
 app.route('/api/storage', storageRouter)
 app.route('/api/payment', paymentRouter)
 app.route('/api/forum', forumRouter)
+app.route('/api/roadmap', roadmapRouter)
 
 export default app
