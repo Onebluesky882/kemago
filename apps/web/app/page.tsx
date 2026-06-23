@@ -9,12 +9,16 @@ function FadeSection({ children, delay = 0 }: { children: React.ReactNode; delay
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.12 })
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true) }, { threshold: 0.1 })
     obs.observe(el)
     return () => obs.disconnect()
   }, [])
   return (
-    <div ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(24px)', transition: `opacity 0.6s ${delay}s ease, transform 0.6s ${delay}s ease` }}>
+    <div ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(24px)',
+      transition: `opacity 0.55s ${delay}s ease, transform 0.55s ${delay}s ease`,
+    }}>
       {children}
     </div>
   )
@@ -22,48 +26,78 @@ function FadeSection({ children, delay = 0 }: { children: React.ReactNode; delay
 
 const SERVICES = [
   {
-    emoji: '💳',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+      </svg>
+    ),
     title: 'รับชำระเงินออนไลน์',
     desc: 'บัตรเครดิต บัตรเดบิต ปลอดภัย ครบวงจร',
     tag: 'Payment',
-    tagStyle: 'tag-pink',
   },
   {
-    emoji: '🔐',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    ),
     title: 'ระบบยืนยันตัวตน',
     desc: 'สมัคร เข้าสู่ระบบ จัดการสิทธิ์ผู้ใช้ได้ทันที',
-    tag: 'Security',
-    tagStyle: 'tag-green',
+    tag: 'Auth',
   },
   {
-    emoji: '💬',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
     title: 'ชุมชนและกระดานถาม-ตอบ',
-    desc: 'สร้างความสัมพันธ์กับลูกค้าของคุณ',
-    tag: 'Community',
-    tagStyle: 'tag-cream',
+    desc: 'สร้างความสัมพันธ์กับผู้ใช้งานของคุณ',
+    tag: 'Forum',
   },
   {
-    emoji: '📊',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+      </svg>
+    ),
     title: 'แผงควบคุมธุรกิจ',
     desc: 'ดูภาพรวม จัดการผู้ใช้ และรายงานทั้งหมด',
     tag: 'Dashboard',
-    tagStyle: 'tag-pink',
   },
   {
-    emoji: '🗺️',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+    ),
     title: 'แผนงานและ Roadmap',
     desc: 'ติดตาม milestone และความคืบหน้าโปรเจกต์',
     tag: 'Planning',
-    tagStyle: 'tag-green',
   },
   {
-    emoji: '✉️',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+    ),
     title: 'อีเมลแจ้งเตือนอัตโนมัติ',
     desc: 'ส่งอีเมลทันทีเมื่อมีกิจกรรมสำคัญ',
     tag: 'Email',
-    tagStyle: 'tag-cream',
   },
 ]
+
+const ArrowRight = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+)
 
 export default function HomePage() {
   return (
@@ -71,135 +105,111 @@ export default function HomePage() {
 
       {/* Navbar */}
       <nav style={{
+        position: 'sticky', top: 0, zIndex: 10,
         borderBottom: '1px solid var(--border)',
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        maxWidth: 1000,
-        margin: '0 auto',
-        background: 'rgba(253,250,247,0.85)',
-        backdropFilter: 'blur(12px)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
+        background: 'rgba(250,250,250,0.88)',
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 20 }}>🌸</span>
-          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text)' }}>YourApp</span>
-        </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <Link href="/roadmap" style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 500 }}>Roadmap</Link>
-          <Link href="/forum" style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 500 }}>Forum</Link>
-          <Link href="/dashboard" className="btn-glow" style={{ fontSize: 13, fontWeight: 700, color: '#fff', textDecoration: 'none', padding: '9px 18px', borderRadius: 10, background: 'var(--accent)', boxShadow: '0 2px 12px rgba(232,100,122,0.25)' }}>
-            เข้าสู่ระบบ →
-          </Link>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px', height: 56, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.04em' }}>YourApp</span>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <Link href="/roadmap" style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', padding: '7px 12px', borderRadius: 'var(--radius-sm)', transition: 'color 150ms', fontWeight: 500 }}>Roadmap</Link>
+            <Link href="/forum" style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', padding: '7px 12px', borderRadius: 'var(--radius-sm)', fontWeight: 500 }}>Forum</Link>
+            <Link href="/dashboard" className="btn-primary" style={{ padding: '8px 18px', fontSize: 13 }}>
+              Dashboard <ArrowRight />
+            </Link>
+          </div>
         </div>
       </nav>
 
       {/* Hero */}
       <section style={{ position: 'relative', overflow: 'hidden' }}>
-        <div className="dot-grid" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.6 }} />
-        <div style={{ position: 'absolute', top: '5%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 500, background: 'radial-gradient(ellipse at center, rgba(247,168,184,0.2) 0%, rgba(91,186,138,0.08) 50%, transparent 70%)', pointerEvents: 'none' }} />
+        <div className="dot-grid" style={{ position: 'absolute', inset: 0, opacity: 0.4, pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', maxWidth: 640, margin: '0 auto', padding: '104px 24px 88px', textAlign: 'center' }}>
 
-        <div style={{ position: 'relative', maxWidth: 660, margin: '0 auto', padding: '100px 24px 80px', textAlign: 'center' }}>
-          <div className="anim-fade-up" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--pink-dim)', border: '1px solid rgba(232,100,122,0.2)', borderRadius: 100, padding: '5px 14px', fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginBottom: 28, letterSpacing: '0.02em' }}>
-            <span style={{ fontSize: 14 }}>✨</span>
+          <div className="anim-fade-up" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--border)', borderRadius: 100, padding: '5px 14px', fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 32, background: 'var(--surface)' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block', animation: 'pulse-dot 2s ease infinite' }} />
             Starter Template — พร้อมใช้งานทันที
           </div>
 
-          <h1 className="anim-fade-up-1" style={{ fontSize: 'clamp(34px, 7vw, 60px)', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.04em', marginBottom: 20 }}>
-            สร้างซอฟต์แวร์ของคุณ<br />
-            <span className="shimmer-text">ได้ง่ายกว่าเดิม</span>
+          <h1 className="anim-fade-up-1" style={{ fontSize: 'clamp(36px, 7vw, 62px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.05em', marginBottom: 20 }}>
+            สร้างซอฟต์แวร์<br />
+            <span style={{ color: 'var(--accent)' }}>ของคุณเอง</span>
           </h1>
 
-          <p className="anim-fade-up-2" style={{ fontSize: 17, color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 460, margin: '0 auto 40px' }}>
-            ระบบพร้อมใช้ครบชุด ทั้ง payment, auth, forum และ dashboard<br />ไม่ต้องสร้างใหม่ตั้งแต่ต้น
+          <p className="anim-fade-up-2" style={{ fontSize: 17, color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 420, margin: '0 auto 40px', fontWeight: 400 }}>
+            ระบบพร้อมใช้ครบชุด — payment, auth, forum, dashboard ไม่ต้องสร้างใหม่ตั้งแต่ต้น
           </p>
 
           <div className="anim-fade-up-3" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/dashboard" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none', padding: '13px 28px', borderRadius: 12, display: 'inline-block', boxShadow: '0 4px 16px rgba(232,100,122,0.3)' }}>
-              เริ่มต้นเลย →
+            <Link href="/dashboard" className="btn-primary">
+              เริ่มต้นเลย <ArrowRight />
             </Link>
-            <Link href="/roadmap" style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 15, fontWeight: 600, textDecoration: 'none', padding: '13px 28px', borderRadius: 12, display: 'inline-block', boxShadow: 'var(--shadow-sm)' }}>
-              ดูแผนงาน 🗺️
+            <Link href="/roadmap" className="btn-secondary">
+              ดูแผนงาน
             </Link>
           </div>
 
-          <p className="anim-fade-up-4" style={{ marginTop: 32, fontSize: 12, color: 'var(--text-faint)' }}>
-            🌿 ฟรีค่า hosting · 🔒 ปลอดภัย · ⚡ โหลดเร็ว
-          </p>
         </div>
       </section>
 
-      {/* Divider */}
-      <div style={{ maxWidth: 800, margin: '0 auto', borderTop: '1px solid var(--border)' }} />
+      <hr className="divider" />
 
       {/* Services */}
       <section style={{ maxWidth: 960, margin: '0 auto', padding: '80px 24px' }}>
+
         <FadeSection>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, fontSize: 12, color: 'var(--text-faint)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              🎁 ระบบที่รวมไว้ให้แล้ว
-            </div>
-            <h2 style={{ fontSize: 'clamp(22px, 4vw, 34px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-              ทุกอย่างที่ธุรกิจต้องการ<br />
-              <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>ในแพลตฟอร์มเดียว</span>
+          <div style={{ marginBottom: 52 }}>
+            <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 12 }}>Services included</p>
+            <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.15 }}>
+              ทุกอย่างที่ธุรกิจต้องการ
             </h2>
           </div>
         </FadeSection>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(272px, 1fr))', gap: 14 }}>
           {SERVICES.map((s, i) => (
-            <FadeSection key={s.title} delay={i * 0.07}>
-              <div className="card-hover" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '28px 24px', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden', height: '100%' }}>
-                <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'var(--pink-dim)', pointerEvents: 'none' }} />
-                <div style={{ position: 'relative' }}>
-                  <div style={{ fontSize: 32, marginBottom: 14 }}>{s.emoji}</div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 10 }}>{s.title}</h3>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 16 }}>{s.desc}</p>
-                  <span className={`tag ${s.tagStyle}`}>{s.tag}</span>
+            <FadeSection key={s.title} delay={i * 0.06}>
+              <div className="card" style={{ padding: '26px 24px', height: '100%' }}>
+                <div className="icon-box" style={{ marginBottom: 18 }}>
+                  {s.icon}
                 </div>
+                <h3 style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 8 }}>{s.title}</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 18 }}>{s.desc}</p>
+                <span className="tag tag-neutral">{s.tag}</span>
               </div>
             </FadeSection>
           ))}
         </div>
       </section>
 
-      {/* Divider */}
-      <div style={{ maxWidth: 800, margin: '0 auto', borderTop: '1px solid var(--border)' }} />
+      <hr className="divider" />
 
       {/* CTA */}
-      <section style={{ position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 50%, rgba(247,168,184,0.15) 0%, transparent 65%)', pointerEvents: 'none' }} />
+      <section style={{ maxWidth: 640, margin: '0 auto', padding: '96px 24px', textAlign: 'center' }}>
         <FadeSection>
-        <div style={{ position: 'relative', maxWidth: 540, margin: '0 auto', padding: '88px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🌸</div>
-          <h2 style={{ fontSize: 'clamp(24px, 4vw, 38px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 14, lineHeight: 1.2 }}>
+          <h2 style={{ fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 800, letterSpacing: '-0.04em', marginBottom: 16, lineHeight: 1.15 }}>
             พร้อมเริ่มต้นแล้วหรือยัง?
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 36, lineHeight: 1.7 }}>
-            เข้าสู่ระบบเพื่อจัดการโปรเจกต์ของคุณ<br />หรือดูแผนงานความคืบหน้า
+            เข้าสู่ระบบเพื่อจัดการโปรเจกต์ของคุณ
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/dashboard" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none', padding: '13px 32px', borderRadius: 12, display: 'inline-block', boxShadow: '0 4px 16px rgba(232,100,122,0.3)' }}>
-              Dashboard →
+            <Link href="/dashboard" className="btn-primary">
+              Dashboard <ArrowRight />
             </Link>
-            <Link href="/roadmap" style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 15, fontWeight: 600, textDecoration: 'none', padding: '13px 28px', borderRadius: 12, display: 'inline-block', boxShadow: 'var(--shadow-sm)' }}>
+            <Link href="/roadmap" className="btn-secondary">
               Roadmap
             </Link>
           </div>
-        </div>
         </FadeSection>
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '28px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>🌸</span>
-          <span style={{ fontSize: 14, fontWeight: 700 }}>YourApp</span>
-        </div>
-        <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>© 2025 · Made with love</span>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, maxWidth: 1000, margin: '0 auto' }}>
+        <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em' }}>YourApp</span>
+        <span style={{ fontSize: 13, color: 'var(--text-faint)' }}>© 2025</span>
       </footer>
 
     </div>
