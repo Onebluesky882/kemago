@@ -1,8 +1,15 @@
 import { Hono } from 'hono'
+import Stripe from 'stripe'
 import { createPaymentIntentSchema, createCheckoutSessionSchema } from './payment.schema'
 import { createPaymentIntent, createCheckoutSession, handleWebhook } from './payment.handler'
 import { createDb, purchases, eq } from '@gover-agent/db'
 import { createAuth } from '@gover-agent/auth'
+
+const PRICE_PLAN_MAP: Record<string, { plan: 'starter' | 'pro' | 'business'; invites: number }> = {
+  price_1TkM0Y43gXSTS96LQiaMPGXF: { plan: 'starter', invites: 1 },
+  price_1TlQtB43gXSTS96LLVdbYSFW: { plan: 'pro', invites: 3 },
+  price_1TlQu643gXSTS96LUTW80l6Y: { plan: 'business', invites: 10 },
+}
 
 type Bindings = {
   DB: D1Database
@@ -101,12 +108,21 @@ paymentRouter.post('/webhook', async (c) => {
     }
     const email = session.customer_email ?? session.customer_details?.email ?? ''
     if (email) {
+      const stripe = new Stripe(c.env.STRIPE_SECRET_KEY, { apiVersion: '2026-05-27.dahlia' })
+      const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ['line_items'],
+      })
+      const priceId = fullSession.line_items?.data[0]?.price?.id ?? ''
+      const planInfo = PRICE_PLAN_MAP[priceId] ?? { plan: 'starter' as const, invites: 1 }
+
       const db = createDb(c.env.DB)
       await db.insert(purchases).values({
         id: crypto.randomUUID(),
         email,
         stripeSessionId: session.id,
         status: 'pending',
+        plan: planInfo.plan,
+        invitesRemaining: planInfo.invites,
         createdAt: new Date(),
       }).onConflictDoNothing()
     }
@@ -129,7 +145,7 @@ paymentRouter.post('/github-invite', async (c) => {
     .limit(1)
 
   if (!purchase) return c.json({ error: 'Purchase not found' }, 404)
-  if (purchase.status === 'invited') return c.json({ success: true, message: 'Already invited' })
+  if (purchase.invitesRemaining <= 0) return c.json({ error: 'No invites remaining for this purchase' }, 403)
 
   // Call GitHub API to invite collaborator (read-only pull access)
   const res = await fetch(
@@ -154,12 +170,22 @@ paymentRouter.post('/github-invite', async (c) => {
     return c.json({ error: 'GitHub invite failed', status: res.status, detail: ghError }, 500)
   }
 
+  const newRemaining = purchase.invitesRemaining - 1
   await db
     .update(purchases)
-    .set({ status: 'invited', githubUsername, invitedAt: new Date() })
+    .set({
+      status: newRemaining === 0 ? 'invited' : 'pending',
+      githubUsername,
+      invitedAt: new Date(),
+      invitesRemaining: newRemaining,
+    })
     .where(eq(purchases.stripeSessionId, sessionId))
 
-  return c.json({ success: true, message: `Invited ${githubUsername} to the template repo` })
+  return c.json({
+    success: true,
+    message: `Invited ${githubUsername} to the template repo`,
+    invitesRemaining: newRemaining,
+  })
 })
 
 export { paymentRouter }

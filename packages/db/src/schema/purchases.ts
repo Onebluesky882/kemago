@@ -7,6 +7,8 @@ export const purchases = sqliteTable('purchases', {
   githubUsername: text('github_username'),
   invitedAt: integer('invited_at', { mode: 'timestamp' }),
   status: text('status', { enum: ['pending', 'invited', 'failed'] }).notNull().default('pending'),
+  plan: text('plan', { enum: ['starter', 'pro', 'business'] }).notNull().default('starter'),
+  invitesRemaining: integer('invites_remaining').notNull().default(1),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
 })
 

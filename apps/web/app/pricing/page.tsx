@@ -7,15 +7,13 @@ export const metadata = {
   description: 'Simple, transparent pricing. One AI software company — pick the plan that fits.',
 }
 
-// Replace with your Stripe payment link from https://dashboard.stripe.com/payment-links
-const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_9B6cMYflVd3r2Rf8nF8Zq00'
-
 const PLANS = [
   {
     name: 'Starter',
     price: 49,
     projects: 1,
     isPro: false,
+    paymentLink: 'https://buy.stripe.com/test_9B6cMYflVd3r2Rf8nF8Zq00',
     features: [
       '1 active project',
       'Full-stack app (web + admin + API)',
@@ -30,6 +28,7 @@ const PLANS = [
     price: 119,
     projects: 3,
     isPro: true,
+    paymentLink: 'https://buy.stripe.com/test_5kQeV6a1Be7v8bzcDV8Zq01',
     features: [
       '3 active projects',
       'Everything in Starter',
@@ -45,6 +44,7 @@ const PLANS = [
     price: 299,
     projects: 10,
     isPro: false,
+    paymentLink: 'https://buy.stripe.com/test_00weV6a1Bd3rajH6fx8Zq02',
     features: [
       '10 active projects',
       'Everything in Pro',
@@ -149,7 +149,7 @@ export default function PricingPage() {
                   </span>
                 </div>
               </div>
-              <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', background: plan.isPro ? 'var(--accent)' : 'var(--surface-2)', color: plan.isPro ? '#fff' : 'var(--text)', border: plan.isPro ? 'none' : '1px solid var(--border)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', marginBottom: 24, transition: 'background 150ms' }}>
+              <a href={plan.paymentLink} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', background: plan.isPro ? 'var(--accent)' : 'var(--surface-2)', color: plan.isPro ? '#fff' : 'var(--text)', border: plan.isPro ? 'none' : '1px solid var(--border)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', marginBottom: 24, transition: 'background 150ms' }}>
                 Buy now
               </a>
               <div style={{ borderTop: '1px solid var(--border-subtle)', marginBottom: 20 }} />

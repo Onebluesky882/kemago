@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 type State = 'idle' | 'loading' | 'success' | 'error'
+type InviteResult = { invitesRemaining: number; username: string }
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
@@ -15,6 +16,7 @@ function PaymentSuccessContent() {
   const [username, setUsername] = useState('')
   const [state, setState] = useState<State>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [inviteResult, setInviteResult] = useState<InviteResult | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,8 +28,9 @@ function PaymentSuccessContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, githubUsername: username.trim() }),
       })
-      const data = await res.json() as { success?: boolean; message?: string; error?: string }
+      const data = await res.json() as { success?: boolean; message?: string; error?: string; invitesRemaining?: number }
       if (res.ok && data.success) {
+        setInviteResult({ invitesRemaining: data.invitesRemaining ?? 0, username: username.trim() })
         setState('success')
       } else {
         setErrorMsg(data.error ?? 'Something went wrong')
@@ -45,10 +48,15 @@ function PaymentSuccessContent() {
         <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
           <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 24 }}>✓</div>
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12 }}>You're in.</h1>
-          <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 32 }}>
-            GitHub invitation sent to <strong style={{ color: 'var(--text)' }}>{username}</strong>.<br />
+          <p style={{ fontSize: 15, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: inviteResult && inviteResult.invitesRemaining > 0 ? 16 : 32 }}>
+            GitHub invitation sent to <strong style={{ color: 'var(--text)' }}>{inviteResult?.username ?? username}</strong>.<br />
             Check your email to accept the invite, then clone the repo.
           </p>
+          {inviteResult && inviteResult.invitesRemaining > 0 && (
+            <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 8, padding: '12px 16px', marginBottom: 32, fontSize: 13, color: 'var(--text-muted)' }}>
+              You have <strong style={{ color: '#a78bfa' }}>{inviteResult.invitesRemaining} invite{inviteResult.invitesRemaining > 1 ? 's' : ''} remaining</strong> — go back to invite more GitHub accounts.
+            </div>
+          )}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px 20px', textAlign: 'left', marginBottom: 32 }}>
             <p style={{ fontSize: 12, color: 'var(--text-faint)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Next steps</p>
             {[
