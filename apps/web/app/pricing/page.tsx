@@ -7,6 +7,9 @@ export const metadata = {
   description: 'Simple, transparent pricing. One AI software company — pick the plan that fits.',
 }
 
+// Replace with your Stripe payment link from https://dashboard.stripe.com/payment-links
+const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/YOUR_PAYMENT_LINK'
+
 const PLANS = [
   {
     name: 'Starter',
@@ -146,9 +149,9 @@ export default function PricingPage() {
                   </span>
                 </div>
               </div>
-              <Link href="/setup" style={{ display: 'block', textAlign: 'center', background: plan.isPro ? 'var(--accent)' : 'var(--surface-2)', color: plan.isPro ? '#fff' : 'var(--text)', border: plan.isPro ? 'none' : '1px solid var(--border)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', marginBottom: 24, transition: 'background 150ms' }}>
-                Get started
-              </Link>
+              <a href={STRIPE_PAYMENT_LINK} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', background: plan.isPro ? 'var(--accent)' : 'var(--surface-2)', color: plan.isPro ? '#fff' : 'var(--text)', border: plan.isPro ? 'none' : '1px solid var(--border)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', marginBottom: 24, transition: 'background 150ms' }}>
+                Buy now
+              </a>
               <div style={{ borderTop: '1px solid var(--border-subtle)', marginBottom: 20 }} />
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {plan.features.map((f) => (
@@ -225,7 +228,7 @@ export default function PricingPage() {
           <h2 style={{ fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 14 }}>Not sure which plan?</h2>
           <p style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 32, lineHeight: 1.6 }}>Start with Starter — upgrade anytime. Or talk to a developer first.</p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/setup" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none', padding: '12px 28px', borderRadius: 8, display: 'inline-block', transition: 'box-shadow 200ms' }}>Start with Starter</Link>
+            <Link href="/pricing" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 700, textDecoration: 'none', padding: '12px 28px', borderRadius: 8, display: 'inline-block', transition: 'box-shadow 200ms' }}>Start with Starter</Link>
             <Link href="/contact" style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 15, fontWeight: 500, textDecoration: 'none', padding: '12px 28px', borderRadius: 8, display: 'inline-block' }}>Talk to a developer</Link>
           </div>
         </div>

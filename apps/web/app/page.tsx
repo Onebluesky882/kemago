@@ -127,7 +127,7 @@ export default function HomePage() {
           </p>
 
           <div className="anim-fade-up-3" style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/setup" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 600, textDecoration: 'none', padding: '12px 24px', borderRadius: 8, display: 'inline-block', transition: 'background 150ms' }}>Start building for free →</Link>
+            <Link href="/pricing" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 600, textDecoration: 'none', padding: '12px 24px', borderRadius: 8, display: 'inline-block', transition: 'background 150ms' }}>Get access →</Link>
             <Link href="#why" style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', fontSize: 15, fontWeight: 500, textDecoration: 'none', padding: '12px 24px', borderRadius: 8, display: 'inline-block' }}>See how it works</Link>
           </div>
 
@@ -347,10 +347,10 @@ export default function HomePage() {
             Ready to build your<br /><span className="shimmer-text">software company?</span>
           </h2>
           <p style={{ fontSize: 16, color: 'var(--text-muted)', marginBottom: 36 }}>Tell the AI what you want. It handles everything else.</p>
-          <Link href="/setup" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em', transition: 'background 150ms, box-shadow 200ms' }}>
-            Start for free →
+          <Link href="/pricing" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em', transition: 'background 150ms, box-shadow 200ms' }}>
+            Get access →
           </Link>
-          <p style={{ marginTop: 20, fontSize: 13, color: 'var(--text-faint)' }}>No credit card required · Deployed in minutes</p>
+          <p style={{ marginTop: 20, fontSize: 13, color: 'var(--text-faint)' }}>One-time purchase · Deployed in minutes</p>
         </div>
       </section>
 
