@@ -5,15 +5,16 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 FROM_EMAIL = "noreply@yourdomain.com"
-STRIPE_PUBLISHABLE_KEY = ""
 R2_ACCOUNT_ID = "c40a6cc1eb575a43f79e9b4d9cc6a88d"
 R2_BUCKET_NAME = "fullstack-builder-storage"
 GITHUB_REPO_OWNER = "Onebluesky882"
 GITHUB_TEMPLATE_REPO = "goveragent-template"
+STRIPE_PUBLISHABLE_KEY= "whsec_bOGPaaZVLxdbIDraVkjylLsAQ9Lgj0fT"
 
 # Secrets — set via: wrangler secret put <NAME>
 # RESEND_API_KEY
 # STRIPE_SECRET_KEY
+# STRIPE_PUBLISHABLE_KEY
 # STRIPE_WEBHOOK_SECRET
 # GITHUB_TOKEN
 # R2_ACCESS_KEY_ID
