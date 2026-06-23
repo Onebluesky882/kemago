@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useSetupStore } from '@/store/setup.store'
 import type { SetupAnswers } from '@/store/setup.store'
 
-const TOTAL_STEPS = 8
+const TOTAL_STEPS = 4
 
 export type StepConfig = {
   id: keyof SetupAnswers
@@ -29,58 +29,17 @@ export const STEPS: StepConfig[] = [
     type: 'textarea',
   },
   {
-    id: 'language',
-    question: 'What language should your website be in?',
-    type: 'single',
-    options: [
-      { label: 'Thai', value: 'thai' },
-      { label: 'English', value: 'english' },
-      { label: 'Both Thai and English', value: 'both' },
-    ],
-  },
-  {
     id: 'websiteFeatures',
-    question: 'What do you want your website to do? (Select all that apply)',
+    question: 'What do you need? (Select all that apply)',
     type: 'multi',
     options: [
-      { label: 'Show business info / portfolio', value: 'portfolio' },
-      { label: 'Accept orders / sell products online', value: 'ecommerce' },
+      { label: 'Sell products online', value: 'ecommerce' },
       { label: 'Accept bookings / appointments', value: 'bookings' },
-      { label: 'Member system (login / register)', value: 'members' },
-      { label: 'Articles / blog / news', value: 'blog' },
-      { label: 'Contact form / quote request', value: 'contact' },
-      { label: 'Photo gallery', value: 'gallery' },
-      { label: 'Other', value: 'other' },
-    ],
-  },
-  {
-    id: 'needsAdminPanel',
-    question: 'Do you need an admin panel to manage things yourself?',
-    type: 'single',
-    options: [
-      { label: 'Yes', value: 'yes' },
-      { label: 'No', value: 'no' },
-    ],
-  },
-  {
-    id: 'onlinePayments',
-    question: 'Do you want to accept online payments?',
-    type: 'single',
-    options: [
-      { label: 'Yes', value: 'yes' },
-      { label: 'No', value: 'no' },
-      { label: 'Later', value: 'later' },
-    ],
-  },
-  {
-    id: 'preferredStyle',
-    question: 'What style do you prefer?',
-    type: 'swatches',
-    options: [
-      { label: 'Clean', value: 'clean', color: '#F8F9FA' },
-      { label: 'Elegant', value: 'elegant', color: '#2C2C2C' },
-      { label: 'Bright', value: 'bright', color: '#FF6B35' },
-      { label: 'Formal', value: 'formal', color: '#1A3A5C' },
+      { label: 'Member login / register', value: 'members' },
+      { label: 'Accept online payments', value: 'payments' },
+      { label: 'Blog / articles', value: 'blog' },
+      { label: 'Contact form', value: 'contact' },
+      { label: 'Show business info only', value: 'portfolio' },
     ],
   },
 ]
@@ -90,7 +49,7 @@ export function useSetup() {
   const [submitted, setSubmitted] = useState(false)
   const { answers, setAnswer } = useSetupStore()
 
-  const totalSteps = TOTAL_STEPS
+  const totalSteps = STEPS.length
   const isLastStep = currentStep === totalSteps - 1
   const isSummary = currentStep === totalSteps
   const step = STEPS[currentStep]
