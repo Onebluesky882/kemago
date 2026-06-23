@@ -77,6 +77,59 @@ Read `agentic/START_HERE.md` before any task. For UI work, also read `agentic/DE
 
 ---
 
+## Navigation Rules
+
+Every page except `/` must have a **back button** that returns to the previous page.
+
+Every logo/brand name in the navbar must link to `/` (homepage).
+
+```ts
+// Back button — use router, not <a>
+'use client'
+import { useRouter } from 'next/navigation'
+
+const router = useRouter()
+<button onClick={() => router.back()}>← Back</button>
+
+// Logo — always routes to homepage
+import Link from 'next/link'
+<Link href="/">YourApp</Link>
+```
+
+**Rules:**
+- Logo click → always `router.push('/')` or `<Link href="/">`
+- Every inner page (`/forum`, `/roadmap`, `/dashboard`, `/payment/*`, etc.) → must render a back button
+- Back button uses `router.back()` — never hardcode a path unless the page has no logical parent
+
+---
+
+## Icons
+
+Never use emoji in UI code. Use inline SVG only.
+
+```tsx
+// ❌ wrong
+<span>💳</span>
+
+// ✅ correct
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+  <rect x="2" y="5" width="20" height="14" rx="2" />
+  <line x1="2" y1="10" x2="22" y2="10" />
+</svg>
+```
+
+---
+
+## Design — Ask Before Building
+
+Before writing any UI code, ask the client:
+
+> "มีเว็บไซต์ที่อยากให้ design คล้ายๆ ไหม? (Do you have a reference website?)"
+
+Do not start designing without a reference or explicit style direction.
+
+---
+
 ## ADR Numbering
 
 ```bash
