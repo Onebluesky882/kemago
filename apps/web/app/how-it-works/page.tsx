@@ -238,7 +238,7 @@ export default function HowItWorksPage() {
             Ready to see it<br /><span className="shimmer-text">build your app?</span>
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 36 }}>Tell us what you need. The system handles everything else.</p>
-          <Link href="/setup" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em' }}>
+          <Link href="/pricing" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em' }}>
             Start building →
           </Link>
           <p style={{ marginTop: 16, fontSize: 13, color: 'var(--text-faint)' }}>No credit card · No setup · Live in minutes</p>

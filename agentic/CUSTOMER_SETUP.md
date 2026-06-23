@@ -157,11 +157,27 @@ Empty array = storage connected and ready.
 
 ---
 
-## Stripe Payment Rule — Ask before setup
+## Stripe Payment Rule — Built-in feature, enable on request
 
-The Conductor MUST ask whether the customer needs to accept online payments before doing any Stripe setup. Stripe is included at no extra charge in all plans.
+**The Stripe payment feature is already built into the system.** The Conductor does NOT need to build anything — it only needs to connect the customer's Stripe account.
 
-### Step 1 — Ask
+### When to activate
+
+Activate this rule when the customer asks any of the following (in any language):
+- "Does the app accept online payments?"
+- "Can customers pay through the website?"
+- "Is there a payment system?"
+- "I want to sell / charge customers online"
+
+When triggered, respond:
+
+> "Yes — your app already has a built-in payment system powered by Stripe. Stripe is trusted by millions of businesses worldwide. All we need to do is connect your Stripe account and you will be ready to accept payments."
+
+Then proceed to Step 2.
+
+### When NOT to activate
+
+If the customer does not mention payments, ask first:
 
 > "Do you need your app to accept payments from customers? For example: selling products, accepting booking fees, or charging for a subscription."
 

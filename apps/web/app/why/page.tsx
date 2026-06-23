@@ -199,7 +199,7 @@ export default function WhyPage() {
           Claude is an incredible tool. It&apos;s in our product too. But a tool isn&apos;t the same as a system.
           GoverAgent is the system that takes what you want and turns it into software that runs.
         </p>
-        <Link href="/setup" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em' }}>
+        <Link href="/pricing" className="btn-glow" style={{ background: 'var(--accent)', color: '#fff', fontSize: 16, fontWeight: 700, textDecoration: 'none', padding: '14px 32px', borderRadius: 10, display: 'inline-block', letterSpacing: '-0.01em' }}>
           Start building →
         </Link>
         <p style={{ marginTop: 16, fontSize: 13, color: 'var(--text-faint)' }}>No credit card required</p>
