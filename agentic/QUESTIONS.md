@@ -22,6 +22,19 @@ Conductor จะนำคำตอบไปอัพเดทไฟล์ govern
 
 ⸻
 
+## Section 0 — Project Owner ⚠️ MANDATORY FIRST
+→ อัพเดทไฟล์: PROJECT.md
+→ Action: Conductor ต้อง SET role = 'owner' ใน database ให้ email นี้หลัง deploy
+
+Q0. อีเมลของเจ้าของโปรเจกต์คืออะไร?
+
+> อีเมลนี้จะได้รับสิทธิ์ `owner` โดยอัตโนมัติ — สามารถจัดการ roadmap, forum, และตั้งค่าทุกอย่างในระบบได้
+> ต้องตรงกับอีเมลที่ใช้ลงทะเบียนเข้าระบบ
+
+Answer: [TBD]
+
+⸻
+
 ## Section 1 — Project Identity
 → อัพเดทไฟล์: PROJECT.md
 
@@ -296,6 +309,16 @@ Answer: [TBD]
 ## Conductor Instructions
 
 หลังจากผู้ใช้ตอบคำถามครบ ให้ Conductor:
+
+0. **⚠️ SET OWNER ROLE FIRST** — รัน SQL นี้ใน D1 database ทันทีหลัง deploy ครั้งแรก:
+   ```sql
+   UPDATE user SET role = 'owner' WHERE email = '<คำตอบ Q0>';
+   ```
+   ตรวจสอบด้วย:
+   ```sql
+   SELECT id, name, email, role FROM user WHERE email = '<คำตอบ Q0>';
+   ```
+   ต้องเห็น `role = 'owner'` ก่อนจึงจะ proceed ต่อได้
 
 1. PROJECT.md — อัพเดท: name, description, target users, status (จาก Q1–Q4)
 2. DECISIONS.md — อัพเดท: tech stack ทั้งหมด, naming conventions, testing, code style (จาก Q5–Q20)
