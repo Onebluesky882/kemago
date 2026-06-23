@@ -20,12 +20,12 @@ export function RegisterForm({ onSubmit, isLoading, error }: Props) {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    background: 'var(--surface-2)',
-    border: '1px solid var(--border)',
+    background: '#ffffff',
+    border: '1px solid #d1d5db',
     borderRadius: 8,
     padding: '11px 14px',
     fontSize: 14,
-    color: 'var(--text)',
+    color: '#374151',
     outline: 'none',
     transition: 'border-color 150ms',
     appearance: 'none' as const,
