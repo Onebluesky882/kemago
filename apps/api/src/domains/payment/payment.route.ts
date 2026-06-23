@@ -107,8 +107,9 @@ paymentRouter.post('/webhook', async (c) => {
     }
 
     return c.json({ received: true })
-  } catch {
-    return c.json({ error: 'Webhook verification failed' }, 400)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return c.json({ error: 'Webhook verification failed', detail: msg }, 400)
   }
 })
 
