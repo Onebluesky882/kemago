@@ -60,7 +60,7 @@ export default function RoadmapPage() {
       </div>
       <div style={{ borderBottom: '1px solid var(--border)', padding: '0 24px 20px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>Project Roadmap</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.04em' }}>Project Roadmap</h1>
         </div>
       </div>
       <RoadmapClient data={data} />

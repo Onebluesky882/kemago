@@ -32,8 +32,8 @@ const SERVICES = [
         <line x1="2" y1="10" x2="22" y2="10" />
       </svg>
     ),
-    title: 'รับชำระเงินออนไลน์',
-    desc: 'บัตรเครดิต บัตรเดบิต ปลอดภัย ครบวงจร',
+    title: 'Online Payments',
+    desc: 'Accept credit cards, debit cards, and more — secure and ready.',
     tag: 'Payment',
   },
   {
@@ -43,8 +43,8 @@ const SERVICES = [
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </svg>
     ),
-    title: 'ระบบยืนยันตัวตน',
-    desc: 'สมัคร เข้าสู่ระบบ จัดการสิทธิ์ผู้ใช้ได้ทันที',
+    title: 'Authentication',
+    desc: 'Sign up, sign in, and manage user permissions out of the box.',
     tag: 'Auth',
   },
   {
@@ -53,8 +53,8 @@ const SERVICES = [
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
-    title: 'ชุมชนและกระดานถาม-ตอบ',
-    desc: 'สร้างความสัมพันธ์กับผู้ใช้งานของคุณ',
+    title: 'Community Forum',
+    desc: 'Q&amp;A board to connect and engage with your users.',
     tag: 'Forum',
   },
   {
@@ -64,8 +64,8 @@ const SERVICES = [
         <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
       </svg>
     ),
-    title: 'แผงควบคุมธุรกิจ',
-    desc: 'ดูภาพรวม จัดการผู้ใช้ และรายงานทั้งหมด',
+    title: 'Admin Dashboard',
+    desc: 'Overview, user management, and reports — all in one place.',
     tag: 'Dashboard',
   },
   {
@@ -75,8 +75,8 @@ const SERVICES = [
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
       </svg>
     ),
-    title: 'แผนงานและ Roadmap',
-    desc: 'ติดตาม milestone และความคืบหน้าโปรเจกต์',
+    title: 'Project Roadmap',
+    desc: 'Track milestones and project progress at a glance.',
     tag: 'Planning',
   },
   {
@@ -86,8 +86,8 @@ const SERVICES = [
         <polyline points="22,6 12,13 2,6" />
       </svg>
     ),
-    title: 'อีเมลแจ้งเตือนอัตโนมัติ',
-    desc: 'ส่งอีเมลทันทีเมื่อมีกิจกรรมสำคัญ',
+    title: 'Email Notifications',
+    desc: 'Automatic emails triggered by signups, orders, and key events.',
     tag: 'Email',
   },
 ]
@@ -130,24 +130,24 @@ export default function HomePage() {
 
           <div className="anim-fade-up" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--border)', borderRadius: 100, padding: '5px 14px', fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 32, background: 'var(--surface)' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block', animation: 'pulse-dot 2s ease infinite' }} />
-            Starter Template — พร้อมใช้งานทันที
+            Starter Template — Ready to use
           </div>
 
           <h1 className="anim-fade-up-1" style={{ fontSize: 'clamp(36px, 7vw, 62px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.05em', marginBottom: 20 }}>
-            สร้างซอฟต์แวร์<br />
-            <span style={{ color: 'var(--accent)' }}>ของคุณเอง</span>
+            Build your own<br />
+            <span style={{ color: 'var(--accent)' }}>software product</span>
           </h1>
 
           <p className="anim-fade-up-2" style={{ fontSize: 17, color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 420, margin: '0 auto 40px', fontWeight: 400 }}>
-            ระบบพร้อมใช้ครบชุด — payment, auth, forum, dashboard ไม่ต้องสร้างใหม่ตั้งแต่ต้น
+            A full-stack starter with payment, auth, forum, and dashboard — no setup from scratch.
           </p>
 
           <div className="anim-fade-up-3" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/dashboard" className="btn-primary">
-              เริ่มต้นเลย <ArrowRight />
+              Get started <ArrowRight />
             </Link>
             <Link href="/roadmap" className="btn-secondary">
-              ดูแผนงาน
+              View Roadmap
             </Link>
           </div>
 
@@ -163,7 +163,7 @@ export default function HomePage() {
           <div style={{ marginBottom: 52 }}>
             <p style={{ fontSize: 11, color: 'var(--text-faint)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 12 }}>Services included</p>
             <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.15 }}>
-              ทุกอย่างที่ธุรกิจต้องการ
+              Everything your product needs
             </h2>
           </div>
         </FadeSection>
@@ -190,10 +190,10 @@ export default function HomePage() {
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '96px 24px', textAlign: 'center' }}>
         <FadeSection>
           <h2 style={{ fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 800, letterSpacing: '-0.04em', marginBottom: 16, lineHeight: 1.15 }}>
-            พร้อมเริ่มต้นแล้วหรือยัง?
+            Ready to start building?
           </h2>
           <p style={{ fontSize: 15, color: 'var(--text-muted)', marginBottom: 36, lineHeight: 1.7 }}>
-            เข้าสู่ระบบเพื่อจัดการโปรเจกต์ของคุณ
+            Sign in to manage your project
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/dashboard" className="btn-primary">
