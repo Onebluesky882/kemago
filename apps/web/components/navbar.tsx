@@ -6,11 +6,8 @@ import { useAuthStore } from '@/store/auth.store'
 import { useAuth } from '@/hooks/use-auth'
 
 const NAV_LINKS = [
-  { href: '/how-it-works', label: 'How it works' },
-  { href: '/why', label: 'Why us' },
-  { href: '/showcase', label: 'Showcase' },
   { href: '/forum', label: 'Forum' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/roadmap', label: 'Roadmap' },
 ]
 
 const linkStyle = {
@@ -33,14 +30,14 @@ export function Navbar() {
       <nav style={{
         position: 'sticky', top: 0, zIndex: 50,
         borderBottom: '1px solid var(--border)',
-        background: 'rgba(8,8,8,0.92)',
+        background: 'rgba(250,250,250,0.88)',
         backdropFilter: 'blur(12px)',
         padding: '0 24px', height: 56,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         {/* Logo */}
         <Link href="/" style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.02em', color: 'var(--text)', textDecoration: 'none' }}>
-          GoverAgent
+          YourApp
         </Link>
 
         {/* Desktop nav */}
@@ -69,7 +66,7 @@ export function Navbar() {
           ) : (
             <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
               <Link href="/login" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Sign in</Link>
-              <Link href="/pricing" style={{ background: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Buy now</Link>
+              <Link href="/login" style={{ background: 'var(--text)', color: '#fff', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Sign in</Link>
             </div>
           )}
         </div>
@@ -93,7 +90,7 @@ export function Navbar() {
       {open && (
         <div className="nav-mobile-menu" style={{
           position: 'fixed', top: 56, left: 0, right: 0, zIndex: 49,
-          background: 'rgba(8,8,8,0.97)', backdropFilter: 'blur(16px)',
+          background: 'rgba(250,250,250,0.97)', backdropFilter: 'blur(16px)',
           borderBottom: '1px solid var(--border)', padding: '16px 24px 24px',
           display: 'flex', flexDirection: 'column', gap: 4,
         }}>
@@ -125,9 +122,9 @@ export function Navbar() {
                   style={{ border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 500, textDecoration: 'none', textAlign: 'center', display: 'block' }}>
                   Sign in
                 </Link>
-                <Link href="/pricing" onClick={() => setOpen(false)}
-                  style={{ background: 'var(--accent)', color: '#fff', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', textAlign: 'center', display: 'block' }}>
-                  Buy now
+                <Link href="/login" onClick={() => setOpen(false)}
+                  style={{ background: 'var(--text)', color: '#fff', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', textAlign: 'center', display: 'block' }}>
+                  Sign in
                 </Link>
               </>
             )}
