@@ -126,7 +126,7 @@ paymentRouter.post('/github-invite', async (c) => {
     .limit(1)
 
   if (!purchase) return c.json({ error: 'Purchase not found' }, 404)
-  if (purchase.status === 'invited') return c.json({ message: 'Already invited' })
+  if (purchase.status === 'invited') return c.json({ success: true, message: 'Already invited' })
 
   // Call GitHub API to invite collaborator (read-only pull access)
   const res = await fetch(
