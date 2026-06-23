@@ -168,7 +168,7 @@ body { line-height: 1.5; }
   align-items: center;
   gap: 6px;
   background: var(--text);
-  color: #fff;
+  color: var(--bg);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
