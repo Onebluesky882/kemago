@@ -56,8 +56,8 @@ export function Navbar() {
             <Link href="/login" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>
               Sign in
             </Link>
-            <Link href="/register" style={{ background: 'var(--text)', color: '#000', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>
-              Get started
+            <Link href="/pricing" style={{ background: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>
+              Buy now
             </Link>
           </div>
         )}

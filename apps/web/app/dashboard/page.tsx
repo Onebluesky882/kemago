@@ -10,6 +10,8 @@ import { BackButton } from '@/components/back-button'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
 
+type Purchase = { purchased: boolean; status?: string; githubUsername?: string }
+
 type Post = {
   id: string; title: string; postNumber: number
   status: 'open' | 'closed'; createdAt: string
@@ -35,10 +37,19 @@ export default function DashboardPage() {
   const { signOut } = useAuth()
   const router = useRouter()
   const [myPosts, setMyPosts] = useState<Post[]>([])
+  const [purchase, setPurchase] = useState<Purchase | null>(null)
 
   useEffect(() => {
     if (!isLoading && !user) router.push('/login')
   }, [user, isLoading, router])
+
+  useEffect(() => {
+    if (!user) return
+    fetch(`${API}/api/payment/my-purchase`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => setPurchase(data))
+      .catch(() => {})
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -69,23 +80,38 @@ export default function DashboardPage() {
         </div>
 
         {/* Template access */}
-        <div style={{ background: 'var(--surface)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 14, padding: '24px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: `1px solid ${purchase?.purchased ? 'rgba(124,58,237,0.3)' : 'var(--border)'}`, borderRadius: 14, padding: '24px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, right: 0, width: 200, height: 200, background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
           <p style={{ fontSize: 11, color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 10 }}>Template Access</p>
           <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>GoverAgent Template</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
-            Clone the private repo and start building your product with AI.
-          </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <a href="https://github.com/Onebluesky882/goveragent-template" target="_blank" rel="noopener noreferrer"
-              style={{ background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
-              Open on GitHub →
-            </a>
-            <Link href="/forum"
-              style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', fontSize: 13, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
-              Ask a question
-            </Link>
-          </div>
+
+          {purchase?.purchased ? (
+            <>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+                Clone the private repo and start building your product with AI.
+              </p>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <a href="https://github.com/Onebluesky882/goveragent-template" target="_blank" rel="noopener noreferrer"
+                  style={{ background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
+                  Open on GitHub →
+                </a>
+                <Link href="/forum"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text-muted)', border: '1px solid var(--border)', fontSize: 13, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
+                  Ask a question
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
+                Get access to the full AI Software Factory — auth, payments, storage, and more. Deploy your product in one day.
+              </p>
+              <Link href="/pricing"
+                style={{ background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none', padding: '9px 18px', borderRadius: 8, display: 'inline-block' }}>
+                Get access →
+              </Link>
+            </>
+          )}
         </div>
 
         {/* My Forum Posts */}

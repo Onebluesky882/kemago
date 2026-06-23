@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { createPaymentIntentSchema, createCheckoutSessionSchema } from './payment.schema'
 import { createPaymentIntent, createCheckoutSession, handleWebhook } from './payment.handler'
 import { createDb, purchases, eq } from '@gover-agent/db'
+import { createAuth } from '@gover-agent/auth'
 
 type Bindings = {
   DB: D1Database
@@ -19,6 +20,28 @@ type Bindings = {
 }
 
 const paymentRouter = new Hono<{ Bindings: Bindings }>()
+
+const TRUSTED_ORIGINS = [
+  'http://localhost:3000',
+  'https://fullstack-builder-web.onebluesky882.workers.dev',
+]
+
+// Check if current user has purchased — returns purchase status
+paymentRouter.get('/my-purchase', async (c) => {
+  const db = createDb(c.env.DB)
+  const auth = createAuth(db, TRUSTED_ORIGINS)
+  const session = await auth.api.getSession({ headers: c.req.raw.headers })
+  if (!session) return c.json({ purchased: false })
+
+  const [purchase] = await db
+    .select()
+    .from(purchases)
+    .where(eq(purchases.email, session.user.email))
+    .limit(1)
+
+  if (!purchase) return c.json({ purchased: false })
+  return c.json({ purchased: true, status: purchase.status, githubUsername: purchase.githubUsername })
+})
 
 // Get publishable key (safe to expose to frontend)
 paymentRouter.get('/config', (c) => {
