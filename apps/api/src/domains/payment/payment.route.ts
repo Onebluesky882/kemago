@@ -79,38 +79,40 @@ paymentRouter.post('/webhook', async (c) => {
   const signature = c.req.header('stripe-signature')
   if (!signature) return c.json({ error: 'Missing signature' }, 400)
   const body = await c.req.text()
+
+  let event: Awaited<ReturnType<typeof handleWebhook>>
   try {
-    const event = await handleWebhook(
+    event = await handleWebhook(
       c.env.STRIPE_SECRET_KEY,
       c.env.STRIPE_WEBHOOK_SECRET,
       body,
       signature,
     )
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as {
-        id: string
-        customer_email?: string | null
-        customer_details?: { email?: string | null }
-      }
-      const email = session.customer_email ?? session.customer_details?.email ?? ''
-      if (email) {
-        const db = createDb(c.env.DB)
-        await db.insert(purchases).values({
-          id: crypto.randomUUID(),
-          email,
-          stripeSessionId: session.id,
-          status: 'pending',
-          createdAt: new Date(),
-        })
-      }
-    }
-
-    return c.json({ received: true })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return c.json({ error: 'Webhook verification failed', detail: msg }, 400)
   }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as {
+      id: string
+      customer_email?: string | null
+      customer_details?: { email?: string | null }
+    }
+    const email = session.customer_email ?? session.customer_details?.email ?? ''
+    if (email) {
+      const db = createDb(c.env.DB)
+      await db.insert(purchases).values({
+        id: crypto.randomUUID(),
+        email,
+        stripeSessionId: session.id,
+        status: 'pending',
+        createdAt: new Date(),
+      }).onConflictDoNothing()
+    }
+  }
+
+  return c.json({ received: true })
 })
 
 // Buyer submits GitHub username after payment — sends invite

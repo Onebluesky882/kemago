@@ -38,5 +38,5 @@ export async function handleWebhook(
   signature: string,
 ) {
   const stripe = createStripe(secretKey)
-  return stripe.webhooks.constructEvent(body, signature, webhookSecret)
+  return stripe.webhooks.constructEventAsync(body, signature, webhookSecret)
 }
