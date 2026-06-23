@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { BackButton } from '@/components/back-button'
 
 type State = 'idle' | 'loading' | 'success' | 'error'
 type InviteResult = { invitesRemaining: number; username: string }
@@ -70,7 +71,7 @@ function PaymentSuccessContent() {
               </div>
             ))}
           </div>
-          <Link href="/" style={{ fontSize: 13, color: 'var(--text-faint)', textDecoration: 'none' }}>← Back to home</Link>
+          <BackButton href="/" />
         </div>
       </div>
     )

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
+import { BackButton } from '@/components/back-button'
 import { uploadForumImage } from '@/hooks/use-image-upload'
 import { useAuthStore } from '@/store/auth.store'
 import { useApi } from '@/hooks/use-api'
@@ -196,10 +197,7 @@ export default function ForumPostPage() {
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px' }}>
 
-        {/* Back */}
-        <div style={{ marginBottom: 24 }}>
-          <span onClick={() => history.back()} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>← Back to Forum</span>
-        </div>
+        <BackButton href="/forum" />
 
         {/* Post */}
         <div style={{ marginBottom: 32 }}>

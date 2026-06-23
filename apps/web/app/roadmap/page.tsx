@@ -1,6 +1,8 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { RoadmapClient } from './roadmap-client'
+import { Navbar } from '@/components/navbar'
+import { BackButton } from '@/components/back-button'
 
 export const metadata = {
   title: 'Roadmap — Project Plan',
@@ -52,8 +54,14 @@ export default function RoadmapPage() {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
-      <div style={{ borderBottom: '1px solid var(--border)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em' }}>Project Roadmap</span>
+      <Navbar />
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 24px 0' }}>
+        <BackButton href="/" />
+      </div>
+      <div style={{ borderBottom: '1px solid var(--border)', padding: '0 24px 20px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>Project Roadmap</h1>
+        </div>
       </div>
       <RoadmapClient data={data} />
     </div>
