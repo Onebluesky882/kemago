@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type User = { id: string; name: string; email: string }
+type User = { id: string; name: string; email: string; role: 'owner' | 'client' | 'member' }
 
 type AuthStore = {
   user: User | null

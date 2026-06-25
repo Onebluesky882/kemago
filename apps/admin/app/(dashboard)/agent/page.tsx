@@ -1,5 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import { useSession } from '@/hooks/use-session'
 import { useAgent } from '@/hooks/use-agent'
 import { RepoSetup } from '@/components/agent/repo-setup'
 import { ChatWindow } from '@/components/agent/chat-window'
@@ -7,6 +8,7 @@ import { DeployResult } from '@/components/agent/deploy-result'
 
 export default function AgentPage() {
   const router = useRouter()
+  const { user, isLoading: sessionLoading } = useSession()
   const {
     isSetup,
     isSettingUp,
@@ -22,6 +24,21 @@ export default function AgentPage() {
     sendMessage,
     clearSession,
   } = useAgent()
+
+  if (sessionLoading) return null
+
+  if (!user || (user as any).role !== 'owner') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', gap: '12px' }}>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+        <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>Access restricted to project owner only.</p>
+        <button onClick={() => router.back()} style={{ fontSize: '13px', color: '#6366f1', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Go back</button>
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)' }}>

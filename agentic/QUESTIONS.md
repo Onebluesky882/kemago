@@ -171,6 +171,20 @@ Answer: [TBD]
 ## Section 4 — Code Style & Patterns
 → อัพเดทไฟล์: DECISIONS.md
 
+Q15b. IDE / Editor ที่ใช้พัฒนา?
+
+- [ ] VS Code
+- [ ] Cursor
+- [ ] WebStorm / JetBrains
+- [ ] Neovim / Vim
+- [ ] อื่นๆ: [ระบุ]
+
+> ถ้าใช้ VS Code หรือ Cursor — แนะนำติดตั้ง Claude Code extension เพื่อ chat กับ AI ภายใน editor ได้โดยตรง
+
+Answer: [TBD]
+
+---
+
 Q16. Linting / Formatting tools?
 
 ตัวอย่าง: ESLint + Prettier, Biome, Ruff (Python)

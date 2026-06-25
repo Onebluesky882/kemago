@@ -229,16 +229,75 @@ All three deploys must succeed before merge-approval is written.
 
 | Stage | Domain | Status |
 |-------|--------|--------|
-| stage-1-setup | monorepo, config | ✅ COMPLETE |
+| stage-1-setup | monorepo, config, deploy | ✅ COMPLETE |
 | stage-2-auth | Better Auth, session, DB schema | ✅ COMPLETE |
 | stage-3-api-core | Hono domain structure | ✅ COMPLETE |
 | stage-4-email | Resend templates | ✅ COMPLETE |
 | stage-5-storage | R2 presigned URLs | ✅ COMPLETE |
-| stage-6-web-ui | Landing, pricing, onboarding, auth | ✅ COMPLETE |
-| stage-7-admin-ui | Dashboard real data, session guard | ✅ COMPLETE |
-| stage-8-customer | Customer onboarding flow | 🔲 PENDING |
-| stage-9-tests | Vitest unit + integration | 🔲 PENDING |
-| stage-10-docs | Developer + customer guide | 🔲 PENDING |
+| stage-6-payment | Stripe payment + webhook | ✅ COMPLETE |
+| stage-7-web-ui | Landing, pricing, onboarding, auth | ✅ COMPLETE |
+| stage-8-admin-ui | Dashboard, users, storage, emails | ✅ COMPLETE |
+| stage-9-customer | Customer onboarding flow | ✅ COMPLETE |
+| stage-10-tests | Vitest unit + integration tests | ✅ COMPLETE |
+| stage-11-docs | README, developer guide, .dev.vars | ✅ COMPLETE |
+| stage-12-ai-agent-setup | Anthropic Managed Agents backend | ✅ COMPLETE |
+| stage-13-ai-agent-chat | Admin UI chat interface | ✅ COMPLETE |
+| stage-14-ai-agent-deploy | Deploy status tracking | ✅ COMPLETE |
+| stage-15-observability | Structured logging, admin log table | ✅ COMPLETE |
+
+---
+
+## Developer Guide — Extending the Template
+
+### Adding a new API domain
+
+Each domain follows this structure:
+
+```
+apps/api/src/domains/<name>/
+  <name>.schema.ts   — Zod request/response schemas
+  <name>.handler.ts  — business logic functions
+  <name>.route.ts    — Hono router, auth guard, mount here
+```
+
+**Steps:**
+
+1. Create the domain folder and 3 files above
+2. Mount the router in `apps/api/src/index.ts`:
+   ```ts
+   import { myRouter } from './domains/my-domain/my-domain.route'
+   app.route('/api/my-domain', myRouter)
+   ```
+3. Add the binding type to `Bindings` in `index.ts` if new env vars are needed
+4. Create migration in `packages/db/migrations/<name>.sql` and apply:
+   ```bash
+   wrangler d1 execute <db-name> --remote --file packages/db/migrations/<name>.sql
+   ```
+
+### Adding a new admin page
+
+```
+apps/admin/app/(dashboard)/<page>/
+  page.tsx          — React page component
+```
+
+Add the route to `NAV_LINKS` in `apps/admin/app/(dashboard)/layout.tsx`.
+
+Pattern to follow: every page uses a `use-<page>.ts` hook for data fetching, and `components/<page>/` for UI components.
+
+### Set owner after first deploy
+
+After deploying and signing up with your owner email:
+
+```bash
+pnpm set-owner --email your@email.com
+# or for local D1:
+pnpm set-owner --email your@email.com --local
+```
+
+### Environment variables
+
+Copy `apps/api/.dev.vars.example` → `apps/api/.dev.vars` and fill in all values before running locally.
 
 ---
 

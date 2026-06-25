@@ -5,6 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 FROM_EMAIL = "noreply@yourdomain.com"
+OWNER_EMAIL = ""
 R2_ACCOUNT_ID = "c40a6cc1eb575a43f79e9b4d9cc6a88d"
 R2_BUCKET_NAME = "fullstack-builder-storage"
 GITHUB_REPO_OWNER = "Onebluesky882"

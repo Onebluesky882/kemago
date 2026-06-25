@@ -319,6 +319,58 @@ Ask:
 
 ---
 
+## AI Editor (Claude) Rule — Ask before setup
+
+The Conductor MUST ask the customer whether they want the browser-based AI editor before doing any Claude/Anthropic setup. This feature is NOT enabled by default.
+
+### When to activate
+
+Activate this rule when the customer asks any of the following (in any language):
+- "Can I edit my website myself by chatting?"
+- "I want to be able to change things without a developer"
+- "Is there a way to update my site through chat / AI?"
+- "Can I use AI to edit my website?"
+
+When triggered, respond:
+
+> "Yes — your app includes an AI editor. You can type what you want to change in plain language, and the AI will update your website files automatically. To use this feature, we need to connect your personal Claude AI account."
+
+Then proceed to Step 2.
+
+### When NOT to activate
+
+If the customer does not ask about this feature, do NOT mention it or set it up. Never ask for an Anthropic API key unless the customer has explicitly chosen to use the AI editor.
+
+### Step 2 — Explain what Claude AI is (plain language)
+
+> "Claude is an AI assistant made by Anthropic. Your app will use Claude to read and edit your website files when you give it instructions. Each client uses their own Claude account — this keeps your content private and separate from everyone else."
+
+### Step 3 — Guide to get an API key
+
+Walk the customer through these steps one at a time (in their language):
+
+1. Go to https://console.anthropic.com and sign in (or create a free account)
+2. Click **API Keys** in the left sidebar
+3. Click **Create Key**, give it any name (e.g. "My Website Editor")
+4. Copy the key — it starts with `sk-ant-...`
+5. Share it with me privately — treat it like a password, never post it publicly
+
+> ⚠️ **Important:** This key will only be shown once. Copy it immediately before closing the page.
+
+### Step 4 — Record securely
+
+Save as a secret — NEVER commit to git:
+```bash
+wrangler secret put ANTHROPIC_API_KEY
+# paste the key when prompted
+```
+
+### Step 5 — Confirm feature is ready
+
+After the key is set and deployed, the AI editor will appear in the admin dashboard under **AI Editor**. The customer can start chatting to make changes to their website.
+
+---
+
 ## Cloudflare (Wrangler) Login Rule — MANDATORY before any deploy
 
 Before deploying anything for the customer, the Conductor MUST verify Cloudflare login.
@@ -393,6 +445,36 @@ The starter kit lives on GitHub. Without an account, the customer cannot:
 - receive their customized app
 - save changes
 - deploy updates in the future
+
+---
+
+## Development Style Rule — Ask before starting any work
+
+Before customizing anything, the Conductor MUST ask whether the customer edits files themselves. This determines which editing workflow to recommend.
+
+### Step 1 — Ask
+
+> "Do you use a code editor on your computer — for example VS Code — to open and edit files yourself?"
+
+- If **Yes** → they are comfortable with local editing. Recommend Claude Code extension for VS Code (they can chat with AI directly in their editor).
+- If **No / Not sure** → they are non-technical. Use the browser-based AI Editor only (admin dashboard chat interface).
+
+### Step 2 — If Yes (has VS Code or similar)
+
+> "Great — you can use the Claude Code extension inside VS Code to chat with AI and make changes directly. Would you like to use that instead of the browser editor?"
+
+- If **Yes to VS Code + Claude Code** → guide to install the extension: open VS Code → Extensions → search "Claude Code" → Install
+- If **Prefer browser editor** → use the admin dashboard AI Editor (no extra setup needed)
+
+### Step 3 — Record
+
+Save the customer's preferred editing method:
+
+```
+Editing Method: [VS Code + Claude Code / Browser AI Editor]
+```
+
+This determines which setup instructions to follow for future change requests.
 
 ---
 

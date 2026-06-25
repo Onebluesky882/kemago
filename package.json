@@ -8,10 +8,12 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "test": "turbo test",
-    "type-check": "turbo type-check"
+    "type-check": "turbo type-check",
+    "set-owner": "tsx scripts/set-owner.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
+    "tsx": "latest",
     "turbo": "latest",
     "typescript": "latest"
   }

@@ -32,9 +32,17 @@ async function getUser(c: { req: { raw: Request }; env: Bindings }) {
   return session?.user ?? null
 }
 
+// Owner-only guard — returns user if role === 'owner', null otherwise
+async function getOwner(c: { req: { raw: Request }; env: Bindings }) {
+  const user = await getUser(c)
+  if (!user) return null
+  if ((user as any).role !== 'owner') return null
+  return user
+}
+
 // POST /api/agent/vault — create Anthropic Vault and store GitHub PAT
 agentRouter.post('/vault', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const body = await c.req.json()
@@ -58,7 +66,7 @@ agentRouter.post('/vault', async (c) => {
 
 // POST /api/agent/session — create Managed Agents session with github_repository mounted
 agentRouter.post('/session', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const body = await c.req.json()
@@ -86,7 +94,7 @@ agentRouter.post('/session', async (c) => {
 
 // POST /api/agent/message — send user message to active session
 agentRouter.post('/message', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const body = await c.req.json()
@@ -100,17 +108,26 @@ agentRouter.post('/message', async (c) => {
   return c.json({ ok: true })
 })
 
-// GET /api/agent/stream?sessionId=... — SSE stream of agent events
+// GET /api/agent/stream?sessionId=... — SSE stream of agent events, writes agent_logs on complete
 agentRouter.get('/stream', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const query = streamQuerySchema.safeParse({ sessionId: c.req.query('sessionId') })
   if (!query.success) return c.json({ error: 'Missing sessionId' }, 400)
 
   const { sessionId } = query.data
+  const correlationId = crypto.randomUUID()
+  const startedAt = Date.now()
 
   return streamSSE(c, async (stream) => {
+    const toolCalls: string[] = []
+    let outputText = ''
+    let tokensInput = 0
+    let tokensOutput = 0
+    let logStatus = 'success'
+    let errorMessage: string | null = null
+
     try {
       const events = await streamSession(c.env.ANTHROPIC_API_KEY, sessionId)
 
@@ -118,12 +135,14 @@ agentRouter.get('/stream', async (c) => {
         if (event.type === 'agent.message') {
           for (const block of event.content ?? []) {
             if (block.type === 'text' && block.text) {
+              outputText += block.text
               await stream.writeSSE({ event: 'agent_message', data: JSON.stringify({ text: block.text }) })
             }
           }
         }
 
         if (event.type === 'agent.tool_use') {
+          if (event.name) toolCalls.push(event.name)
           await stream.writeSSE({ event: 'tool_use', data: JSON.stringify({ tool: event.name }) })
         }
 
@@ -135,21 +154,50 @@ agentRouter.get('/stream', async (c) => {
           }
         }
 
+        if ((event.type as string) === 'span.model_request_end') {
+          tokensInput = event.usage?.input_tokens ?? tokensInput
+          tokensOutput = event.usage?.output_tokens ?? tokensOutput
+        }
+
         if (event.type === 'session.status_idle' || event.type === 'session.status_terminated') {
           await stream.writeSSE({ event: 'done', data: '{}' })
           break
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Stream error'
-      await stream.writeSSE({ event: 'error', data: JSON.stringify({ error: msg }) })
+      logStatus = 'error'
+      errorMessage = err instanceof Error ? err.message : 'Stream error'
+      await stream.writeSSE({ event: 'error', data: JSON.stringify({ error: errorMessage }) })
+    } finally {
+      await c.env.DB
+        .prepare(
+          `INSERT INTO agent_logs (id, correlation_id, user_id, session_id, agent_id, input_preview, output_preview, tool_calls, tokens_input, tokens_output, latency_ms, status, error_message, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          correlationId,
+          user.id,
+          sessionId,
+          c.env.ANTHROPIC_AGENT_ID,
+          null,
+          outputText.slice(0, 300) || null,
+          toolCalls.length > 0 ? JSON.stringify(toolCalls) : null,
+          tokensInput,
+          tokensOutput,
+          Date.now() - startedAt,
+          logStatus,
+          errorMessage,
+          Date.now(),
+        )
+        .run()
     }
   })
 })
 
 // GET /api/agent/files?sessionId=... — list files Claude wrote to session outputs
 agentRouter.get('/files', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const query = filesQuerySchema.safeParse({ sessionId: c.req.query('sessionId') })
@@ -162,7 +210,7 @@ agentRouter.get('/files', async (c) => {
 
 // POST /api/agent/deploy-notify — called by frontend when SSE stream ends (Claude finished)
 agentRouter.post('/deploy-notify', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const body = await c.req.json()
@@ -202,7 +250,7 @@ agentRouter.post('/deploy-complete', async (c) => {
 
 // GET /api/agent/deploy-status?sessionId=... — poll deploy status
 agentRouter.get('/deploy-status', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const query = deployStatusQuerySchema.safeParse({ sessionId: c.req.query('sessionId') })
@@ -225,7 +273,7 @@ agentRouter.get('/deploy-status', async (c) => {
 
 // GET /api/agent/my-session — return active session for current user (used for session persistence)
 agentRouter.get('/my-session', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const row = await c.env.DB
@@ -259,9 +307,43 @@ agentRouter.get('/my-session', async (c) => {
   })
 })
 
+// GET /api/agent/logs — recent agent logs for the authenticated user
+agentRouter.get('/logs', async (c) => {
+  const user = await getOwner(c)
+  if (!user) return c.json({ error: 'Unauthorized' }, 401)
+
+  const rows = await c.env.DB
+    .prepare(
+      `SELECT id, correlation_id, session_id, agent_id, output_preview, tool_calls, tokens_input, tokens_output, latency_ms, status, error_message, created_at
+       FROM agent_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`,
+    )
+    .bind(user.id)
+    .all<{
+      id: string
+      correlation_id: string
+      session_id: string | null
+      agent_id: string | null
+      output_preview: string | null
+      tool_calls: string | null
+      tokens_input: number
+      tokens_output: number
+      latency_ms: number
+      status: string
+      error_message: string | null
+      created_at: number
+    }>()
+
+  return c.json({
+    logs: (rows.results ?? []).map((r) => ({
+      ...r,
+      tool_calls: r.tool_calls ? JSON.parse(r.tool_calls) : [],
+    })),
+  })
+})
+
 // GET /api/agent/file/:fileId — proxy download from Anthropic Files API
 agentRouter.get('/file/:fileId', async (c) => {
-  const user = await getUser(c)
+  const user = await getOwner(c)
   if (!user) return c.json({ error: 'Unauthorized' }, 401)
 
   const { fileId } = c.req.param()

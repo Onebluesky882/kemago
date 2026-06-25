@@ -19,12 +19,12 @@ Conductor Branch: main
 | stage-7-web-ui | Next.js public site, landing page, onboarding setup page | stage-3-api-core | COMPLETE |
 | stage-8-admin-ui | Admin dashboard with real data, protected routes | stage-2-auth, stage-5-storage, stage-4-email | COMPLETE |
 | stage-9-customer | CUSTOMER_SETUP flow wired into Conductor | stage-7-web-ui, stage-8-admin-ui | COMPLETE |
-| stage-10-tests | Vitest unit + integration tests all apps | stage-9-customer | PENDING |
-| stage-11-docs | README, customer guide, how to use with Conductor | stage-10-tests | PENDING |
-| stage-12-ai-agent-setup | Anthropic Managed Agents backend — vault, session, SSE stream, D1 table | stage-2-auth, stage-3-api-core | PENDING |
-| stage-13-ai-agent-chat | Admin UI — GitHub repo connect, chat interface, SSE streaming display | stage-12-ai-agent-setup, stage-8-admin-ui | PENDING |
-| stage-14-ai-agent-deploy | Deploy status tracking — Cloudflare auto-deploy after Claude git push | stage-13-ai-agent-chat | PENDING |
-| stage-15-observability | Structured logging for all agent calls — D1 agent_logs, correlation_id, admin dashboard | stage-12-ai-agent-setup | PENDING |
+| stage-10-tests | Vitest unit + integration tests all apps | stage-9-customer | COMPLETE |
+| stage-11-docs | README, customer guide, how to use with Conductor | stage-10-tests | COMPLETE |
+| stage-12-ai-agent-setup | Anthropic Managed Agents backend — vault, session, SSE stream, D1 table | stage-2-auth, stage-3-api-core | COMPLETE |
+| stage-13-ai-agent-chat | Admin UI — GitHub repo connect, chat interface, SSE streaming display | stage-12-ai-agent-setup, stage-8-admin-ui | COMPLETE |
+| stage-14-ai-agent-deploy | Deploy status tracking — Cloudflare auto-deploy after Claude git push | stage-13-ai-agent-chat | COMPLETE |
+| stage-15-observability | Structured logging for all agent calls — D1 agent_logs, correlation_id, admin dashboard | stage-12-ai-agent-setup | COMPLETE |
 
 **Parallel stages:**
 - stage-7-web-ui, stage-8-admin-ui ran in parallel (no overlapping dependencies)
@@ -201,7 +201,7 @@ Conductor Branch: main
 
 **Domain:** agentic/CUSTOMER_SETUP.md, apps/web onboarding page
 **Depends On:** stage-7-web-ui, stage-8-admin-ui
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
 - [ ] Conductor reads CUSTOMER_SETUP.md before starting any customer project
@@ -221,7 +221,7 @@ Conductor Branch: main
 
 **Domain:** apps/*, packages/*
 **Depends On:** stage-9-customer
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
 - [ ] Vitest configured in all apps and packages
@@ -240,7 +240,7 @@ Conductor Branch: main
 
 **Domain:** README.md, agentic/
 **Depends On:** stage-10-tests
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
 - [ ] README.md — what this starter kit is, who it's for, how to use it
@@ -259,7 +259,7 @@ Conductor Branch: main
 
 **Domain:** apps/api/src/domains/agent, packages/db/migrations, apps/api/wrangler.toml, scripts/
 **Depends On:** stage-2-auth, stage-3-api-core
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 **Parallel with:** stage-9-customer (no shared dependencies)
 
 **Acceptance Criteria:**
@@ -303,7 +303,7 @@ created_at INTEGER NOT NULL
 
 **Domain:** apps/admin/src/app/agent
 **Depends On:** stage-12-ai-agent-setup, stage-8-admin-ui
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
 - [ ] `/agent` page in apps/admin — protected route (redirect to /login if no session)
@@ -326,7 +326,7 @@ created_at INTEGER NOT NULL
 
 **Domain:** apps/api/src/domains/agent (extend), apps/admin/src/app/agent (extend)
 **Depends On:** stage-13-ai-agent-chat
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
 - [ ] After Claude git push — detect push via session events
@@ -345,7 +345,7 @@ created_at INTEGER NOT NULL
 
 **Domain:** packages/db/migrations, apps/api/src/domains/agent, apps/admin/app/(dashboard)/observability
 **Depends On:** stage-12-ai-agent-setup
-**Status:** `PENDING`
+**Status:** `COMPLETE`
 **Parallel with:** stage-14-ai-agent-deploy (no shared dependencies)
 
 **Acceptance Criteria:**

@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: '/storage', label: 'Storage' },
   { href: '/emails', label: 'Emails' },
   { href: '/agent', label: 'AI Agent' },
+  { href: '/observability', label: 'Observability' },
   { href: '/settings', label: 'Settings' },
 ]
 

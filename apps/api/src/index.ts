@@ -14,6 +14,7 @@ import { setupRouter } from './domains/setup/setup.route'
 type Bindings = {
   DB: D1Database
   BUCKET: R2Bucket
+  OWNER_EMAIL: string
   RESEND_API_KEY: string
   R2_ACCOUNT_ID: string
   R2_ACCESS_KEY_ID: string

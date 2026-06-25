@@ -167,6 +167,32 @@ Before shipping any UI:
 3. Verify every interactive element has hover + focus + loading states
 4. Use real placeholder content (not "Lorem ipsum" or "Card Title")
 5. Confirm color contrast passes WCAG AA
+6. **Reference first** — before writing any UI code, identify one real product to reference. Never design from scratch. Tell the AI: "design like linear.app" not "design a dashboard." AI copies style better than it invents one.
+7. **Strip AI defaults** — after generating any UI, remove the following before shipping:
+
+| AI puts in automatically | Replace with |
+|--------------------------|--------------|
+| Gradient hero section | Flat color or white background |
+| Icon on every list item | Text only, or icon only on hover |
+| Box-shadow on every card | Border (`1px solid var(--border)`) only |
+| Large centered CTA button | Smaller button, left-aligned or inline |
+| Rounded corners everywhere (≥12px) | 4–6px radius max on components |
+| Subtitle under every heading | One dominant line — remove the subtitle |
+
+8. **Add micro-interactions manually** — AI-generated UI rarely has personality in hover states. Add these after every component:
+
+```css
+/* Card hover */
+transition: border-color 150ms ease, transform 150ms ease;
+&:hover { border-color: var(--color-accent); transform: translateY(-2px); }
+
+/* Button active */
+&:active { transform: scale(0.97); }
+
+/* Link / clickable row */
+transition: background 120ms ease;
+&:hover { background: var(--color-surface); }
+```
 
 ---
 
