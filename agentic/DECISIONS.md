@@ -103,44 +103,6 @@ If any check is true → block parallel, use sequential automatically.
 
 ⸻
 
-## Decision: Observability Strategy — D1 Structured Logging for Agent Calls
-
-**Date:** 2026-06-23
-**Status:** ACCEPTED
-
-**Context:**
-Without structured logging, debugging agent failures is impossible. When a client reports "Claude didn't do what I asked", there is no way to see what input was sent, what Claude responded, how long it took, how many tokens were used, or what tools were called. The system is a black box.
-
-**Decision:**
-Use **D1 as the observability store** via a `agent_logs` table. Every Anthropic Managed Agents call writes one structured row. A `correlation_id` UUID links all calls within one user request chain. Log previews only (300 chars) — never full content. Admin dashboard (stage-15) surfaces this data.
-
-No third-party observability service (Datadog, Axiom, etc.) — D1 is sufficient for this scale and keeps the stack simple.
-
-**What is logged per agent call:**
-- `correlation_id` — trace across chained calls
-- `user_id`, `session_id`, `agent_id` — who/what
-- `input_preview`, `output_preview` — 300-char truncations only
-- `tool_calls` — JSON array of tool names used
-- `tokens_input`, `tokens_output` — from `span.model_request_end` event
-- `latency_ms` — time from send to idle
-- `status` (success/error), `error_message`
-
-**What is NOT logged:**
-- Full user messages (privacy)
-- Full agent responses (privacy)
-- API keys, PATs, secrets (security)
-
-**How to add `correlation_id`:**
-Generate UUID in the Hono route handler at the start of each request. Pass it through to all downstream agent calls and log writes. Return it in the response header `X-Correlation-ID` for client-side debugging.
-
-**Consequences:**
-- Every stage with agent calls must implement `agent_logs` write (enforced in AGENT_RULES.md Observability Rule)
-- stage-15 adds: `packages/db/migrations/observability.sql`, log writes in `agent.route.ts`, and `/admin/observability` dashboard page
-- D1 `agent_logs` table must exist before any agent call goes to production
-- Workers that skip logging = Status: FAIL
-
-⸻
-
 ## Decision: [Title]
 
 **Date:** YYYY-MM-DD
@@ -159,28 +121,25 @@ Generate UUID in the Hono route handler at the start of each request. Pass it th
 
 ## Decision: Anthropic Managed Agents for Web-Based Code Editing
 
-**Date:** 2026-06-23
+**Date:** YYYY-MM-DD
 **Status:** ACCEPTED
 
 **Context:**
-Non-technical clients (business owners with no VSCode, no terminal) need to request code changes to their project via a web UI. The template is delivered via GitHub — clients fork it and own their repo. A web interface backed by Claude must be able to read and modify their codebase directly.
+Non-technical clients (business owners with no VSCode, no terminal) need to request code changes to their project via a web UI. A web interface backed by Claude must be able to read and modify their codebase directly without requiring the client to touch code or a terminal.
 
 **Decision:**
-Use **Anthropic Managed Agents** (`/v1/agents`, `/v1/sessions`) with a `github_repository` resource. Client's GitHub PAT is stored in an **Anthropic Vault** (never in D1 as plaintext). Each chat session mounts the client's repo at `/workspace`. Claude uses `agent_toolset_20260401` (bash, read, write, edit, glob, grep) to modify files, then commits and pushes. Cloudflare auto-deploys on push. All communication is HTTP — compatible with Cloudflare Workers.
+Use **Anthropic Managed Agents** (`/v1/agents`, `/v1/sessions`) with a `github_repository` resource. Client's GitHub PAT is stored in an **Anthropic Vault** (never in the database as plaintext). Each chat session mounts the client's repo at `/workspace`. Claude uses file tools to modify files, then commits and pushes. All communication is HTTP — compatible with Cloudflare Workers.
 
 **Anthropic resource model:**
 - One shared Agent → `ANTHROPIC_AGENT_ID` secret (created once via setup script)
 - One shared Environment → `ANTHROPIC_ENV_ID` secret (created once via setup script)
-- Per-user Vault → `vault_id` stored in D1 `agent_sessions` table
-- Per-conversation Session → `session_id` stored in D1 `agent_sessions` table
+- Per-user Vault → `vault_id` stored in database
+- Per-conversation Session → `session_id` stored in database
 
 **Consequences:**
-- `@anthropic-ai/sdk` required in `apps/api`
-- Three new Cloudflare secrets: `ANTHROPIC_API_KEY`, `ANTHROPIC_AGENT_ID`, `ANTHROPIC_ENV_ID`
-- New D1 table: `agent_sessions` (migration in `packages/db/migrations/agent.sql`)
-- One-time setup script `scripts/setup-anthropic-agent.ts` must be run by Dev before deploying stage-12
-- GitHub PAT stored in Anthropic Vault only — never logged, never D1 plaintext
-- Beta header required on Managed Agents calls: `managed-agents-2026-04-01`
+- `@anthropic-ai/sdk` required in the API app
+- Cloudflare secrets required: `ANTHROPIC_API_KEY`, `ANTHROPIC_AGENT_ID`, `ANTHROPIC_ENV_ID`
+- GitHub PAT stored in Anthropic Vault only — never logged, never database plaintext
 
 ⸻
 

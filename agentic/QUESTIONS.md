@@ -22,6 +22,27 @@ Conductor จะนำคำตอบไปอัพเดทไฟล์ govern
 
 ⸻
 
+## Starter Question ⚠️ FIRST — ถามก่อนทุกอย่าง
+→ อัพเดทไฟล์: `agentic/CLIENT_TYPE.md`
+
+Conductor ถามประโยคนี้ก่อนเสมอ ก่อนที่จะถามคำถามอื่นใด:
+
+> "คุณเป็นนักพัฒนา (developer) หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์?"
+> (English: "Are you a developer, or a business owner who wants to build a website?")
+
+| คำตอบ | Conductor ทำอะไร |
+|-------|-----------------|
+| นักพัฒนา / Developer | เขียน `DEVELOPER` ลงใน `CLIENT_TYPE.md` → ดำเนินการต่อใน QUESTIONS.md นี้ |
+| เจ้าของธุรกิจ / Business owner | เขียน `CLIENT` ลงใน `CLIENT_TYPE.md` → **หยุด QUESTIONS.md** → ไปที่ `CUSTOMER_SETUP.md` แทนทันที |
+
+> ถ้าไม่แน่ใจ ให้ถามเพิ่ม: "คุณจะใช้ template นี้เพื่ออะไร?"
+> - สร้างเว็บให้ธุรกิจตัวเอง → CLIENT
+> - ใช้เป็น starter สำหรับพัฒนา → DEVELOPER
+
+Answer: [TBD]
+
+⸻
+
 ## Section 0 — Project Owner ⚠️ MANDATORY FIRST
 → อัพเดทไฟล์: PROJECT.md
 → Action: Conductor ต้อง SET role = 'owner' ใน database ให้ email นี้หลัง deploy

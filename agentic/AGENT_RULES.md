@@ -344,50 +344,23 @@ Observability Rule — MANDATORY
 
 Every stage that introduces or modifies an agent call, API route, or background task MUST implement structured logging. Shipping code without observability is a violation.
 
-**What observability means in this project:**
-
-Every agent call must produce a log row in D1 table `agent_logs` with these fields:
-
-| Field | Type | Description |
-|---|---|---|
-| `id` | TEXT | UUID for this log row |
-| `correlation_id` | TEXT | UUID linking all calls in one user request chain |
-| `user_id` | TEXT | Who initiated the request |
-| `session_id` | TEXT | Anthropic Managed Agents session ID |
-| `agent_id` | TEXT | Anthropic Agent ID used |
-| `input_preview` | TEXT | First 300 chars of user message (never full content) |
-| `output_preview` | TEXT | First 300 chars of agent response |
-| `tool_calls` | TEXT | JSON array of tool names called during the run |
-| `tokens_input` | INTEGER | From `span.model_request_end` usage |
-| `tokens_output` | INTEGER | From `span.model_request_end` usage |
-| `latency_ms` | INTEGER | ms from session.events.send to session.status_idle |
-| `status` | TEXT | `success` or `error` |
-| `error_message` | TEXT | Error detail if status = error |
-| `created_at` | INTEGER | Unix timestamp ms |
-
-**How to implement:**
-
-1. Generate `correlation_id` (UUID) at the start of each user request — attach to all downstream calls
-2. Record `start_time = Date.now()` before calling the agent
-3. Collect tool names from `agent.tool_use` events during SSE stream
-4. On `session.status_idle` (done): write the log row with `latency_ms = Date.now() - start_time`
-5. On `session.status_terminated` or error: write log row with `status = 'error'`
+**Minimum required per agent call:**
+- A unique `correlation_id` linking all calls in one request chain
+- Who made the request (`user_id` or equivalent)
+- Input and output previews — truncated, never full content (privacy)
+- Token counts and latency
+- Status: success or error
+- Tool names used during the run
 
 **What workers must NOT do:**
+- Log full user messages or full agent responses (privacy)
+- Log API keys, tokens, or secrets (never)
+- Skip logging on success — logging is not optional
+- Use `console.log` as the only observability mechanism
 
-- Log full user messages or full agent responses (privacy — use 300-char preview only)
-- Log API keys, tokens, PATs, or secrets (never)
-- Skip logging when the agent call succeeds (logging is not optional on success)
-- Use `console.log` as the only observability (must write to D1)
+**Implementation:** Each project defines its own logging storage and schema. Document the chosen approach in ARCHITECTURE.md and record the decision in DECISIONS.md.
 
-**Where to query logs:**
-
-Admin dashboard page `/admin/observability` (stage-15) shows:
-- Per-session latency and token usage
-- Error rate over time
-- Tool usage frequency
-
-Any stage that adds agent calls without `agent_logs` write → Status: FAIL.
+Any stage that adds agent calls without structured logging → Status: FAIL.
 
 ⸻
 

@@ -221,7 +221,7 @@ Rules:
 - New domain with new table → write SQL to `packages/db/migrations/[domain].sql`, apply with wrangler, verify
 - Always verify tables exist before testing any DB-dependent feature
 
-6. Fullstack Edge Deployment — Cloudflare Workers & Pages — MANDATORY after every feature completion
+6. Deployment — MANDATORY after every stage that changes code
 
 This template deploys three apps to Cloudflare's edge network. All three must succeed before merge-approval is written.
 
@@ -245,6 +245,25 @@ Rules:
 - `pnpm test` fails → write rejection, do NOT deploy
 - Any `wrangler deploy` fails → write rejection with deploy error details
 - Log deploy URLs and Version IDs in `merge-approval/stage-[N]-<domain>.md`
+
+After deploy succeeds, the Conductor MUST notify the client:
+
+**If CLIENT_TYPE = CLIENT (non-technical business owner):**
+
+Notify in plain language — no technical terms:
+
+> Tell the client their site is updated and ask them to reload. Use the client's language.
+> Example (Thai): "เว็บของคุณอัพเดทแล้ว กรุณา reload หน้าเว็บเพื่อดูการเปลี่ยนแปลง"
+
+Include the site URL. Never say "deploy", "build", "push", "Workers", "wrangler".
+
+**If CLIENT_TYPE = DEVELOPER:**
+
+Standard deploy confirmation with URLs and version IDs.
+
+Rules:
+- Never skip the reload notification for CLIENT type
+- If deploy fails → notify client in plain language that there is an issue and it is being fixed. Do not notify "done" until deploy actually succeeds.
 
 7. Merge Control & Quality Gate
 
@@ -282,49 +301,16 @@ Sequential dispatch of parallelizable stages is a violation.
 
 **Example — correct parallel dispatch:**
 ```
-stage-7-web-ui    (depends: stage-3) ← COMPLETE → dispatch NOW
-stage-8-admin-ui  (depends: stage-2,4,5) ← all COMPLETE → dispatch NOW
+stage-A (depends: stage-1) ← COMPLETE → dispatch NOW
+stage-B (depends: stage-1) ← COMPLETE → dispatch NOW
 Both dispatched in same Conductor turn, each in own worktree.
 ```
 
 **Example — violation:**
 ```
-stage-7 dispatched → wait for it to finish → then dispatch stage-8
+stage-A dispatched → wait for it to finish → then dispatch stage-B
 ← WRONG: these have no dependency between them
 ```
-
-⸻
-
-7. Client Deployment — MANDATORY after every stage that changes code
-
-After gate validation passes and all tests pass, the Conductor MUST deploy to Cloudflare in this order:
-
-```bash
-pnpm test
-cd apps/api   && wrangler deploy
-cd apps/web   && opennextjs-cloudflare build && wrangler deploy
-cd apps/admin && opennextjs-cloudflare build && wrangler deploy
-```
-
-After deploy succeeds, the Conductor MUST notify the client:
-
-**If CLIENT_TYPE = CLIENT (non-technical business owner):**
-
-Notify in plain language — no technical terms:
-
-> Tell the client their site is updated and ask them to reload. Use the client's language.
-> Example (Thai): "เว็บของคุณอัพเดทแล้ว กรุณา reload หน้าเว็บเพื่อดูการเปลี่ยนแปลง"
-
-Include the site URL. Never say "deploy", "build", "push", "Workers", "wrangler".
-
-**If CLIENT_TYPE = DEVELOPER:**
-
-Standard deploy confirmation with URLs and version IDs.
-
-Rules:
-- Never skip the reload notification for CLIENT type
-- If deploy fails → notify client in plain language that there is an issue and it is being fixed. Do not notify "done" until deploy actually succeeds.
-- Log deploy URLs in merge-approval
 
 ⸻
 

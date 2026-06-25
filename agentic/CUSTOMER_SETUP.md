@@ -27,6 +27,41 @@ Conductor uses these answers to customize the app to match the customer's busine
 
 ---
 
+## How to Understand What the Client Needs
+
+The client only cares about the **result** — not the method, not the technology.
+They cannot describe features. They can only describe problems and outcomes.
+
+**Never ask:** "What features do you need?" — they don't know what a feature is.
+**Always ask:** "What do you want to happen?" — they will tell you the outcome themselves.
+
+### The 3 Core Questions (use these before Section 1)
+
+Ask in this order, in the client's language:
+
+**1. "How do you handle this today?"**
+> Understand their current workflow — even if it's pen and paper, Line chat, or spreadsheet.
+> This reveals what already works and what is painful.
+
+**2. "What is the most annoying or difficult part?"**
+> This is the real problem. The app exists to remove this pain.
+> Listen carefully — the answer here defines the most important feature.
+
+**3. "If the website could help, what would you want it to do for you?"**
+> Let them describe the outcome in their own words.
+> The Conductor then translates that into features — never ask the client to do this translation.
+
+### Rules for interpreting answers
+
+- Client says "I want customers to order easily" → Conductor builds an order flow
+- Client says "I want to know what's selling" → Conductor builds a sales dashboard
+- Client says "I don't want to answer the same question 100 times" → Conductor builds an FAQ or automated reply
+- Client says "I want it to look professional" → Conductor focuses on design quality, not just function
+
+**The Conductor translates business language into technical requirements. The client never should.**
+
+---
+
 ## Language Preference (recorded at first contact)
 
 ```
