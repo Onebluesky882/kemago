@@ -18,6 +18,24 @@
             "command": "bash .claude/hooks/gate-out-typecheck.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/merge-approval-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/no-main-branch.sh"
+          }
+        ]
       }
     ]
   }
