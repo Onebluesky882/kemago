@@ -149,7 +149,7 @@ animation: orb-move 12s ease-in-out infinite;
 - No animations that cause layout shift or jank
 - No animations on text that users need to read quickly
 
-### 8. Layout Patterns (preferred)
+### 9. Layout Patterns (preferred)
 
 - Navigation: sticky top bar max-height 56px, or side nav on desktop
 - Cards: 1 column mobile → 2–3 columns tablet/desktop

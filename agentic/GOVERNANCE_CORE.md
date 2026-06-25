@@ -27,6 +27,11 @@ Governance File Ownership
 | SECURITY_RULES.md | Conductor | Yes | Yes | Read-only |
 | AGENT_RULES.md | Conductor | Yes | Yes | Read-only |
 | CONDUCTOR.md | Conductor | Yes | Yes | Read-only |
+| START_HERE.md | Conductor | Yes | Yes | Read-only |
+| DESIGN_SYSTEM.md | Conductor | Yes | Yes | Read-only |
+| CUSTOMER_SETUP.md | Conductor | Yes | Yes | Read-only |
+| QUESTIONS.md | Conductor | Yes | Yes | Read-only |
+| CLIENT_TYPE.md | Conductor | Yes | Yes | Read-only |
 | DEV.md | Dev | Yes | No | Read-only |
 | DEV_LOG.md | Dev | Yes | No | Read-only |
 | GOVERNANCE_CORE.md | Dev | Yes | No | Read-only |
