@@ -21,30 +21,38 @@ esac
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 CLIENT_TYPE_FILE="$ROOT/agentic/CLIENT_TYPE.md"
 
-# Check if CLIENT_TYPE.md exists and has a valid value
-if [ ! -f "$CLIENT_TYPE_FILE" ]; then
-  echo ""
-  echo "╔══════════════════════════════════════════════════════════╗"
-  echo "║         BLOCKED: CLIENT TYPE NOT IDENTIFIED              ║"
-  echo "╚══════════════════════════════════════════════════════════╝"
-  echo ""
-  echo "Conductor must identify client type before writing any code."
-  echo ""
-  echo "Ask the client first:"
-  echo "  'คุณเป็นนักพัฒนา (developer) หรือเจ้าของธุรกิจ?'"
-  echo "  'Are you a developer or a business owner?'"
-  echo ""
-  echo "Then create: agentic/CLIENT_TYPE.md"
-  echo "  Content: DEVELOPER  or  CLIENT"
-  echo ""
-  exit 2
+# Strip HTML comments and whitespace to get the actual value
+if [ -f "$CLIENT_TYPE_FILE" ]; then
+  CLIENT_TYPE=$(sed 's/<!--[^>]*-->//g' "$CLIENT_TYPE_FILE" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+else
+  CLIENT_TYPE=""
 fi
-
-CLIENT_TYPE=$(cat "$CLIENT_TYPE_FILE" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
 
 case "$CLIENT_TYPE" in
   DEVELOPER|CLIENT)
     exit 0
+    ;;
+  "")
+    # First-run state — file is blank or comment-only
+    echo ""
+    echo "╔══════════════════════════════════════════════════════════╗"
+    echo "║           FIRST-RUN SETUP — ACTION REQUIRED             ║"
+    echo "╚══════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "Before writing any code, identify who is using this template."
+    echo ""
+    echo "Ask first:"
+    echo "  'Are you a developer, or a business owner who wants a website?'"
+    echo "  'คุณเป็นนักพัฒนา หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์?'"
+    echo ""
+    echo "Then set agentic/CLIENT_TYPE.md to one of:"
+    echo "  DEVELOPER   → follows agentic/QUESTIONS.md"
+    echo "  CLIENT      → follows agentic/CUSTOMER_SETUP.md"
+    echo ""
+    echo "Example:"
+    echo "  echo 'DEVELOPER' > agentic/CLIENT_TYPE.md"
+    echo ""
+    exit 2
     ;;
   *)
     echo ""
@@ -54,6 +62,10 @@ case "$CLIENT_TYPE" in
     echo ""
     echo "agentic/CLIENT_TYPE.md must contain exactly: DEVELOPER or CLIENT"
     echo "Current value: '$CLIENT_TYPE'"
+    echo ""
+    echo "Fix:"
+    echo "  echo 'DEVELOPER' > agentic/CLIENT_TYPE.md"
+    echo "  echo 'CLIENT'    > agentic/CLIENT_TYPE.md"
     echo ""
     exit 2
     ;;
