@@ -11,22 +11,24 @@ export const metadata = {
 type Milestone = { id: string; name: string; goal: string; status: string }
 
 function parseRoadmap(md: string) {
+  // Matches both ## and # headings
   const section = (heading: string): string => {
-    const re = new RegExp(`## ${heading}[\\s\\S]*?\\n([\\s\\S]*?)(?=\\n## |$)`)
+    const re = new RegExp(`#{1,3} ${heading}[^\\n]*\\n([\\s\\S]*?)(?=\\n#{1,3} |$)`)
     const match = md.match(re)
     return match ? match[1].trim() : ''
   }
 
-  const vision = section('Project Vision')
-    .replace(/^Example:\s*/m, '').replace(/^Build an AI.*$/m, '').trim() || ''
+  const clean = (text: string) =>
+    text
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/^\[TBD\]$/m, '')
+      .trim()
 
-  const currentProgress = section('Current Progress')
-    .replace(/<!--[\s\S]*?-->/g, '').trim()
+  const vision = clean(section('Project Vision'))
+  const currentProgress = clean(section('Current Progress'))
+  const nextSteps = clean(section('Next Steps'))
 
-  const nextSteps = section('Next Steps')
-    .replace(/<!--[\s\S]*?-->/g, '').trim()
-
-  // Parse milestone backlog table: | M-001 | Name | Goal | Status |
+  // Parse pipe table: | M-001 | Name | Goal | Status |
   const milestones: Milestone[] = []
   const tableSection = section('Milestone Backlog')
   const rows = tableSection.match(/^\|[^|]+\|[^|]+\|[^|]+\|[^|]+\|$/gm) ?? []
