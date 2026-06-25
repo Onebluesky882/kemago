@@ -85,7 +85,7 @@ export function Navbar() {
           ) : (
             <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
               <Link href="/login" style={{ color: 'var(--text-muted)', fontSize: 14, textDecoration: 'none', padding: '6px 12px', borderRadius: 6 }}>Sign in</Link>
-              <Link href="/login" style={{ background: 'var(--text)', color: 'var(--bg)', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Sign in</Link>
+              <Link href="/register" style={{ background: 'var(--text)', color: 'var(--bg)', fontSize: 14, fontWeight: 600, textDecoration: 'none', padding: '6px 14px', borderRadius: 6 }}>Sign up</Link>
             </div>
           )}
         </div>
@@ -141,9 +141,9 @@ export function Navbar() {
                   style={{ border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 500, textDecoration: 'none', textAlign: 'center', display: 'block' }}>
                   Sign in
                 </Link>
-                <Link href="/login" onClick={() => setOpen(false)}
+                <Link href="/register" onClick={() => setOpen(false)}
                   style={{ background: 'var(--text)', color: 'var(--bg)', borderRadius: 8, padding: '10px', fontSize: 14, fontWeight: 600, textDecoration: 'none', textAlign: 'center', display: 'block' }}>
-                  Sign in
+                  Sign up
                 </Link>
               </>
             )}
