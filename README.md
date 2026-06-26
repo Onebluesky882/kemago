@@ -68,6 +68,18 @@ agentic/        AI governance system (Conductor + Worker workflow)
 
 ---
 
+## How to Use This Template
+
+1. Click **"Use this template"** → **"Create a new repository"** on GitHub
+2. Name your repo and set visibility (private recommended)
+3. Clone your new repo locally
+4. Open it in **Claude Code**
+5. Claude will ask: *"Are you a developer or a business owner?"* — answer and follow the guide
+
+That's it. The AI handles the rest.
+
+---
+
 ## Quick Start (Developer)
 
 ### Prerequisites
