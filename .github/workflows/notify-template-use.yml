@@ -1,71 +1,22 @@
 name: Notify Template Use
 
-# Runs only on the very first push after someone creates a repo from this template.
-# GitHub sets GITHUB_REPOSITORY_OWNER ≠ template owner on the first workflow run
-# in the new repo, so we detect "not the original template repo" here.
 on:
   push:
     branches: [main]
 
 jobs:
   notify:
-    name: Notify developer of template use
+    name: Notify on Discord when template is used
     runs-on: ubuntu-latest
-    # Skip if this IS the original template repo — only fire in derived repos
     if: github.repository != 'Onebluesky882/goveragent-template'
     steps:
-      - name: Check if first commit (template clone detection)
-        id: check
-        run: |
-          COMMIT_COUNT=$(git rev-list --count HEAD 2>/dev/null || echo "1")
-          echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Send Slack notification
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": "🚀 *Template Used!*",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Someone used your template!*\n\n*New repo:* `${{ github.repository }}`\n*Owner:* `${{ github.repository_owner }}`\n*Actor:* `${{ github.actor }}`\n*Time:* ${{ github.event.head_commit.timestamp }}\n*Repo URL:* https://github.com/${{ github.repository }}"
-                  }
-                }
-              ]
-            }'
-
-      - name: Send Email notification (via API endpoint)
-        if: ${{ secrets.NOTIFY_API_URL != '' }}
-        run: |
-          curl -s -X POST "${{ secrets.NOTIFY_API_URL }}" \
-            -H "Content-Type: application/json" \
-            -H "x-notify-secret: ${{ secrets.NOTIFY_API_SECRET }}" \
-            -d '{
-              "event": "template_used",
-              "repo": "${{ github.repository }}",
-              "owner": "${{ github.repository_owner }}",
-              "actor": "${{ github.actor }}",
-              "timestamp": "${{ github.event.head_commit.timestamp }}",
-              "repo_url": "https://github.com/${{ github.repository }}"
-            }'
-
       - name: Send Discord notification
-        if: ${{ secrets.DISCORD_WEBHOOK_URL != '' }}
         run: |
-          curl -s -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -s -X POST "https://discord.com/api/webhooks/1519896647574749304/WY3iEVRnNdlFxwPvF_B4hyiTSZhFO60MjsFBOMw2mPl-OImTzJRv8uTijJTOFuhTEzJ6" \
             -H "Content-Type: application/json" \
             -d '{
-              "content": "**Template Used!**",
               "embeds": [{
-                "title": "New repo from template",
+                "title": "new client purchese !!love!!",
                 "color": 5763719,
                 "fields": [
                   { "name": "Repo", "value": "`${{ github.repository }}`", "inline": true },
