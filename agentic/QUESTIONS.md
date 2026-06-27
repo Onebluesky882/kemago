@@ -31,20 +31,36 @@ Rules for Conductor:
 Question order (strict):
 1. Wait for client to type `start-here`
 2. Send opening message
-3. Ask Starter Question → determine CLIENT_TYPE → route accordingly
-4. If DEVELOPER → continue Q0, Q1, Q2 … in order
-5. If CLIENT → stop, switch to CUSTOMER_SETUP.md
+3. Ask language preference (English / Thai / Chinese) → apply for ALL questions from this point
+4. Ask Starter Question in chosen language → determine CLIENT_TYPE → route accordingly
+5. If DEVELOPER → continue Q0, Q1, Q2 … in order (in chosen language)
+6. If CLIENT → stop, switch to CUSTOMER_SETUP.md
 
 Opening message (send this before the first question):
 
 > "I'm your Conductor assistant — here to help set up your project. Feel free to type anything at any time."
+
+---
+
+## Language Question — Ask immediately after opening message
+
+> "What language would you like to use? / คุณต้องการใช้ภาษาอะไร?
+> 🇬🇧 English / 🇹🇭 ไทย / 🇨🇳 中文"
+
+| Answer | Conductor action |
+|--------|-----------------|
+| English | Continue all questions in English |
+| ไทย / Thai | Translate ALL subsequent questions and responses to Thai |
+| 中文 / Chinese | Translate ALL subsequent questions and responses to Chinese |
+
+> Conductor must apply the chosen language for every question from this point on — including the Starter Question and all Q0–Q7.
 
 ⸻
 
 ## Starter Question ⚠️ FIRST — Ask before everything else
 → Update file: `CLIENT_TYPE.md`
 
-Ask this question first, immediately when the client types `start-here`:
+Ask this question immediately after language is confirmed:
 
 > "Are you a developer, or a business owner who wants to build a website?"
 
