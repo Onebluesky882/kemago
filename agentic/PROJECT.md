@@ -41,6 +41,6 @@ conductor_branch: main
 owner_email:
 ```
 
-<!-- conductor_branch: the branch all PRs merge into (answer from QUESTIONS.md Q23) -->
+<!-- conductor_branch: the branch all PRs merge into — default is "main" -->
 <!-- owner_email: the user who gets owner role after first deploy (answer from QUESTIONS.md Q0) -->
 

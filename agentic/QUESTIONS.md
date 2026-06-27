@@ -308,10 +308,10 @@ Result: [ ] PASS / [ ] FAIL
 ### T2 — conductor-branch exists in git
 
 ```bash
-git branch -a | grep -F "<real conductor-branch name from Q23>"
+git branch -a | grep -F "main"
 ```
 
-Result: must find that branch — if not found, Conductor must create it first.
+Result: must find the `main` branch — if not found, Conductor must create it first.
 
 Result: [ ] PASS / [ ] FAIL
 
