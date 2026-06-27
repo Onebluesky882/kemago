@@ -1,7 +1,7 @@
 'use client'
 import { useAuthStore } from '@/store/auth.store'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
+const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 export function useApi() {
   const { token } = useAuthStore()

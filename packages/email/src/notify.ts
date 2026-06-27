@@ -18,7 +18,7 @@ export async function sendNotificationEmail({ to, name, subject, message, resend
     <p style="color:#555;font-size:15px;line-height:1.6">Hi ${name},</p>
     <p style="color:#555;font-size:15px;line-height:1.6">${message}</p>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0" />
-    <p style="color:#aaa;font-size:12px">You received this because you participated in a forum thread. <a href="https://fullstack-builder-web.onebluesky882.workers.dev/forum" style="color:#7c3aed">Visit Forum</a></p>
+    <p style="color:#aaa;font-size:12px">You received this because you participated in a forum thread.</p>
   </div>`
   return sendEmail(resend, { to, subject, html, from: fromEmail })
 }

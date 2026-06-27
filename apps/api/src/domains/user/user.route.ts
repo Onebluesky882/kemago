@@ -8,8 +8,8 @@ const userRouter = new Hono<{ Bindings: { DB: D1Database } }>()
 const TRUSTED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://fullstack-builder-web.onebluesky882.workers.dev',
-  'https://fullstack-builder-admin.onebluesky882.workers.dev',
+  '',
+  '',
 ]
 
 userRouter.get('/me', async (c) => {

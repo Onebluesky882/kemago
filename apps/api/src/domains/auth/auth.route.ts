@@ -9,8 +9,8 @@ authRouter.all('/*', async (c) => {
   const auth = createAuth(db, [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://fullstack-builder-web.onebluesky882.workers.dev',
-    'https://fullstack-builder-admin.onebluesky882.workers.dev',
+    '',
+    '',
   ], c.env.OWNER_EMAIL)
   return auth.handler(c.req.raw)
 })

@@ -30,7 +30,7 @@ const paymentRouter = new Hono<{ Bindings: Bindings }>()
 
 const TRUSTED_ORIGINS = [
   'http://localhost:3000',
-  'https://fullstack-builder-web.onebluesky882.workers.dev',
+  '',
 ]
 
 // Check if current user has purchased — returns purchase status

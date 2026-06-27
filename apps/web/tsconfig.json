@@ -1,45 +1,23 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../../packages/config/tsconfig/nextjs.json",
   "compilerOptions": {
-    "strict": true,
-    "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "dom",
-      "dom.iterable"
-    ],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "declaration": false,
-    "declarationMap": false,
-    "jsx": "preserve",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo",
     "paths": {
       "@/*": [
         "./*"
       ]
     },
     "allowJs": true,
-    "incremental": true,
     "esModuleInterop": true
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next"
   ]
 }

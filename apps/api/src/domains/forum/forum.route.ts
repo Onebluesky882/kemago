@@ -11,8 +11,8 @@ const forumRouter = new Hono<{ Bindings: Bindings }>()
 const TRUSTED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'https://fullstack-builder-web.onebluesky882.workers.dev',
-  'https://fullstack-builder-admin.onebluesky882.workers.dev',
+  '',
+  '',
 ]
 
 async function getSession(c: { env: Bindings; req: { raw: Request } }) {
@@ -202,7 +202,7 @@ async function notifyParticipants({
       }
     }
 
-    const postUrl = `https://fullstack-builder-web.onebluesky882.workers.dev/forum/${postId}`
+    const postUrl = ``
 
     await Promise.allSettled(
       participants.map(p =>

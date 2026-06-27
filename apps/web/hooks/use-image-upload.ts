@@ -1,6 +1,6 @@
 'use client'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
+const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 async function convertToWebP(file: File, maxWidth = 1200, quality = 0.85): Promise<Blob> {
   return new Promise((resolve, reject) => {

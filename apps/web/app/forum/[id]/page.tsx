@@ -8,7 +8,7 @@ import { uploadForumImage } from '@/hooks/use-image-upload'
 import { useAuthStore } from '@/store/auth.store'
 import { useApi } from '@/hooks/use-api'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'https://fullstack-builder-api.onebluesky882.workers.dev'
+const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 type Reply = {
   id: string; body: string; imageUrl?: string | null; createdAt: string

@@ -41,7 +41,7 @@ export function createAuth(db: Db, trustedOrigins?: string[], ownerEmail?: strin
     advanced: {
       crossSubdomainCookies: {
         enabled: true,
-        domain: '.onebluesky882.workers.dev',
+        domain: '',
       },
       defaultCookieAttributes: {
         sameSite: 'none',

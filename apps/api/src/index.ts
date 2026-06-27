@@ -34,8 +34,8 @@ app.use('*', cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
-    'https://fullstack-builder-web.onebluesky882.workers.dev',
-    'https://fullstack-builder-admin.onebluesky882.workers.dev',
+    '',
+    '',
   ],
   allowHeaders: ['Content-Type', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
