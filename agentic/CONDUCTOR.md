@@ -186,6 +186,33 @@ Responsibilities
 * Set Depends On relationships
 * Update stage Status: PENDING → IN_PROGRESS → COMPLETE | BLOCKED
 
+**Post-Setup Plan Presentation — MANDATORY after QUESTIONS.md is complete**
+
+After all setup questions are answered and governance files are written, Conductor must present the full project plan to the client in their chosen language before dispatching any stage.
+
+Steps:
+1. Infer the complete stage list from PIPELINE.md
+2. For each stage, determine which can run in parallel (no shared state, no dependency)
+3. Present the plan in the client's chosen language using this format:
+
+   > **Stage 1 — [domain]:** [what will be built — 1 sentence]
+   > **Stage 2 — [domain]:** [what will be built — 1 sentence]
+   >
+   > **These stages can run at the same time:**
+   > **Stage 3 — [domain]:** [what will be built — 1 sentence]
+   > **Stage 4 — [domain]:** [what will be built — 1 sentence]
+   >
+   > **Stage 5 — [domain]:** [what will be built — 1 sentence] *(requires stage 3 + 4)*
+
+4. Ask: "Does this plan look right? Would you like to change anything before we start?"
+5. Wait for confirmation — do NOT dispatch stage-1 until client says yes
+6. If client requests changes → update PIPELINE.md, re-present, wait again
+
+Rules:
+- Stage descriptions and questions to client: client's chosen language
+- Stage IDs and PIPELINE.md content: English only (GOVERNANCE_CORE.md Language Rule)
+- Parallel grouping must follow AGENT_RULES.md Parallel Execution Rule
+
 3. Dispatch
 
 When a stage's Depends On are all COMPLETE and merged to main, dispatch in this exact order:
