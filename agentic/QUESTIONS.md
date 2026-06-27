@@ -123,8 +123,8 @@ Answer: [TBD]
 
 Q6. Describe your project idea and what you want to achieve.
 
-- What type of project is this? (web app, mobile app, API, tool, etc.)
 - What is the main thing users can do in it?
+- What is the plan and goal of this project?
 - What pages or screens do you want? (e.g. landing page, dashboard, login, settings)
 - What is the expected output or result the user gets?
 
@@ -134,39 +134,8 @@ Answer: [TBD]
 
 ---
 
-Q7. Backend framework?
 
-Examples: Express, Fastify, FastAPI, Django, NestJS, Hono, None (frontend-only)
-
-Answer: [TBD]
-
----
-
-Q8. Database?
-
-Examples: PostgreSQL, MySQL, MongoDB, SQLite, Supabase, PlanetScale, None
-
-Answer: [TBD]
-
----
-
-Q9. Authentication / Authorization?
-
-Examples: JWT, NextAuth, Clerk, Supabase Auth, Firebase Auth, OAuth2, None
-
-Answer: [TBD]
-
----
-
-Q10. Deployment platform?
-
-Examples: Vercel, Railway, AWS, GCP, Fly.io, Docker self-hosted
-
-Answer: [TBD]
-
----
-
-Q11. Package manager?
+Q7. Package manager?
 
 - [ ] npm
 - [ ] yarn
@@ -175,200 +144,58 @@ Q11. Package manager?
 
 Answer: [TBD]
 
-⸻
+---
 
-## Section 3 — Architecture & Structure
-→ Update file: ARCHITECTURE.md, CONTRACTS.md
-
-Q12. What is the architecture style?
-
-Examples: Monolith, Monorepo (Turborepo/Nx), Microservices, Serverless, Full-stack SSR
-
-Answer: [TBD]
+> **Template defaults (Conductor sets automatically — do not ask client):**
+> - Testing: **Vitest** (unit) + **Playwright** (e2e)
+> - State management: **TanStack Query** (server state) + **Zustand** (client state)
+> - Linting/Formatting: **Biome**
 
 ---
 
-Q13. What modules / domains does the project consist of?
-
-Examples: auth, user, product, payment, notification, admin
-
-Answer: [TBD]
-
----
-
-Q14. Are there any external services or third-party APIs required?
-
-Examples: Stripe, SendGrid, Twilio, AWS S3, OpenAI API
-
-Answer: [TBD]
-
----
-
-Q15. What is the desired folder structure?
-
-Example:
-```
-src/
-  app/        (Next.js App Router)
-  components/
-  lib/
-  server/
-```
-
-Answer: [TBD]
-
-⸻
-
-## Section 4 — Code Style & Patterns
+## Tech Stack Summary & Cloudflare Check
 → Update file: DECISIONS.md
 
-Q15b. IDE / Editor used for development?
+After Q7, Conductor must:
 
-- [ ] VS Code
-- [ ] Cursor
-- [ ] WebStorm / JetBrains
-- [ ] Neovim / Vim
-- [ ] Other: [specify]
+1. **Summarize the full tech stack** collected so far and present it clearly to the client:
 
-> If using VS Code or Cursor — recommended to install the Claude Code extension to chat with AI directly inside the editor.
+   > "Here's the setup we'll use for your project:
+   > - **Frontend:** [inferred from Q6]
+   > - **Backend:** Hono (+ FastAPI if Python layer needed)
+   > - **Database:** Cloudflare D1 (SQLite)
+   > - **Auth:** packages/auth with Bearer token
+   > - **Deployment:** Cloudflare Workers + Pages
+   > - **Linting/Formatting:** Biome
+   > - **Language:** [Q5 answer]
+   > - **Package manager:** [Q7 answer]
+   >
+   > Does this look right, or would you like to change anything?"
 
-Answer: [TBD]
+2. **Ask this question:**
 
----
+   > "Do you already have a Cloudflare account?"
 
-Q16. Linting / Formatting tools?
+   | Answer | Conductor action |
+   |--------|-----------------|
+   | Yes | Ask: "Would you like to deploy the project to Cloudflare now, or set it up later?" → continue to Section 3 either way |
+   | No | Walk them through sign-up step by step (see instructions below) → wait until confirmed before continuing |
 
-Examples: ESLint + Prettier, Biome, Ruff (Python)
+   **If client does not have a Cloudflare account — guide them:**
 
-Answer: [TBD]
+   > "No problem! Here's how to create a free Cloudflare account:
+   >
+   > 1. Go to **cloudflare.com**
+   > 2. Click **"Sign Up"** in the top right corner
+   > 3. Enter your email and create a password
+   > 4. Verify your email address
+   > 5. You're in — no credit card required
+   >
+   > Let me know once your account is ready and we'll continue the setup."
 
----
+   Conductor waits for confirmation before proceeding to Section 3.
 
-Q17. Naming conventions?
-
-Example:
-- Components: PascalCase
-- Functions/variables: camelCase
-- Files: kebab-case
-- Constants: UPPER_SNAKE_CASE
-
-Answer: [TBD]
-
----
-
-Q18. Testing framework?
-
-Examples: Vitest, Jest, Playwright, Cypress, pytest
-
-Answer: [TBD]
-
----
-
-Q19. State management (if frontend exists)?
-
-Examples: Zustand, Jotai, Redux Toolkit, TanStack Query, Context API, None
-
-Answer: [TBD]
-
----
-
-Q20. TypeScript usage?
-
-- [ ] Yes — strict mode
-- [ ] Yes — relaxed
-- [ ] No
-
-Answer: [TBD]
-
-⸻
-
-## Section 5 — Pipeline & Stages
-→ Update file: PIPELINE.md
-
-Q21. List of stages to build (in order)?
-
-Example:
-```
-Stage 1 — setup       (project scaffold, config)
-Stage 2 — auth        (login, register, session)
-Stage 3 — user        (profile, settings)
-Stage 4 — core        (main feature)
-Stage 5 — api         (REST endpoints)
-Stage 6 — ui          (pages, components)
-Stage 7 — tests       (e2e, integration)
-```
-
-Answer: [TBD]
-
----
-
-Q22. Which stages can be done in parallel?
-
-Answer: [TBD]
-
----
-
-Q23. What is the branch name that all PRs will merge into? ⚠️ BLOCKING
-(This value will replace the `<conductor-branch>` placeholder across all governance files.)
-
-Examples: main, develop, conductor
-
-> This must be answered before starting the project. Conductor and Worker will be BLOCKED until answered.
-> See PRE-FLIGHT CHECK in CONDUCTOR.md and START_HERE.md.
-
-Answer: [TBD]
-
-⸻
-
-## Section 6 — Roadmap & Goals
-→ Update file: ROADMAP.md
-
-Q24. Short-term goals (1–4 weeks)?
-
-Answer: [TBD]
-
----
-
-Q25. Long-term vision?
-
-Answer: [TBD]
-
----
-
-Q26. What is the first milestone considered "done"?
-
-Example: MVP where users can log in and use the core feature
-
-Answer: [TBD]
-
-⸻
-
-## Section 7 — Security & Environment
-→ Update file: SECURITY_RULES.md
-
-Q27. What sensitive data does this project handle?
-
-Examples: user PII, payment data, health records, None
-
-Answer: [TBD]
-
----
-
-Q28. Are there separate environments?
-
-- [ ] dev / staging / production
-- [ ] dev / production
-- [ ] development only
-
-Answer: [TBD]
-
----
-
-Q29. Any special compliance requirements?
-
-Examples: PDPA, GDPR, PCI-DSS, HIPAA, None
-
-Answer: [TBD]
+Answer (Cloudflare account): [TBD]
 
 ⸻
 
@@ -387,7 +214,7 @@ After the client has answered all questions, Conductor must:
    Must see `role = 'owner'` before proceeding.
 
 1. PROJECT.md — update: name, description, target users, status (from Q1–Q4)
-2. DECISIONS.md — update: full tech stack, naming conventions, testing, code style (from Q5–Q20)
+2. DECISIONS.md — update: full tech stack, naming conventions, testing, code style (from Q5–Q6, Q11, Q15b–Q19)
 3. ARCHITECTURE.md — update: architecture type, modules, external services, folder structure (from Q12–Q15)
 4. CONTRACTS.md — create initial contracts for each module (from Q13–Q14)
 5. PIPELINE.md — create stage list, Depends On, conductor-branch (from Q21–Q23)
