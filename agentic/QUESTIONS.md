@@ -14,18 +14,29 @@ Conductor จะนำคำตอบไปอัพเดทไฟล์ govern
 
 ⸻
 
-วิธีใช้
+How to Use (Conductor)
 
-1. ผู้ใช้ตอบทุกคำถาม (ใส่คำตอบแทน [TBD])
-2. แจ้ง Conductor ว่า QUESTIONS.md อัพเดทแล้ว
-3. Conductor อ่านคำตอบและอัพเดทไฟล์ governance ตาม "→ อัพเดทไฟล์" ที่ระบุไว้
+**Ask one question at a time — start immediately when the client opens the conversation (e.g. "hi", "hello").**
+
+Rules for Conductor:
+- **Read `DECISIONS.md` and `ARCHITECTURE.md` before asking any question.** Know the template's default stack before the conversation starts — never ask the client what the template uses.
+- Ask exactly one question per message. Wait for the client's answer before asking the next.
+- Start asking immediately. Do NOT wait for the client to type "start" or any command.
+- Save the answer to the file specified in "→ อัพเดทไฟล์" as soon as it is received.
+- Never bundle multiple questions into a single message.
+- If the answer is unclear, ask for clarification with an example before moving on.
+- If the client requests a language (Thai / Chinese / English), translate all subsequent questions and responses into that language.
+
+Opening message (send this before the first question):
+
+> "I'm your Conductor assistant — here to help set up your project. Feel free to type anything at any time."
 
 ⸻
 
 ## Starter Question ⚠️ FIRST — ถามก่อนทุกอย่าง
 → อัพเดทไฟล์: `agentic/CLIENT_TYPE.md`
 
-Conductor ถามประโยคนี้ก่อนเสมอ ก่อนที่จะถามคำถามอื่นใด:
+Conductor ถามประโยคนี้ก่อนเสมอ ทันทีที่ client เริ่มบทสนทนา:
 
 > "คุณเป็นนักพัฒนา (developer) หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์?"
 > (English: "Are you a developer, or a business owner who wants to build a website?")
@@ -91,6 +102,14 @@ Answer: [TBD]
 → อัพเดทไฟล์: DECISIONS.md
 
 Q5. ภาษาหลักที่ใช้?
+
+> ⚠️ Template นี้ใช้ **TypeScript** เป็นภาษาหลัก — แนะนำให้เลือก TypeScript เพื่อให้ compatible กับ codebase ที่มีอยู่
+
+- [ ] TypeScript *(used in this template — recommended)*
+- [ ] JavaScript
+- [ ] Python
+- [ ] Go
+- [ ] Other: [ระบุ]
 
 Answer: [TBD]
 
