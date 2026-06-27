@@ -45,6 +45,28 @@ May NOT commit: `.env`, `.env.local`, `.env.production`, `.env.development` (unl
 
 ⸻
 
+Session & Cookie Removal — MANDATORY on setup
+
+This template uses Bearer token authentication only. Session and cookie-based auth must be removed from every project that uses this template.
+
+Workers must remove or disable the following during stage-1-setup and any auth stage:
+* `httpOnly` cookie configuration in auth libraries (e.g. Better Auth, NextAuth)
+* `credentials: 'include'` in any fetch call — replace with `Authorization: Bearer <token>` via `apiFetch()`
+* `Set-Cookie` response headers on any API route
+* Session store configuration (in-memory, Redis, D1-backed session tables)
+* CSRF protection middleware — not needed without cookies
+* Any `sameSite`, `secure`, `maxAge` cookie options in auth config
+
+After removal, Workers must verify:
+```bash
+grep -rn "credentials.*include\|Set-Cookie\|httpOnly\|sameSite\|csrf\|session" apps/ packages/
+```
+Result must be empty (or only in comments explaining why it was removed). Any hit → fix before gate-out.
+
+Violation → Status: FAIL, Ready For Next Stage: NO.
+
+⸻
+
 Access Control
 
 Workers may NOT:
