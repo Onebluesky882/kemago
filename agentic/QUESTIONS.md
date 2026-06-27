@@ -213,27 +213,48 @@ After the client has answered all questions, Conductor must:
    ```
    Must see `role = 'owner'` before proceeding.
 
-1. PROJECT.md — update: name, description, target users, status (from Q1–Q4)
-2. DECISIONS.md — update: full tech stack, naming conventions, testing, code style (from Q5–Q6, Q11, Q15b–Q19)
-3. ARCHITECTURE.md — update: architecture type, modules, external services, folder structure (from Q12–Q15)
-4. CONTRACTS.md — create initial contracts for each module (from Q13–Q14)
-5. PIPELINE.md — create stage list, Depends On, conductor-branch (from Q21–Q23)
-6. ROADMAP.md — update: goals, vision, milestone (from Q24–Q26)
-7. SECURITY_RULES.md — add/edit rules to match sensitive data and compliance (from Q27–Q29)
-8. All `<conductor-branch>` in PIPELINE.md, PROJECT.md, AGENT_RULES.md, README.md — replace with the real branch name (from Q23)
-9. Log all changes in DEV_LOG.md
+1. **PROJECT.md** — update: name, description, target users, status (from Q1–Q4)
+
+2. **DECISIONS.md** — update with client answers + template defaults below:
+
+   | Setting | Source |
+   |---------|--------|
+   | Language | Q5 answer |
+   | Frontend framework | inferred from Q6 |
+   | Backend | Hono (+ FastAPI if Python needed) |
+   | Database | Cloudflare D1 (SQLite) |
+   | Auth | packages/auth — Bearer token |
+   | Deployment | Cloudflare Workers + Pages |
+   | Package manager | Q7 answer |
+   | Linting/Formatting | Biome |
+   | Testing | Vitest (unit) + Playwright (e2e) |
+   | State management | TanStack Query + Zustand |
+   | Naming conventions | PascalCase components, camelCase functions, kebab-case files, UPPER_SNAKE_CASE constants |
+
+3. **ARCHITECTURE.md** — infer from Q6 (project idea, pages, goals):
+   - Architecture style: Monorepo (template default)
+   - Modules: derive from Q6 answers
+   - Folder structure: template default (`apps/web`, `apps/api`, `packages/auth`)
+
+4. **CONTRACTS.md** — create initial contracts for modules inferred from Q6
+
+5. **PIPELINE.md** — generate stage list from Q6 answers. Use `main` as conductor-branch (template default)
+
+6. **ROADMAP.md** — derive goals, vision, and milestone from Q6 (plan and goal answer)
+
+7. **SECURITY_RULES.md** — use template defaults: standard user PII protection, dev/production environments, no special compliance
+
+8. **Replace `<conductor-branch>`** in PIPELINE.md, PROJECT.md, AGENT_RULES.md, README.md with `main`
+
+9. **Log all changes** in DEV_LOG.md
 
 ⸻
 
 Status
 
-- [ ] Section 1 — Project Identity: not answered
-- [ ] Section 2 — Tech Stack: not answered
-- [ ] Section 3 — Architecture: not answered
-- [ ] Section 4 — Code Style: not answered
-- [ ] Section 5 — Pipeline: not answered
-- [ ] Section 6 — Roadmap: not answered
-- [ ] Section 7 — Security: not answered
+- [ ] Project Identity (Q0–Q4): not answered
+- [ ] Tech Stack (Q5–Q7): not answered
+- [ ] Cloudflare account: not confirmed
 - [ ] Conductor updated all governance files: not done
 - [ ] Setup Test PASSED: not done
 
