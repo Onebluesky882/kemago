@@ -8,9 +8,9 @@ Owner: CONDUCTOR
 
 Purpose
 
-ตอบคำถามทั้งหมดนี้ก่อนเริ่มใช้ template นี้กับโปรเจ็คจริง
+Answer all questions below before using this template on a real project.
 
-Conductor จะนำคำตอบไปอัพเดทไฟล์ governance ที่เกี่ยวข้องโดยอัตโนมัติ
+Conductor will use the answers to automatically update the relevant governance files.
 
 ⸻
 
@@ -19,13 +19,20 @@ How to Use (Conductor)
 **Ask one question at a time — start immediately when the client opens the conversation (e.g. "hi", "hello").**
 
 Rules for Conductor:
-- **Read `DECISIONS.md` and `ARCHITECTURE.md` before asking any question.** Know the template's default stack before the conversation starts — never ask the client what the template uses.
+- **Read `DECISIONS.md` and `ARCHITECTURE.md` before asking any question.** These files may be empty in a fresh setup — that is expected. Read them to understand what template defaults already exist, so you can guide the client with informed suggestions rather than asking them to specify everything from scratch.
+- **The very first question MUST be the Starter Question** — "Are you a developer or a business owner?" — before Q0 or anything else.
 - Ask exactly one question per message. Wait for the client's answer before asking the next.
 - Start asking immediately. Do NOT wait for the client to type "start" or any command.
-- Save the answer to the file specified in "→ อัพเดทไฟล์" as soon as it is received.
+- Save the answer to the file specified in "→ Update file" as soon as it is received.
 - Never bundle multiple questions into a single message.
 - If the answer is unclear, ask for clarification with an example before moving on.
 - If the client requests a language (Thai / Chinese / English), translate all subsequent questions and responses into that language.
+
+Question order (strict):
+1. Send opening message
+2. Ask Starter Question → determine CLIENT_TYPE → route accordingly
+3. If DEVELOPER → continue Q0, Q1, Q2 … in order
+4. If CLIENT → stop, switch to CUSTOMER_SETUP.md
 
 Opening message (send this before the first question):
 
@@ -33,91 +40,95 @@ Opening message (send this before the first question):
 
 ⸻
 
-## Starter Question ⚠️ FIRST — ถามก่อนทุกอย่าง
-→ อัพเดทไฟล์: `agentic/CLIENT_TYPE.md`
+## Starter Question ⚠️ FIRST — Ask before everything else
+→ Update file: `CLIENT_TYPE.md`
 
-Conductor ถามประโยคนี้ก่อนเสมอ ทันทีที่ client เริ่มบทสนทนา:
+Ask this question first, immediately when the client starts the conversation:
 
-> "คุณเป็นนักพัฒนา (developer) หรือเจ้าของธุรกิจที่ต้องการสร้างเว็บไซต์?"
-> (English: "Are you a developer, or a business owner who wants to build a website?")
+> "Are you a developer, or a business owner who wants to build a website?"
 
-| คำตอบ | Conductor ทำอะไร |
-|-------|-----------------|
-| นักพัฒนา / Developer | เขียน `DEVELOPER` ลงใน `CLIENT_TYPE.md` → ดำเนินการต่อใน QUESTIONS.md นี้ |
-| เจ้าของธุรกิจ / Business owner | เขียน `CLIENT` ลงใน `CLIENT_TYPE.md` → **หยุด QUESTIONS.md** → ไปที่ `CUSTOMER_SETUP.md` แทนทันที |
+| Answer | Conductor action |
+|--------|-----------------|
+| Developer | Write `DEVELOPER` to `CLIENT_TYPE.md` → continue with this QUESTIONS.md |
+| Business owner | Write `CLIENT` to `CLIENT_TYPE.md` → **stop QUESTIONS.md** → switch to `CUSTOMER_SETUP.md` immediately |
 
-> ถ้าไม่แน่ใจ ให้ถามเพิ่ม: "คุณจะใช้ template นี้เพื่ออะไร?"
-> - สร้างเว็บให้ธุรกิจตัวเอง → CLIENT
-> - ใช้เป็น starter สำหรับพัฒนา → DEVELOPER
+> If unsure, ask: "What are you planning to use this template for?"
+> - Building a website for your own business → CLIENT
+> - Using it as a starter for development → DEVELOPER
 
 Answer: [TBD]
 
 ⸻
 
 ## Section 0 — Project Owner ⚠️ MANDATORY FIRST
-→ อัพเดทไฟล์: PROJECT.md
-→ Action: Conductor ต้อง SET role = 'owner' ใน database ให้ email นี้หลัง deploy
+→ Update file: PROJECT.md
+→ Action: Conductor must SET role = 'owner' in the database for this email after deploy
 
-Q0. อีเมลของเจ้าของโปรเจกต์คืออะไร?
+Q0. What is the project owner's email address?
 
-> อีเมลนี้จะได้รับสิทธิ์ `owner` โดยอัตโนมัติ — สามารถจัดการ roadmap, forum, และตั้งค่าทุกอย่างในระบบได้
-> ต้องตรงกับอีเมลที่ใช้ลงทะเบียนเข้าระบบ
+> This email will automatically receive `owner` permissions — able to manage roadmap, forum, and all system settings.
+> Must match the email used to log in to the system.
 
 Answer: [TBD]
 
 ⸻
 
 ## Section 1 — Project Identity
-→ อัพเดทไฟล์: PROJECT.md
+→ Update file: PROJECT.md
 
-Q1. ชื่อโปรเจ็คคืออะไร?
-
-Answer: [TBD]
-
----
-
-Q2. โปรเจ็คนี้ทำอะไร? (อธิบายสั้นๆ 1-3 ประโยค — core problem ที่แก้)
+Q1. What is the project name?
 
 Answer: [TBD]
 
 ---
 
-Q3. ผู้ใช้งานหลัก (target users) คือใคร?
+Q2. What does this project do? (1–3 sentences — the core problem it solves)
 
 Answer: [TBD]
 
 ---
 
-Q4. สถานะปัจจุบันของโปรเจ็ค?
+Q3. Who are the target users?
 
-- [ ] Greenfield (เริ่มใหม่)
-- [ ] Existing codebase (ต่อยอดของเดิม)
-- [ ] Prototype (มี proof-of-concept แล้ว)
+Answer: [TBD]
+
+---
+
+Q4. What is the current status of the project?
+
+- [ ] Greenfield — starting from scratch
+- [ ] Existing codebase — building on top of existing code
+- [ ] Prototype — already have a proof-of-concept
 
 Answer: [TBD]
 
 ⸻
 
 ## Section 2 — Tech Stack
-→ อัพเดทไฟล์: DECISIONS.md
+→ Update file: DECISIONS.md
 
-Q5. ภาษาหลักที่ใช้?
+Q5. What is the primary language?
 
-> ⚠️ Template นี้ใช้ **TypeScript** เป็นภาษาหลัก — แนะนำให้เลือก TypeScript เพื่อให้ compatible กับ codebase ที่มีอยู่
+> ⚠️ This template uses **TypeScript** as the primary language — recommended for compatibility with the existing codebase.
 
 - [ ] TypeScript *(used in this template — recommended)*
 - [ ] JavaScript
 - [ ] Python
 - [ ] Go
-- [ ] Other: [ระบุ]
+- [ ] Other: [specify]
 
 Answer: [TBD]
 
 ---
 
-Q6. Frontend framework?
+Q6. Describe your project idea and what you want to achieve.
 
-ตัวอย่าง: Next.js, React, Vue, SvelteKit, React Native, Expo, ไม่มี (API-only)
+- What type of project is this? (web app, mobile app, API, tool, etc.)
+- What is the main thing users can do in it?
+- What pages or screens do you want? (e.g. landing page, dashboard, login, settings)
+- What is the expected output or result the user gets?
+
+> Conductor: use the answers to infer the frontend framework, page structure, and feature scope. Do not ask for the framework directly — decide it from context.
 
 Answer: [TBD]
 
@@ -125,7 +136,7 @@ Answer: [TBD]
 
 Q7. Backend framework?
 
-ตัวอย่าง: Express, Fastify, FastAPI, Django, NestJS, Hono, ไม่มี (frontend-only)
+Examples: Express, Fastify, FastAPI, Django, NestJS, Hono, None (frontend-only)
 
 Answer: [TBD]
 
@@ -133,7 +144,7 @@ Answer: [TBD]
 
 Q8. Database?
 
-ตัวอย่าง: PostgreSQL, MySQL, MongoDB, SQLite, Supabase, PlanetScale, ไม่มี
+Examples: PostgreSQL, MySQL, MongoDB, SQLite, Supabase, PlanetScale, None
 
 Answer: [TBD]
 
@@ -141,7 +152,7 @@ Answer: [TBD]
 
 Q9. Authentication / Authorization?
 
-ตัวอย่าง: JWT, NextAuth, Clerk, Supabase Auth, Firebase Auth, OAuth2, ไม่มี
+Examples: JWT, NextAuth, Clerk, Supabase Auth, Firebase Auth, OAuth2, None
 
 Answer: [TBD]
 
@@ -149,7 +160,7 @@ Answer: [TBD]
 
 Q10. Deployment platform?
 
-ตัวอย่าง: Vercel, Railway, AWS, GCP, Fly.io, Docker self-hosted
+Examples: Vercel, Railway, AWS, GCP, Fly.io, Docker self-hosted
 
 Answer: [TBD]
 
@@ -167,35 +178,35 @@ Answer: [TBD]
 ⸻
 
 ## Section 3 — Architecture & Structure
-→ อัพเดทไฟล์: ARCHITECTURE.md, CONTRACTS.md
+→ Update file: ARCHITECTURE.md, CONTRACTS.md
 
-Q12. รูปแบบ architecture คืออะไร?
+Q12. What is the architecture style?
 
-ตัวอย่าง: Monolith, Monorepo (Turborepo/Nx), Microservices, Serverless, Full-stack SSR
-
-Answer: [TBD]
-
----
-
-Q13. โปรเจ็คแบ่งออกเป็น modules/domains อะไรบ้าง?
-
-ตัวอย่าง: auth, user, product, payment, notification, admin
+Examples: Monolith, Monorepo (Turborepo/Nx), Microservices, Serverless, Full-stack SSR
 
 Answer: [TBD]
 
 ---
 
-Q14. มี external services หรือ third-party APIs ที่ต้องใช้ไหม?
+Q13. What modules / domains does the project consist of?
 
-ตัวอย่าง: Stripe, SendGrid, Twilio, AWS S3, OpenAI API
+Examples: auth, user, product, payment, notification, admin
 
 Answer: [TBD]
 
 ---
 
-Q15. โครงสร้าง folder ที่ต้องการ?
+Q14. Are there any external services or third-party APIs required?
 
-ตัวอย่าง:
+Examples: Stripe, SendGrid, Twilio, AWS S3, OpenAI API
+
+Answer: [TBD]
+
+---
+
+Q15. What is the desired folder structure?
+
+Example:
 ```
 src/
   app/        (Next.js App Router)
@@ -209,17 +220,17 @@ Answer: [TBD]
 ⸻
 
 ## Section 4 — Code Style & Patterns
-→ อัพเดทไฟล์: DECISIONS.md
+→ Update file: DECISIONS.md
 
-Q15b. IDE / Editor ที่ใช้พัฒนา?
+Q15b. IDE / Editor used for development?
 
 - [ ] VS Code
 - [ ] Cursor
 - [ ] WebStorm / JetBrains
 - [ ] Neovim / Vim
-- [ ] อื่นๆ: [ระบุ]
+- [ ] Other: [specify]
 
-> ถ้าใช้ VS Code หรือ Cursor — แนะนำติดตั้ง Claude Code extension เพื่อ chat กับ AI ภายใน editor ได้โดยตรง
+> If using VS Code or Cursor — recommended to install the Claude Code extension to chat with AI directly inside the editor.
 
 Answer: [TBD]
 
@@ -227,15 +238,15 @@ Answer: [TBD]
 
 Q16. Linting / Formatting tools?
 
-ตัวอย่าง: ESLint + Prettier, Biome, Ruff (Python)
+Examples: ESLint + Prettier, Biome, Ruff (Python)
 
 Answer: [TBD]
 
 ---
 
-Q17. รูปแบบการตั้งชื่อ (naming conventions)?
+Q17. Naming conventions?
 
-ตัวอย่าง:
+Example:
 - Components: PascalCase
 - Functions/variables: camelCase
 - Files: kebab-case
@@ -247,21 +258,21 @@ Answer: [TBD]
 
 Q18. Testing framework?
 
-ตัวอย่าง: Vitest, Jest, Playwright, Cypress, pytest
+Examples: Vitest, Jest, Playwright, Cypress, pytest
 
 Answer: [TBD]
 
 ---
 
-Q19. State management (ถ้ามี frontend)?
+Q19. State management (if frontend exists)?
 
-ตัวอย่าง: Zustand, Jotai, Redux Toolkit, TanStack Query, Context API, ไม่มี
+Examples: Zustand, Jotai, Redux Toolkit, TanStack Query, Context API, None
 
 Answer: [TBD]
 
 ---
 
-Q20. TypeScript ใช้ไหม?
+Q20. TypeScript usage?
 
 - [ ] Yes — strict mode
 - [ ] Yes — relaxed
@@ -272,11 +283,11 @@ Answer: [TBD]
 ⸻
 
 ## Section 5 — Pipeline & Stages
-→ อัพเดทไฟล์: PIPELINE.md
+→ Update file: PIPELINE.md
 
-Q21. รายการ stages ที่ต้องการ build (เรียงตามลำดับ)?
+Q21. List of stages to build (in order)?
 
-ตัวอย่าง:
+Example:
 ```
 Stage 1 — setup       (project scaffold, config)
 Stage 2 — auth        (login, register, session)
@@ -291,58 +302,59 @@ Answer: [TBD]
 
 ---
 
-Q22. Stages ไหนทำพร้อมกันได้ (parallel)?
+Q22. Which stages can be done in parallel?
 
 Answer: [TBD]
 
 ---
 
-Q23. <conductor-branch> — branch name ที่ทุก PR จะ merge เข้า? ⚠️ BLOCKING
+Q23. What is the branch name that all PRs will merge into? ⚠️ BLOCKING
+(This value will replace the `<conductor-branch>` placeholder across all governance files.)
 
-ตัวอย่าง: main, develop, conductor
+Examples: main, develop, conductor
 
-> คำถามนี้ต้องตอบก่อนเริ่มโปรเจ็ค Conductor และ Worker จะ BLOCKED จนกว่าจะได้คำตอบ
-> ดู PRE-FLIGHT CHECK ใน CONDUCTOR.md และ START_HERE.md
+> This must be answered before starting the project. Conductor and Worker will be BLOCKED until answered.
+> See PRE-FLIGHT CHECK in CONDUCTOR.md and START_HERE.md.
 
 Answer: [TBD]
 
 ⸻
 
 ## Section 6 — Roadmap & Goals
-→ อัพเดทไฟล์: ROADMAP.md
+→ Update file: ROADMAP.md
 
-Q24. เป้าหมายระยะสั้น (1-4 สัปดาห์)?
-
-Answer: [TBD]
-
----
-
-Q25. เป้าหมายระยะยาว (vision)?
+Q24. Short-term goals (1–4 weeks)?
 
 Answer: [TBD]
 
 ---
 
-Q26. Milestone แรกที่ถือว่า "done" คืออะไร?
+Q25. Long-term vision?
 
-ตัวอย่าง: MVP ที่ user login และใช้ core feature ได้
+Answer: [TBD]
+
+---
+
+Q26. What is the first milestone considered "done"?
+
+Example: MVP where users can log in and use the core feature
 
 Answer: [TBD]
 
 ⸻
 
 ## Section 7 — Security & Environment
-→ อัพเดทไฟล์: SECURITY_RULES.md
+→ Update file: SECURITY_RULES.md
 
-Q27. ข้อมูล sensitive ที่โปรเจ็คนี้จัดการ?
+Q27. What sensitive data does this project handle?
 
-ตัวอย่าง: user PII, payment data, health records, ไม่มี
+Examples: user PII, payment data, health records, None
 
 Answer: [TBD]
 
 ---
 
-Q28. มี environment แยกกันไหม?
+Q28. Are there separate environments?
 
 - [ ] dev / staging / production
 - [ ] dev / production
@@ -352,9 +364,9 @@ Answer: [TBD]
 
 ---
 
-Q29. มี compliance requirement พิเศษไหม?
+Q29. Any special compliance requirements?
 
-ตัวอย่าง: PDPA, GDPR, PCI-DSS, HIPAA, ไม่มี
+Examples: PDPA, GDPR, PCI-DSS, HIPAA, None
 
 Answer: [TBD]
 
@@ -362,53 +374,53 @@ Answer: [TBD]
 
 ## Conductor Instructions
 
-หลังจากผู้ใช้ตอบคำถามครบ ให้ Conductor:
+After the client has answered all questions, Conductor must:
 
-0. **⚠️ SET OWNER ROLE FIRST** — รัน SQL นี้ใน D1 database ทันทีหลัง deploy ครั้งแรก:
+0. **⚠️ SET OWNER ROLE FIRST** — run this SQL in the D1 database immediately after the first deploy:
    ```sql
-   UPDATE user SET role = 'owner' WHERE email = '<คำตอบ Q0>';
+   UPDATE user SET role = 'owner' WHERE email = '<answer from Q0>';
    ```
-   ตรวจสอบด้วย:
+   Verify with:
    ```sql
-   SELECT id, name, email, role FROM user WHERE email = '<คำตอบ Q0>';
+   SELECT id, name, email, role FROM user WHERE email = '<answer from Q0>';
    ```
-   ต้องเห็น `role = 'owner'` ก่อนจึงจะ proceed ต่อได้
+   Must see `role = 'owner'` before proceeding.
 
-1. PROJECT.md — อัพเดท: name, description, target users, status (จาก Q1–Q4)
-2. DECISIONS.md — อัพเดท: tech stack ทั้งหมด, naming conventions, testing, code style (จาก Q5–Q20)
-3. ARCHITECTURE.md — อัพเดท: architecture type, modules, external services, folder structure (จาก Q12–Q15)
-4. CONTRACTS.md — สร้าง contract เบื้องต้นสำหรับแต่ละ module (จาก Q13–Q14)
-5. PIPELINE.md — สร้าง stage list, Depends On, conductor-branch (จาก Q21–Q23)
-6. ROADMAP.md — อัพเดท: goals, vision, milestone (จาก Q24–Q26)
-7. SECURITY_RULES.md — เพิ่ม/แก้ไข rules ให้ตรงกับ sensitive data และ compliance (จาก Q27–Q29)
-8. ทุก `<conductor-branch>` ใน AGENT_RULES.md, README.md — แทนด้วยชื่อ branch จริง (จาก Q23)
-9. บันทึกการเปลี่ยนแปลงใน DEV_LOG.md
+1. PROJECT.md — update: name, description, target users, status (from Q1–Q4)
+2. DECISIONS.md — update: full tech stack, naming conventions, testing, code style (from Q5–Q20)
+3. ARCHITECTURE.md — update: architecture type, modules, external services, folder structure (from Q12–Q15)
+4. CONTRACTS.md — create initial contracts for each module (from Q13–Q14)
+5. PIPELINE.md — create stage list, Depends On, conductor-branch (from Q21–Q23)
+6. ROADMAP.md — update: goals, vision, milestone (from Q24–Q26)
+7. SECURITY_RULES.md — add/edit rules to match sensitive data and compliance (from Q27–Q29)
+8. All `<conductor-branch>` in PIPELINE.md, PROJECT.md, AGENT_RULES.md, README.md — replace with the real branch name (from Q23)
+9. Log all changes in DEV_LOG.md
 
 ⸻
 
 Status
 
-- [ ] Section 1 — Project Identity: ยังไม่ตอบ
-- [ ] Section 2 — Tech Stack: ยังไม่ตอบ
-- [ ] Section 3 — Architecture: ยังไม่ตอบ
-- [ ] Section 4 — Code Style: ยังไม่ตอบ
-- [ ] Section 5 — Pipeline: ยังไม่ตอบ
-- [ ] Section 6 — Roadmap: ยังไม่ตอบ
-- [ ] Section 7 — Security: ยังไม่ตอบ
-- [ ] Conductor updated all governance files: ยังไม่ทำ
-- [ ] Setup Test PASSED: ยังไม่ทำ
+- [ ] Section 1 — Project Identity: not answered
+- [ ] Section 2 — Tech Stack: not answered
+- [ ] Section 3 — Architecture: not answered
+- [ ] Section 4 — Code Style: not answered
+- [ ] Section 5 — Pipeline: not answered
+- [ ] Section 6 — Roadmap: not answered
+- [ ] Section 7 — Security: not answered
+- [ ] Conductor updated all governance files: not done
+- [ ] Setup Test PASSED: not done
 
 ⸻
 
-## Setup Test — รันหลัง Conductor อัพเดท governance ครบแล้ว
+## Setup Test — Run after Conductor has updated all governance files
 
-Conductor รัน test นี้เพื่อยืนยันว่า governance พร้อมใช้งานจริง
+Conductor runs this test to confirm governance is ready for use.
 
-ผ่านทุกข้อ = เริ่ม pipeline ได้
+All passing = pipeline can start.
 
 ---
 
-### T1 — ไม่มี placeholder หลงเหลือ
+### T1 — No placeholders remaining
 
 ```bash
 grep -rn "\[TBD\]\|<conductor-branch>\|\[name\]\|\[N\]" \
@@ -416,43 +428,43 @@ grep -rn "\[TBD\]\|<conductor-branch>\|\[name\]\|\[N\]" \
   DECISIONS.md PIPELINE.md SECURITY_RULES.md AGENT_RULES.md README.md
 ```
 
-ผล: ต้องไม่มี output — ถ้ามี แสดงว่ายังมีไฟล์ที่ยังไม่ได้อัพเดท
+Result: must produce no output — if any, those files still need updating.
 
 Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T2 — conductor-branch มีอยู่จริงใน git
+### T2 — conductor-branch exists in git
 
 ```bash
-git branch -a | grep -F "<ใส่ชื่อ conductor-branch จริงที่ตอบใน Q23>"
+git branch -a | grep -F "<real conductor-branch name from Q23>"
 ```
 
-ผล: ต้องพบ branch นั้น — ถ้าไม่พบให้ Conductor สร้าง branch ก่อน
+Result: must find that branch — if not found, Conductor must create it first.
 
 Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T3 — PROJECT.md มีข้อมูลจริง
+### T3 — PROJECT.md has real content
 
-ตรวจสอบด้วยตา:
-- [ ] มีชื่อโปรเจ็คจริง (ไม่ใช่ "My Project" หรือ placeholder)
-- [ ] มี description อธิบาย core problem
-- [ ] มี target users
-- [ ] มี status ปัจจุบัน
+Verify manually:
+- [ ] Has a real project name (not "My Project" or a placeholder)
+- [ ] Has a description explaining the core problem
+- [ ] Has target users
+- [ ] Has current status
 
 Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T4 — DECISIONS.md มี tech stack ครบ
+### T4 — DECISIONS.md has complete tech stack
 
-ตรวจสอบด้วยตา:
-- [ ] ภาษาหลัก
-- [ ] Frontend framework (หรือระบุว่า API-only)
-- [ ] Backend framework (หรือระบุว่า frontend-only)
-- [ ] Database (หรือระบุว่าไม่มี)
+Verify manually:
+- [ ] Primary language
+- [ ] Frontend framework (or noted as API-only)
+- [ ] Backend framework (or noted as frontend-only)
+- [ ] Database (or noted as none)
 - [ ] Authentication method
 - [ ] Package manager
 - [ ] Testing framework
@@ -463,56 +475,56 @@ Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T5 — PIPELINE.md มี stages จริง
+### T5 — PIPELINE.md has real stages
 
 ```bash
 grep -c "Stage\|PENDING\|IN_PROGRESS" PIPELINE.md
 ```
 
-ผล: ต้องได้ค่ามากกว่า 0
+Result: must return a value greater than 0.
 
-ตรวจสอบด้วยตา:
-- [ ] มี stage อย่างน้อย 1 stage
-- [ ] ทุก stage มี `Depends On` ระบุ
-- [ ] `<conductor-branch>` ถูกแทนด้วยชื่อจริงแล้ว
+Verify manually:
+- [ ] At least 1 stage exists
+- [ ] Every stage has `Depends On` specified
+- [ ] `<conductor-branch>` has been replaced with the real name
 
 Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T6 — ARCHITECTURE.md และ CONTRACTS.md ไม่ว่างเปล่า
+### T6 — ARCHITECTURE.md and CONTRACTS.md are not empty
 
 ```bash
 wc -l ARCHITECTURE.md CONTRACTS.md
 ```
 
-ผล: ทั้งสองไฟล์ต้องมีมากกว่า 10 บรรทัด
+Result: both files must have more than 10 lines.
 
 Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T7 — DEV_LOG.md มี entry บันทึกการ setup
+### T7 — DEV_LOG.md has a setup entry
 
-ตรวจสอบด้วยตา:
-- [ ] มีอย่างน้อย 1 entry ที่บันทึกการอัพเดท governance จาก QUESTIONS.md
+Verify manually:
+- [ ] At least 1 entry recording the governance update from QUESTIONS.md
 
 Result: [ ] PASS / [ ] FAIL
 
 ---
 
-### T8 — Worker simulation (ทำได้ไหม)
+### T8 — Worker simulation
 
-Conductor ส่ง prompt นี้ให้ Worker agent ใหม่:
+Conductor sends this prompt to a new Worker agent:
 
-> "อ่าน START_HERE.md แล้วรายงานว่าโปรเจ็คนี้คือโปรเจ็คอะไร tech stack คืออะไร และ stage แรกที่ต้องทำคืออะไร"
+> "Read START_HERE.md and report: what is this project, what is the tech stack, and what is the first stage to work on?"
 
-ผล Worker ต้องตอบได้ถูกต้องโดยไม่ต้องถาม Dev
+Worker must answer correctly without asking the developer.
 
-- [ ] Worker ตอบชื่อโปรเจ็คถูก
-- [ ] Worker ตอบ tech stack ถูก
-- [ ] Worker ระบุ stage แรกได้
-- [ ] Worker ไม่ติด BLOCKED
+- [ ] Worker names the project correctly
+- [ ] Worker identifies the tech stack correctly
+- [ ] Worker identifies the first stage
+- [ ] Worker is not BLOCKED
 
 Result: [ ] PASS / [ ] FAIL
 
@@ -522,15 +534,15 @@ Result: [ ] PASS / [ ] FAIL
 
 | Test | Result |
 |------|--------|
-| T1 — ไม่มี placeholder | |
-| T2 — conductor-branch มีใน git | |
-| T3 — PROJECT.md ครบ | |
-| T4 — DECISIONS.md ครบ | |
-| T5 — PIPELINE.md ครบ | |
-| T6 — ARCHITECTURE.md / CONTRACTS.md ไม่ว่าง | |
-| T7 — DEV_LOG.md มี entry | |
+| T1 — No placeholders | |
+| T2 — conductor-branch exists in git | |
+| T3 — PROJECT.md complete | |
+| T4 — DECISIONS.md complete | |
+| T5 — PIPELINE.md complete | |
+| T6 — ARCHITECTURE.md / CONTRACTS.md not empty | |
+| T7 — DEV_LOG.md has entry | |
 | T8 — Worker simulation | |
 
-ผ่านทั้งหมด → อัพเดท Status checklist ด้านบน แล้วเริ่ม pipeline ได้
+All passing → update Status checklist above, then start pipeline.
 
-มี FAIL → แก้ไขและรัน test นั้นซ้ำก่อนเริ่ม pipeline
+Any FAIL → fix and re-run that test before starting the pipeline.

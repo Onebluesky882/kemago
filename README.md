@@ -11,7 +11,8 @@ Build your product by chatting with AI — no manual setup from scratch.
 2. Name your repo and set visibility (private recommended)
 3. Clone your new repo locally
 4. Open it in **Claude Code**
-5. Claude will ask: *"Are you a developer or a business owner?"* — answer and follow the guide
+5. Type `hi` — the AI will start asking setup questions immediately, one at a time
+6. Answer each question and follow the guide
 
 That's it. The AI handles the rest.
 
