@@ -98,6 +98,25 @@ npx create-expo-app@latest
 npx create-next-app@latest
 ```
 
+**Bootstrap Rules for apps/web and apps/api — MANDATORY, do NOT ask client**
+
+`apps/web` — use `create-next-app@latest` only:
+- When prompted "Would you like to use ESLint?" → answer **No** — this template uses Biome, not ESLint
+- When prompted for Tailwind, TypeScript, src/, app router → answer per DECISIONS.md
+- Do NOT use full-stack templates: T3 Stack, Remix, Redwood, Blitz, or any opinionated starter — they conflict with governance structure
+
+`apps/api` — use `hono` starter only:
+- Use: `npm create hono@latest apps/api` (select Cloudflare Workers target)
+- After bootstrapping, check for bundled auth — remove any non-Bearer auth immediately:
+  ```bash
+  grep -rn "cookie\|session\|csrf\|passport\|nextauth\|lucia\|iron-session" apps/api/
+  ```
+  Any hit → remove before writing first file
+
+`packages/` — never bootstrap from a template — write from scratch only
+
+These decisions are final. Workers must NOT ask the client which template to use, and must NOT deviate from these choices.
+
 Violations that result in Status: FAIL:
 * installing a package without running the version check above
 * using a pinned version not declared in DECISIONS.md Pinned Versions table
