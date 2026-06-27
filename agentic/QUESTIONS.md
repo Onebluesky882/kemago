@@ -26,7 +26,7 @@ Rules for Conductor:
 - Save the answer to the file specified in "→ Update file" as soon as it is received.
 - Never bundle multiple questions into a single message.
 - If the answer is unclear, ask for clarification with an example before moving on.
-- If the client requests a language (Thai / Chinese / English), translate all subsequent questions and responses into that language.
+- If the client requests a language (Thai / Chinese / English), translate all subsequent questions and chat responses into that language. Governance files are always written in English — see GOVERNANCE_CORE.md Language Rule.
 
 Question order (strict):
 1. Wait for client to type `start-here`
@@ -217,6 +217,12 @@ Answer (Cloudflare account): [TBD]
 ⸻
 
 ## Conductor Instructions
+
+> ⚠️ **LANGUAGE REMINDER — MANDATORY**
+> The client's chosen language applies to chat messages only.
+> All governance files (ARCHITECTURE.md, DECISIONS.md, PROJECT.md, PIPELINE.md, CONTRACTS.md, ROADMAP.md, SECURITY_RULES.md, etc.) MUST be written in English only — even if the client answered in Thai or Chinese.
+> Translate client answers into English before writing them into any governance file.
+> Violation → Status: FAIL (see GOVERNANCE_CORE.md Language Rule).
 
 After the client has answered all questions, Conductor must:
 
