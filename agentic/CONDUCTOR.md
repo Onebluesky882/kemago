@@ -204,14 +204,23 @@ Steps:
    >
    > **Stage 5 — [domain]:** [what will be built — 1 sentence] *(requires stage 3 + 4)*
 
-4. Ask: "Does this plan look right? Would you like to change anything before we start?"
-5. Wait for confirmation — do NOT dispatch stage-1 until client says yes
-6. If client requests changes → update PIPELINE.md, re-present, wait again
+4. For any parallel group, propose running them in the background:
+
+   > **These stages can run at the same time in the background:**
+   > **Stage 3 — [domain]:** [what will be built]
+   > **Stage 4 — [domain]:** [what will be built]
+   >
+   > Running them together will save time. Would you like me to start both at once?
+
+5. Ask: "Does this plan look right? Would you like to change anything before we start?"
+6. Wait for confirmation — do NOT dispatch any stage or create any task file until client says yes
+7. If client requests changes → update PIPELINE.md, re-present, wait again
 
 Rules:
 - Stage descriptions and questions to client: client's chosen language
 - Stage IDs and PIPELINE.md content: English only (GOVERNANCE_CORE.md Language Rule)
 - Parallel grouping must follow AGENT_RULES.md Parallel Execution Rule
+- Do NOT create task files before client confirms the plan
 
 3. Dispatch
 
@@ -238,6 +247,18 @@ git branch -d stage/stage-[N]-<domain>
 ```
 
 Stages with no overlapping dependencies MUST be dispatched in parallel — each in its own worktree. Sequential dispatch of parallelizable stages is a violation.
+
+**Parallel Proposal — MANDATORY before every dispatch**
+
+Before dispatching, scan PIPELINE.md for all PENDING stages whose Depends On are all COMPLETE. If two or more are ready at the same time, Conductor MUST propose running them in the background to the client before dispatching:
+
+> "Stage X and Stage Y are both ready and have no dependency on each other.
+> I can run them both in the background at the same time to save time.
+> Would you like me to start both now?"
+
+Wait for client confirmation. If client says yes → dispatch both simultaneously, each in its own worktree. If client says no → ask which one to start first.
+
+Do NOT dispatch in parallel silently without proposing to the client first.
 
 4. Gate Validation
 
