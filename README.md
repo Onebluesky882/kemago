@@ -5,6 +5,18 @@ Build your product by chatting with AI — no manual setup from scratch.
 
 ---
 
+## How to Use This Template
+
+1. Click **"Use this template"** → **"Create a new repository"** on GitHub
+2. Name your repo and set visibility (private recommended)
+3. Clone your new repo locally
+4. Open it in **Claude Code**
+5. Claude will ask: *"Are you a developer or a business owner?"* — answer and follow step starter
+
+That's it. The AI handles the rest.
+
+---
+
 ## Who is this for?
 
 | You are | What you get |
@@ -65,18 +77,6 @@ agentic/        AI governance system (Conductor + Worker workflow)
   gate-out/           Worker completion reports
   merge-approval/     Conductor approval files
 ```
-
----
-
-## How to Use This Template
-
-1. Click **"Use this template"** → **"Create a new repository"** on GitHub
-2. Name your repo and set visibility (private recommended)
-3. Clone your new repo locally
-4. Open it in **Claude Code**
-5. Claude will ask: *"Are you a developer or a business owner?"* — answer and follow the guide
-
-That's it. The AI handles the rest.
 
 ---
 
