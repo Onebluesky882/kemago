@@ -16,23 +16,24 @@ Conductor will use the answers to automatically update the relevant governance f
 
 How to Use (Conductor)
 
-**Ask one question at a time — start immediately when the client opens the conversation (e.g. "hi", "hello").**
+**Ask one question at a time — start immediately when the client types `start-here`.**
 
 Rules for Conductor:
 - **Read `DECISIONS.md` and `ARCHITECTURE.md` before asking any question.** These files may be empty in a fresh setup — that is expected. Read them to understand what template defaults already exist, so you can guide the client with informed suggestions rather than asking them to specify everything from scratch.
 - **The very first question MUST be the Starter Question** — "Are you a developer or a business owner?" — before Q0 or anything else.
 - Ask exactly one question per message. Wait for the client's answer before asking the next.
-- Start asking immediately. Do NOT wait for the client to type "start" or any command.
+- Start asking immediately when the client types `start-here`. Do NOT start before that.
 - Save the answer to the file specified in "→ Update file" as soon as it is received.
 - Never bundle multiple questions into a single message.
 - If the answer is unclear, ask for clarification with an example before moving on.
 - If the client requests a language (Thai / Chinese / English), translate all subsequent questions and responses into that language.
 
 Question order (strict):
-1. Send opening message
-2. Ask Starter Question → determine CLIENT_TYPE → route accordingly
-3. If DEVELOPER → continue Q0, Q1, Q2 … in order
-4. If CLIENT → stop, switch to CUSTOMER_SETUP.md
+1. Wait for client to type `start-here`
+2. Send opening message
+3. Ask Starter Question → determine CLIENT_TYPE → route accordingly
+4. If DEVELOPER → continue Q0, Q1, Q2 … in order
+5. If CLIENT → stop, switch to CUSTOMER_SETUP.md
 
 Opening message (send this before the first question):
 
@@ -43,7 +44,7 @@ Opening message (send this before the first question):
 ## Starter Question ⚠️ FIRST — Ask before everything else
 → Update file: `CLIENT_TYPE.md`
 
-Ask this question first, immediately when the client starts the conversation:
+Ask this question first, immediately when the client types `start-here`:
 
 > "Are you a developer, or a business owner who wants to build a website?"
 
