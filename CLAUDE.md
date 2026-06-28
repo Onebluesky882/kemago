@@ -196,6 +196,55 @@ If a service listed above doesn't fit the client's need, extend it — never rep
 
 ---
 
+## Pipeline & Roadmap Docs — Required on Every Commit
+
+Two files in `agentic/` must exist and be updated in every commit.
+The commit hook blocks any `git commit` that does not stage at least one of them.
+
+| File | Audience | Language | Content |
+|------|----------|----------|---------|
+| `agentic/PIPELINE.md` | Conductor (AI / developer) | Technical English | What was done, how, what's next — implementation detail |
+| `agentic/ROADMAP.md` | Client (human / business owner) | Plain English, no jargon | What the client now has, what's coming — outcome focused |
+
+### PIPELINE.md — update the Stage Detail and status after every task
+
+```md
+### stage-N-slug
+**Status:** IN_PROGRESS → COMPLETE
+**Done:** What was implemented and how (technical detail OK here)
+**Next:** What the next conductor should pick up
+**Blockers:** Anything needing client input or external action
+```
+
+### ROADMAP.md — update "Current Progress" and "Next Steps" sections only
+
+```md
+## Current Progress
+- Login and registration are working
+- Payment system is connected
+- Forum is live
+
+## Next Steps
+- Build the dashboard page
+- Connect email notifications
+```
+
+**Rules:**
+- `PIPELINE.md` — write as if handing off to another conductor mid-task
+- `ROADMAP.md` — must be readable by a non-technical client; no code, no tech terms
+- Both files are append-only — never delete previous entries, only add
+
+### Cloudflare Workers — ROADMAP.md is NOT readable at runtime
+
+`agentic/ROADMAP.md` is a repo file for humans — not served by the app.
+Cloudflare Workers have no filesystem (`readFileSync` does not exist at runtime).
+
+- **Never** use `readFileSync` or `fs` to read `.md` files inside a Worker
+- The `/roadmap` page must fetch data from `GET /api/roadmap` (D1 database) — not from this file
+- `ROADMAP.md` is updated by the conductor as a handoff doc; the live roadmap state lives in D1
+
+---
+
 ## Roadmap — Must Be Updated After Every Feature
 
 After completing any feature, the conductor **must** update the roadmap so the client can see progress in plain language. Use the API directly — do not modify database or code manually.
