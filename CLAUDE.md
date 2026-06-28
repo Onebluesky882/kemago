@@ -124,7 +124,7 @@ Never use emoji in UI code. Use inline SVG only.
 
 Before writing any UI code, ask the client:
 
-> "มีเว็บไซต์ที่อยากให้ design คล้ายๆ ไหม? (Do you have a reference website?)"
+> "Do you have a reference website you'd like the design to resemble?"
 
 Do not start designing without a reference or explicit style direction.
 
@@ -201,9 +201,9 @@ If a service listed above doesn't fit the client's need, extend it — never rep
 After completing any feature, the conductor **must** update the roadmap so the client can see progress in plain language. Use the API directly — do not modify database or code manually.
 
 ### When to update
-- ทันทีที่ feature/task เสร็จ → เปลี่ยน status เป็น `done`
-- ระหว่างทำ → เปลี่ยน status เป็น `in-progress`
-- งานที่ยังไม่ได้เริ่ม → คง status เป็น `planned`
+- Feature/task completed → set status to `done`
+- Currently in progress → set status to `in-progress`
+- Not yet started → leave status as `planned`
 
 ### How to update (API call as owner)
 
@@ -221,19 +221,19 @@ curl -X PATCH https://YOUR_APP_NAME-api.workers.dev/api/roadmap/phases/<phase_id
   -d '{"status": "in-progress"}'
 ```
 
-### Language rules — ภาษามนุษย์เท่านั้น
+### Language rules — plain language only, no tech jargon
 
-Label และ description ต้องเขียนให้ client อ่านเข้าใจ ไม่ใช้ศัพท์เทคนิค:
+Labels and descriptions must be written so the client understands without technical knowledge:
 
-| ❌ ห้ามใช้ | ✅ ใช้แทน |
-|-----------|----------|
-| `Deploy API to Cloudflare Workers` | `ระบบ backend พร้อมใช้งาน` |
-| `Implement JWT auth middleware` | `ระบบ login/logout เสร็จแล้ว` |
-| `Setup D1 database migration` | `ฐานข้อมูลพร้อมใช้งาน` |
-| `Integrate Stripe webhook` | `ระบบชำระเงินเชื่อมต่อแล้ว` |
-| `Fix CORS on workers.dev` | `แก้ปัญหาการเชื่อมต่อระหว่าง frontend และ backend` |
+| ❌ Do not use | ✅ Use instead |
+|--------------|--------------|
+| `Deploy API to Cloudflare Workers` | `Backend server is live` |
+| `Implement JWT auth middleware` | `Login and logout is ready` |
+| `Setup D1 database migration` | `Database is ready` |
+| `Integrate Stripe webhook` | `Payment system connected` |
+| `Fix CORS on workers.dev` | `Fixed connection issue between frontend and backend` |
 
-**Rule:** ถ้าอ่านแล้ว client ไม่เข้าใจว่าทำอะไรสำเร็จ → เขียนใหม่
+**Rule:** If the client cannot understand what was completed from the label alone, rewrite it.
 
 ---
 
@@ -259,7 +259,7 @@ The following pages must remain in the project until the **client explicitly ask
 
 **Rule:** Never delete, comment out, or hide these pages on your own initiative. If you think they are unused, ask the client first:
 
-> "คุณต้องการเก็บหน้า Roadmap และ Forum ไว้ไหมครับ?"
+> "Do you want to keep the Roadmap and Forum pages?"
 
 Only remove them after the client confirms in writing.
 
