@@ -32,6 +32,18 @@ Conductor Branch: main
 
 ---
 
+### stage-2-claude-md-scope-rule
+
+**Domain:** CLAUDE.md
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Added "Scope Discipline" rule to CLAUDE.md — instructs the conductor to never do work beyond what was explicitly requested (e.g. mock UI only → no API/DB/hooks).
+**Next:** Optionally enforce via pre-write hook in `.claude/settings.json`.
+**Blockers:** None.
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

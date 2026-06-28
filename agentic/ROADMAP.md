@@ -81,9 +81,7 @@ Success Indicators:
 
 ## Current Progress
 
-<!-- Conductor updates this section to summarize, in plain language, what has been completed so far. -->
-
-[TBD]
+- Added a rule that prevents the assistant from doing work beyond what was asked. For example, if you ask for a screen mockup only, it will not also build a backend or database.
 
 ---
 

@@ -1,5 +1,17 @@
 # Agent Rules
 
+## Scope Discipline — Do Only What Was Asked
+
+Never do more than what the user explicitly requested.
+
+- If asked to create a **mock UI** → create only UI files. Do not create API routes, DB schemas, hooks, or any backend code.
+- If asked to create an **API endpoint** → create only that endpoint. Do not create frontend pages or hooks.
+- If asked to **fix a bug** → fix only that bug. Do not refactor surrounding code.
+
+When in doubt, do less and ask. It is always better to ask than to add unrequested files.
+
+---
+
 ## File Location
 
 Governance files live in `agentic/` only. Never create governance files at the project root.
