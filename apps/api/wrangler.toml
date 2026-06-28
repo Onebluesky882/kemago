@@ -23,6 +23,8 @@ GITHUB_TEMPLATE_REPO = ""
 # ANTHROPIC_ENV_ID           ← output from: npx tsx scripts/setup-anthropic-agent.ts
 # DEPLOY_WEBHOOK_SECRET      ← random secret shared with GitHub Actions
 # SITE_URL                   ← client's live website URL e.g. https://client-web.workers.dev
+# BOT_TOKEN                  ← from @BotFather on Telegram
+# TELEGRAM_SECRET_TOKEN      ← random string you set when registering webhook (openssl rand -hex 16)
 
 [[r2_buckets]]
 binding = "BUCKET"

@@ -10,6 +10,7 @@ import { forumRouter } from './domains/forum/forum.route'
 import { roadmapRouter } from './domains/roadmap/roadmap.route'
 import { agentRouter } from './domains/agent/agent.route'
 import { setupRouter } from './domains/setup/setup.route'
+import { telegramRouter } from './domains/telegram/telegram.route'
 
 type Bindings = {
   DB: D1Database
@@ -26,6 +27,8 @@ type Bindings = {
   ANTHROPIC_API_KEY: string
   ANTHROPIC_AGENT_ID: string
   ANTHROPIC_ENV_ID: string
+  BOT_TOKEN: string
+  TELEGRAM_SECRET_TOKEN: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -52,5 +55,6 @@ app.route('/api/forum', forumRouter)
 app.route('/api/roadmap', roadmapRouter)
 app.route('/api/agent', agentRouter)
 app.route('/api/setup', setupRouter)
+app.route('/webhook', telegramRouter)
 
 export default app
