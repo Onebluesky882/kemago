@@ -256,6 +256,29 @@ When the project uses **Next.js with Cloudflare Workers** (`opennextjs-cloudflar
 
 Detection: project has `opennextjs-cloudflare` in `package.json` dependencies or `wrangler.toml` present.
 
+---
+
+## CORS — ALLOWED_ORIGINS Rule
+
+The API backend runs on `fullstack-builder-api.onebluesky882.workers.dev`.
+
+When setting `ALLOWED_ORIGINS` in `apps/api/wrangler.toml`, the conductor must add **only the client's frontend URLs** — nothing else.
+
+```toml
+# ✅ correct — client's web and admin frontends only
+ALLOWED_ORIGINS = "https://client-web.workers.dev,https://client-admin.workers.dev"
+
+# ❌ wrong — do not add unrelated domains, backend URLs, or wildcard
+ALLOWED_ORIGINS = "https://fullstack-builder-api.onebluesky882.workers.dev"
+ALLOWED_ORIGINS = "*"
+```
+
+**Rules:**
+- Only `https://` frontend URLs that the client's users will open in a browser
+- Separate multiple origins with a comma, no spaces
+- Do not add the API domain itself
+- Do not use `*` (wildcard) — it disables `credentials` support
+
 The `wrangler.toml` template is also a protected default — do not modify its structure:
 
 ```toml
