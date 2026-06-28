@@ -196,6 +196,19 @@ If a service listed above doesn't fit the client's need, extend it — never rep
 
 ---
 
+## Protected Files — Do NOT Modify
+
+The following files are finalized and must not be edited by the conductor:
+
+| File | Reason |
+|------|--------|
+| `apps/api/src/domains/forum/forum.route.ts` | Complete forum API — list, create, reply, status, notifications |
+| `apps/api/src/domains/roadmap/roadmap.route.ts` | Complete roadmap API |
+
+**Rule:** Do not modify logic, rename routes, remove endpoints, or refactor these files. If a new endpoint is needed, ask the client first. Bugs or security issues are the only exception — fix those, nothing else.
+
+---
+
 ## Protected Pages — Do NOT Remove Without Client Approval
 
 The following pages must remain in the project until the **client explicitly asks to remove them**:

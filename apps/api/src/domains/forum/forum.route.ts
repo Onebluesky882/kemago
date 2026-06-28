@@ -4,20 +4,14 @@ import type { ForumCategory } from '@gover-agent/db'
 import { createAuth } from '@gover-agent/auth'
 import { sendNotificationEmail } from '@gover-agent/email'
 
-type Bindings = { DB: D1Database; RESEND_API_KEY: string; FROM_EMAIL: string }
+type Bindings = { DB: D1Database; RESEND_API_KEY: string; FROM_EMAIL: string; ALLOWED_ORIGINS: string; OWNER_EMAIL: string; SITE_URL: string }
 
 const forumRouter = new Hono<{ Bindings: Bindings }>()
 
-const TRUSTED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  '',
-  '',
-]
-
 async function getSession(c: { env: Bindings; req: { raw: Request } }) {
   const db = createDb(c.env.DB)
-  const auth = createAuth(db, TRUSTED_ORIGINS)
+  const extra = (c.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)
+  const auth = createAuth(db, ['http://localhost:3000', 'http://localhost:3001', ...extra])
   // Better Auth reads Authorization: Bearer <token> automatically
   return auth.api.getSession({ headers: c.req.raw.headers })
 }
@@ -147,6 +141,7 @@ forumRouter.post('/:id/reply', async (c) => {
           replierName: session.user.name,
           resendApiKey: c.env.RESEND_API_KEY,
           fromEmail: c.env.FROM_EMAIL,
+          siteUrl: c.env.SITE_URL ?? '',
         })
       )
     } catch {
@@ -161,7 +156,7 @@ forumRouter.post('/:id/reply', async (c) => {
 })
 
 async function notifyParticipants({
-  db, postId, replierId, replierName, resendApiKey, fromEmail,
+  db, postId, replierId, replierName, resendApiKey, fromEmail, siteUrl,
 }: {
   db: ReturnType<typeof createDb>
   postId: string
@@ -169,6 +164,7 @@ async function notifyParticipants({
   replierName: string
   resendApiKey: string
   fromEmail?: string
+  siteUrl: string
 }) {
   try {
     // Get post with author
@@ -202,7 +198,7 @@ async function notifyParticipants({
       }
     }
 
-    const postUrl = ``
+    const postUrl = `${siteUrl}/forum/${postId}`
 
     await Promise.allSettled(
       participants.map(p =>
