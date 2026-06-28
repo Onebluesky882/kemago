@@ -2,18 +2,14 @@ import { Hono } from 'hono'
 import { createDb, roadmapPhases, roadmapTasks, user, eq, asc } from '@gover-agent/db'
 import { createAuth } from '@gover-agent/auth'
 
-type Bindings = { DB: D1Database }
+type Bindings = { DB: D1Database; ALLOWED_ORIGINS: string; OWNER_EMAIL: string }
 
 const roadmapRouter = new Hono<{ Bindings: Bindings }>()
 
-const TRUSTED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-]
-
 async function getSession(c: { env: Bindings; req: { raw: Request } }) {
   const db = createDb(c.env.DB)
-  const auth = createAuth(db, TRUSTED_ORIGINS)
+  const extra = (c.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)
+  const auth = createAuth(db, ['http://localhost:3000', 'http://localhost:3001', ...extra])
   return auth.api.getSession({ headers: c.req.raw.headers })
 }
 
