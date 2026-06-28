@@ -194,6 +194,21 @@ This template ships with fully working services. Before writing any new code, ve
 
 If a service listed above doesn't fit the client's need, extend it — never replace it.
 
+---
+
+## Protected Pages — Do NOT Remove Without Client Approval
+
+The following pages must remain in the project until the **client explicitly asks to remove them**:
+
+- `/roadmap` — product roadmap / feedback collection
+- `/forum` — community discussion
+
+**Rule:** Never delete, comment out, or hide these pages on your own initiative. If you think they are unused, ask the client first:
+
+> "คุณต้องการเก็บหน้า Roadmap และ Forum ไว้ไหมครับ?"
+
+Only remove them after the client confirms in writing.
+
 ### 7. Smoke test — must pass before handoff
 - [ ] `POST /api/auth/register` → returns `{ user, token }` (no error)
 - [ ] `POST /api/auth/login` → returns `{ user, token }` (no error)
