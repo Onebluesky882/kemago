@@ -16,6 +16,7 @@ type Bindings = {
   DB: D1Database
   BUCKET: R2Bucket
   OWNER_EMAIL: string
+  ALLOWED_ORIGINS: string
   RESEND_API_KEY: string
   R2_ACCOUNT_ID: string
   R2_ACCESS_KEY_ID: string
@@ -33,17 +34,15 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-app.use('*', cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    '',
-    '',
-  ],
-  allowHeaders: ['Content-Type', 'Authorization'],
-  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true,
-}))
+app.use('*', async (c, next) => {
+  const extra = (c.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)
+  return cors({
+    origin: ['http://localhost:3000', 'http://localhost:3001', ...extra],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  })(c, next)
+})
 
 app.route('/health', health)
 app.route('/api/auth', authRouter)

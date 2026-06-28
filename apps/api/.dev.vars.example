@@ -1,5 +1,6 @@
 # ── Auth ──────────────────────────────────────────────
 OWNER_EMAIL=your_owner_email@example.com
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 
 # ── Email (Resend) ────────────────────────────────────
 RESEND_API_KEY=re_your_resend_api_key

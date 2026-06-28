@@ -6,6 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 FROM_EMAIL = "noreply@yourdomain.com"
 OWNER_EMAIL = ""
+ALLOWED_ORIGINS = "https://YOUR_APP_NAME-web.YOUR_ACCOUNT.workers.dev,https://YOUR_APP_NAME-admin.YOUR_ACCOUNT.workers.dev"
 R2_ACCOUNT_ID = ""
 R2_BUCKET_NAME = ""
 GITHUB_REPO_OWNER = ""

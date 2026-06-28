@@ -130,6 +130,81 @@ Do not start designing without a reference or explicit style direction.
 
 ---
 
+## First-Deploy Checklist (Next.js + Cloudflare Workers)
+
+When a conductor clones this template and deploys for the first time, complete these steps **in order** before handing off to the client:
+
+### 1. Fill in `wrangler.toml` values
+```toml
+# apps/api/wrangler.toml
+OWNER_EMAIL = "client@email.com"
+ALLOWED_ORIGINS = "https://YOUR_APP_NAME-web.ACCOUNT.workers.dev,https://YOUR_APP_NAME-admin.ACCOUNT.workers.dev"
+database_name = "YOUR_APP_NAME-db"
+database_id = "<from: wrangler d1 create YOUR_APP_NAME-db>"
+bucket_name = "<from: wrangler r2 bucket create YOUR_APP_NAME-storage>"
+```
+
+### 2. Set secrets
+```bash
+cd apps/api
+wrangler secret put RESEND_API_KEY
+wrangler secret put STRIPE_SECRET_KEY
+wrangler secret put STRIPE_PUBLISHABLE_KEY
+wrangler secret put STRIPE_WEBHOOK_SECRET
+wrangler secret put ANTHROPIC_API_KEY
+```
+
+### 3. Run database migration
+```bash
+wrangler d1 execute YOUR_APP_NAME-db --remote --file ../../packages/db/migrations/auth.sql
+```
+
+### 4. Set `NEXT_PUBLIC_API_URL` in web + admin
+```bash
+# apps/web/.env.local
+NEXT_PUBLIC_API_URL=https://YOUR_APP_NAME-api.YOUR_ACCOUNT.workers.dev
+
+# apps/admin/.env.local
+NEXT_PUBLIC_API_URL=https://YOUR_APP_NAME-api.YOUR_ACCOUNT.workers.dev
+```
+
+### 5. Deploy
+```bash
+# from apps/web
+pnpm deploy
+
+# from apps/api
+wrangler deploy
+```
+
+### 6. Use default services first — DO NOT rebuild what's already there
+
+This template ships with fully working services. Before writing any new code, verify the existing ones work:
+
+| Need | Already provided | Do NOT create |
+|------|-----------------|---------------|
+| Auth (login/register) | `POST /api/auth/login`, `POST /api/auth/register` | custom auth system |
+| Session check | `GET /api/user/me` | new session endpoint |
+| File upload | `/api/storage` | direct R2 integration |
+| Email sending | `/api/email` | custom SMTP code |
+| Payments | `/api/payment` (Stripe) | custom payment logic |
+| AI agent | `/api/agent` (Anthropic) | new LLM wrapper |
+| Forum/comments | `/api/forum` | new comments table |
+| Roadmap/feedback | `/api/roadmap` | new feedback system |
+
+If a service listed above doesn't fit the client's need, extend it — never replace it.
+
+### 7. Smoke test — must pass before handoff
+- [ ] `POST /api/auth/register` → returns `{ user, token }` (no error)
+- [ ] `POST /api/auth/login` → returns `{ user, token }` (no error)
+- [ ] `/dashboard` redirects to `/login` when not logged in
+- [ ] Register form on web creates account and redirects to `/dashboard`
+- [ ] Login form on web logs in and redirects to `/dashboard`
+
+If any step fails, check `ALLOWED_ORIGINS` in `wrangler.toml` and redeploy.
+
+---
+
 ## Default Scripts — Next.js + Cloudflare Workers (DO NOT MODIFY)
 
 When the project uses **Next.js with Cloudflare Workers** (`opennextjs-cloudflare`), these scripts in `package.json` are the canonical defaults. The conductor must **never** modify them.
