@@ -11,6 +11,11 @@
     "type-check": "turbo type-check",
     "set-owner": "tsx scripts/set-owner.ts"
   },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "^0.25.0"
+    }
+  },
   "devDependencies": {
     "@biomejs/biome": "latest",
     "tsx": "latest",

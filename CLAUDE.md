@@ -130,6 +130,53 @@ Do not start designing without a reference or explicit style direction.
 
 ---
 
+## Default Scripts — Next.js + Cloudflare Workers (DO NOT MODIFY)
+
+When the project uses **Next.js with Cloudflare Workers** (`opennextjs-cloudflare`), these scripts in `package.json` are the canonical defaults. The conductor must **never** modify them.
+
+```json
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "build:worker": "opennextjs-cloudflare build",
+  "deploy": "opennextjs-cloudflare build && wrangler deploy",
+  "start": "next start",
+  "type-check": "tsc --noEmit",
+  "test": "vitest run"
+}
+```
+
+**Rules:**
+- Do not rename, remove, or alter any of these script entries.
+- Do not replace `opennextjs-cloudflare` with other adapters (e.g. `@cloudflare/next-on-pages`).
+- If a new script is needed, add it — do not overwrite existing ones.
+
+Detection: project has `opennextjs-cloudflare` in `package.json` dependencies or `wrangler.toml` present.
+
+The `wrangler.toml` template is also a protected default — do not modify its structure:
+
+```toml
+name = "YOUR_APP_NAME-web"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+
+[[d1_databases]]
+binding = "DB"
+database_name = ""
+database_id = ""
+```
+
+**Rules:**
+- `main`, `compatibility_date`, `compatibility_flags`, and `[assets].directory` must not be changed.
+- `name`, `database_name`, and `database_id` are the only fields the client fills in — conductor must not prefill or hardcode them.
+- Do not add or remove top-level sections (`[assets]`, `[[d1_databases]]`) unless explicitly instructed by the client.
+
+---
+
 ## ADR Numbering
 
 ```bash
