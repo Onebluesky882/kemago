@@ -1,0 +1,108 @@
+:root {
+  --bg: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f1f1ee;
+  --border: #e1e0d9;
+  --border-strong: rgba(11, 11, 11, 0.10);
+  --text: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --baseline: #c3c2b7;
+  --sidebar-bg: #12131a;
+  --sidebar-text: #cbd5e1;
+  --sidebar-text-active: #ffffff;
+  --sidebar-border: #22242e;
+
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-dim: rgba(124, 58, 237, 0.08);
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
+  --delta-good-text: #006300;
+
+  --chart-seq-base: #2a78d6;
+  --chart-seq-hover: #256abf;
+  --tooltip-bg: #0b0b0b;
+  --tooltip-text: #ffffff;
+
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --radius: 8px;
+  --radius-sm: 6px;
+}
+
+[data-theme="dark"] {
+  --bg: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #202020;
+  --border: #2c2c2a;
+  --border-strong: rgba(255, 255, 255, 0.10);
+  --text: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --baseline: #383835;
+  --sidebar-bg: #0a0a0d;
+  --sidebar-text: #a9b2c3;
+  --sidebar-text-active: #ffffff;
+  --sidebar-border: #1c1d24;
+
+  --accent: #8b5cf6;
+  --accent-hover: #9f75f5;
+  --accent-dim: rgba(139, 92, 246, 0.14);
+
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #e66767;
+  --delta-good-text: #0ca30c;
+
+  --chart-seq-base: #3987e5;
+  --chart-seq-hover: #5598e7;
+  --tooltip-bg: #ffffff;
+  --tooltip-text: #0b0b0b;
+
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  line-height: 1.5;
+  transition: background 200ms ease, color 200ms ease;
+}
+
+/* Subtle dot-grid background — felt, not seen */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, var(--border-strong) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes orb-move {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-15px, 15px) scale(0.97); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}

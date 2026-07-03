@@ -3,8 +3,8 @@ import { streamSSE } from 'hono/streaming'
 import AnthropicSDK from '@anthropic-ai/sdk'
 import { createAuth } from '@gover-agent/auth'
 import { createDb } from '@gover-agent/db'
-import { createVaultSchema, createSessionSchema, sendMessageSchema, streamQuerySchema, filesQuerySchema, deployNotifySchema, deployCompleteSchema, deployStatusQuerySchema } from './agent.schema'
-import { createVault, createAgentSession, sendMessage, streamSession, listSessionFiles } from './agent.handler'
+import { createVaultSchema, createSessionSchema, sendMessageSchema, streamQuerySchema, filesQuerySchema, deployNotifySchema, deployCompleteSchema, deployStatusQuerySchema, statsQuerySchema } from './agent.schema'
+import { createVault, createAgentSession, sendMessage, streamSession, listSessionFiles, estimateCostUsd } from './agent.handler'
 
 type Bindings = {
   DB: D1Database
@@ -171,8 +171,8 @@ agentRouter.get('/stream', async (c) => {
     } finally {
       await c.env.DB
         .prepare(
-          `INSERT INTO agent_logs (id, correlation_id, user_id, session_id, agent_id, input_preview, output_preview, tool_calls, tokens_input, tokens_output, latency_ms, status, error_message, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO agent_logs (id, correlation_id, user_id, session_id, agent_id, input_preview, output_preview, tool_calls, tokens_input, tokens_output, cost_usd, latency_ms, status, error_message, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           crypto.randomUUID(),
@@ -185,6 +185,7 @@ agentRouter.get('/stream', async (c) => {
           toolCalls.length > 0 ? JSON.stringify(toolCalls) : null,
           tokensInput,
           tokensOutput,
+          estimateCostUsd(tokensInput, tokensOutput),
           Date.now() - startedAt,
           logStatus,
           errorMessage,
@@ -314,7 +315,7 @@ agentRouter.get('/logs', async (c) => {
 
   const rows = await c.env.DB
     .prepare(
-      `SELECT id, correlation_id, session_id, agent_id, output_preview, tool_calls, tokens_input, tokens_output, latency_ms, status, error_message, created_at
+      `SELECT id, correlation_id, session_id, agent_id, output_preview, tool_calls, tokens_input, tokens_output, cost_usd, latency_ms, status, error_message, created_at
        FROM agent_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`,
     )
     .bind(user.id)
@@ -327,17 +328,94 @@ agentRouter.get('/logs', async (c) => {
       tool_calls: string | null
       tokens_input: number
       tokens_output: number
+      cost_usd: number
       latency_ms: number
       status: string
       error_message: string | null
       created_at: number
     }>()
 
+  const logs = (rows.results ?? []).map((r) => ({
+    ...r,
+    tool_calls: r.tool_calls ? JSON.parse(r.tool_calls) : [],
+  }))
+
   return c.json({
-    logs: (rows.results ?? []).map((r) => ({
-      ...r,
-      tool_calls: r.tool_calls ? JSON.parse(r.tool_calls) : [],
+    logs,
+    totalCostUsd: logs.reduce((sum, log) => sum + log.cost_usd, 0),
+  })
+})
+
+// GET /api/agent/stats?days=30 — daily-bucketed cost/token/run aggregates for monitor dashboard
+agentRouter.get('/stats', async (c) => {
+  const user = await getOwner(c)
+  if (!user) return c.json({ error: 'Unauthorized' }, 401)
+
+  const query = statsQuerySchema.safeParse({ days: c.req.query('days') })
+  if (!query.success) return c.json({ error: 'Invalid request', issues: query.error.issues }, 400)
+
+  const { days } = query.data
+  const since = Date.now() - days * 24 * 60 * 60 * 1000
+
+  const rows = await c.env.DB
+    .prepare(
+      `SELECT
+         strftime('%Y-%m-%d', created_at / 1000, 'unixepoch') as day,
+         SUM(tokens_input) as tokens_input,
+         SUM(tokens_output) as tokens_output,
+         SUM(cost_usd) as cost_usd,
+         COUNT(*) as total_runs,
+         SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as error_count,
+         AVG(latency_ms) as avg_latency_ms
+       FROM agent_logs
+       WHERE user_id = ? AND created_at >= ?
+       GROUP BY day
+       ORDER BY day ASC`,
+    )
+    .bind(user.id, since)
+    .all<{
+      day: string
+      tokens_input: number
+      tokens_output: number
+      cost_usd: number
+      total_runs: number
+      error_count: number
+      avg_latency_ms: number
+    }>()
+
+  const daily = rows.results ?? []
+
+  const totals = daily.reduce(
+    (acc, d) => ({
+      costUsd: acc.costUsd + d.cost_usd,
+      tokensInput: acc.tokensInput + d.tokens_input,
+      tokensOutput: acc.tokensOutput + d.tokens_output,
+      totalRuns: acc.totalRuns + d.total_runs,
+      errorCount: acc.errorCount + d.error_count,
+      latencyWeighted: acc.latencyWeighted + d.avg_latency_ms * d.total_runs,
+    }),
+    { costUsd: 0, tokensInput: 0, tokensOutput: 0, totalRuns: 0, errorCount: 0, latencyWeighted: 0 },
+  )
+
+  return c.json({
+    daily: daily.map((d) => ({
+      day: d.day,
+      costUsd: d.cost_usd,
+      tokensInput: d.tokens_input,
+      tokensOutput: d.tokens_output,
+      totalRuns: d.total_runs,
+      errorCount: d.error_count,
+      avgLatencyMs: d.avg_latency_ms,
     })),
+    totals: {
+      costUsd: totals.costUsd,
+      tokensInput: totals.tokensInput,
+      tokensOutput: totals.tokensOutput,
+      totalRuns: totals.totalRuns,
+      errorCount: totals.errorCount,
+      successRate: totals.totalRuns > 0 ? (totals.totalRuns - totals.errorCount) / totals.totalRuns : 1,
+      avgLatencyMs: totals.totalRuns > 0 ? totals.latencyWeighted / totals.totalRuns : 0,
+    },
   })
 })
 

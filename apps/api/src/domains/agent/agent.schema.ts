@@ -35,3 +35,7 @@ export const deployCompleteSchema = z.object({
 export const deployStatusQuerySchema = z.object({
   sessionId: z.string().min(1),
 })
+
+export const statsQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(90).default(30),
+})

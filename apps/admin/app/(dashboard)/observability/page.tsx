@@ -13,6 +13,7 @@ type AgentLog = {
   tool_calls: string[]
   tokens_input: number
   tokens_output: number
+  cost_usd: number
   latency_ms: number
   status: string
   error_message: string | null
@@ -22,12 +23,16 @@ type AgentLog = {
 export default function ObservabilityPage() {
   const router = useRouter()
   const [logs, setLogs] = useState<AgentLog[]>([])
+  const [totalCostUsd, setTotalCostUsd] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetch(`${API}/api/agent/logs`, { credentials: 'include' })
       .then((r) => r.json())
-      .then((d) => setLogs(d.logs ?? []))
+      .then((d) => {
+        setLogs(d.logs ?? [])
+        setTotalCostUsd(d.totalCostUsd ?? 0)
+      })
       .catch(() => {})
       .finally(() => setIsLoading(false))
   }, [])
@@ -47,6 +52,12 @@ export default function ObservabilityPage() {
         <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: '#0f172a' }}>Observability</h1>
       </div>
 
+      {!isLoading && logs.length > 0 && (
+        <div style={{ marginBottom: '16px', fontSize: '14px', color: '#475569' }}>
+          Total cost (last {logs.length} runs): <strong style={{ color: '#0f172a' }}>${totalCostUsd.toFixed(4)}</strong>
+        </div>
+      )}
+
       {isLoading ? (
         <p style={{ color: '#94a3b8', fontSize: '14px' }}>Loading logs...</p>
       ) : logs.length === 0 ? (
@@ -56,7 +67,7 @@ export default function ObservabilityPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
-                {['Time', 'Status', 'Latency', 'Tokens in', 'Tokens out', 'Tools', 'Output preview'].map((h) => (
+                {['Time', 'Status', 'Latency', 'Tokens in', 'Tokens out', 'Cost', 'Tools', 'Output preview'].map((h) => (
                   <th key={h} style={{ padding: '10px 12px', fontWeight: 600, color: '#475569', borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
@@ -79,6 +90,7 @@ export default function ObservabilityPage() {
                   <td style={{ padding: '10px 12px', color: '#0f172a' }}>{log.latency_ms.toLocaleString()} ms</td>
                   <td style={{ padding: '10px 12px', color: '#0f172a' }}>{log.tokens_input.toLocaleString()}</td>
                   <td style={{ padding: '10px 12px', color: '#0f172a' }}>{log.tokens_output.toLocaleString()}</td>
+                  <td style={{ padding: '10px 12px', color: '#0f172a', whiteSpace: 'nowrap' }}>${log.cost_usd.toFixed(4)}</td>
                   <td style={{ padding: '10px 12px', color: '#64748b' }}>
                     {log.tool_calls.length > 0 ? log.tool_calls.join(', ') : '—'}
                   </td>

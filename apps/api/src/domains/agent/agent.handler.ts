@@ -111,4 +111,13 @@ export async function listSessionFiles(
   }))
 }
 
+// Price per model — update if ANTHROPIC_AGENT_ID is configured with a different model tier.
+// Defaults assume Claude Sonnet 5 ($3 / $15 per million tokens).
+const PRICE_PER_MTOK_INPUT = 3
+const PRICE_PER_MTOK_OUTPUT = 15
+
+export function estimateCostUsd(tokensInput: number, tokensOutput: number): number {
+  return (tokensInput * PRICE_PER_MTOK_INPUT + tokensOutput * PRICE_PER_MTOK_OUTPUT) / 1_000_000
+}
+
 export { AGENT_SYSTEM_PROMPT }

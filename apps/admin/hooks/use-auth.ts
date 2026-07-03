@@ -6,7 +6,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
 export function useAuth() {
   const router = useRouter()
-  const { setUser, token } = useAuthStore()
+  const { setUser, setToken, token } = useAuthStore()
 
   async function signIn(email: string, password: string) {
     const res = await fetch(`${API}/api/auth/login`, {
@@ -17,6 +17,7 @@ export function useAuth() {
     if (!res.ok) throw new Error('Invalid credentials')
     const data = await res.json()
     setUser(data.user)
+    setToken(data.token ?? null)
     router.push('/dashboard')
   }
 
@@ -26,6 +27,7 @@ export function useAuth() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
     setUser(null)
+    setToken(null)
     router.push('/login')
   }
 
