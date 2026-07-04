@@ -83,9 +83,10 @@ Success Indicators:
 
 - Added a rule that prevents the assistant from doing work beyond what was asked. For example, if you ask for a screen mockup only, it will not also build a backend or database.
 - The admin panel now tracks how much each AI agent run actually costs, not just how much text it processed — this shows up on the Observability page as a dollar amount per run and a running total.
-- Started building a new "Monitor" section in the admin panel — an overview page plus dedicated pages for cost, system health, and error tracking, styled like a technology monitoring dashboard.
+- The staff login issue found earlier (logins not staying signed in on a live deployment) has been fixed.
+- The admin panel's Dashboard home page is now fully built: it shows system status, AI agent cost and usage at a glance, a cost trend chart, a success-rate gauge, and a feed of recent activity — with a 7/30/90-day range switch.
+- The new "Monitor" section is complete — three dedicated pages for Cost, System Health, and Errors, all reachable from the sidebar menu, styled like a technology monitoring dashboard.
 - Redesigned the admin login page and the whole admin panel to support both light mode and dark mode with a switch to toggle between them.
-- While testing the login page, found a real issue: staff logins may not stay signed in correctly once the admin panel and the backend are hosted on separate web addresses (the normal setup for a live deployment). This needs to be fixed before the admin panel goes live — flagged for the next update.
 
 ---
 
@@ -107,8 +108,8 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 
 <!-- Conductor updates this section to summarize, in plain language, what happens next. -->
 
-- Fix the login session issue found during testing so staff logins stay reliable on a live deployment.
-- Finish the new Monitor pages (cost, system health, errors) and connect them to the admin menu.
+- Monitor pages and Dashboard overview are done — no open items on this piece of work right now.
+- Awaiting your direction on what to build next.
 
 ---
 

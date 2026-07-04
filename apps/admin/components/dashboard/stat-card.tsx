@@ -1,4 +1,5 @@
 import { Sparkline } from '../monitor/sparkline'
+import { chrome, status as statusColors } from '../monitor/colors'
 
 type StatCardProps = {
   label: string
@@ -12,18 +13,18 @@ export function StatCard({ label, value, status, delta, trend }: StatCardProps) 
   return (
     <div
       style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
+        background: chrome.surface,
+        border: `1px solid ${chrome.gridline}`,
         borderRadius: '8px',
         padding: '20px',
         transition: 'border-color 150ms ease, transform 150ms ease',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = '#94a3b8'
+        e.currentTarget.style.borderColor = chrome.border
         e.currentTarget.style.transform = 'translateY(-2px)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = '#e2e8f0'
+        e.currentTarget.style.borderColor = chrome.gridline
         e.currentTarget.style.transform = 'translateY(0)'
       }}
     >
@@ -32,7 +33,7 @@ export function StatCard({ label, value, status, delta, trend }: StatCardProps) 
           display: 'flex',
           alignItems: 'center',
           gap: '6px',
-          color: '#64748b',
+          color: chrome.inkSecondary,
           fontSize: '14px',
           marginBottom: '8px',
         }}
@@ -44,7 +45,7 @@ export function StatCard({ label, value, status, delta, trend }: StatCardProps) 
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              background: status === 'ok' ? '#16a34a' : '#dc2626',
+              background: status === 'ok' ? statusColors.good : statusColors.critical,
               flexShrink: 0,
             }}
           />
@@ -53,9 +54,9 @@ export function StatCard({ label, value, status, delta, trend }: StatCardProps) 
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px' }}>
         <div>
-          <div style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>{value}</div>
+          <div style={{ fontSize: '20px', fontWeight: 700, color: chrome.ink }}>{value}</div>
           {delta && (
-            <div style={{ fontSize: '12px', marginTop: '4px', color: delta.positive ? '#006300' : '#dc2626' }}>
+            <div style={{ fontSize: '12px', marginTop: '4px', color: delta.positive ? 'var(--delta-good-text)' : statusColors.critical }}>
               {delta.positive ? '↑' : '↓'} {delta.text}
             </div>
           )}

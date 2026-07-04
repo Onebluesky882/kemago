@@ -11,6 +11,7 @@ export const chrome = {
   gridline: 'var(--border)',
   baseline: 'var(--baseline)',
   border: 'var(--border-strong)',
+  accent: 'var(--accent)',
 }
 
 export const status = {
