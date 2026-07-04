@@ -150,11 +150,9 @@ License Gate Rule — MANDATORY
 
 The license system does not exist yet in this template. It will be implemented in a future stage.
 
-**Governance gate (enforced now — via hook):**
+**Governance gate (currently manual — not hook-enforced):**
 
-`license_status: active` must be set in `agentic/PROJECT.md` before any file can be written or edited. This is enforced automatically by `.claude/hooks/license-check.sh` — not prompt-based. The hook blocks `Write` and `Edit` tool calls at the harness level and exits with code 2 if license is not active.
-
-Exempt from hook: `agentic/PROJECT.md`, `agentic/GOVERNANCE_CORE.md`, `agentic/DEV.md`, `agentic/DEV_LOG.md`, `.claude/*`, `.gitkeep`, `.example` files.
+`license_status: active` should be set in `agentic/PROJECT.md` before the Conductor dispatches any stage. A pre-tool-use hook (`.claude/hooks/license-check.sh`) previously enforced this at the harness level, but it was deliberately removed (commit `2990989`, "chore: remove license check system") because the underlying license system doesn't exist yet and a hard file-write block on every task was premature. Enforcement today is a manual governance check — see CONDUCTOR.md's Pre-Flight Check, Step 1 (License Gate Check).
 
 Only Dev may set `license_status: active` in PROJECT.md. Workers may NOT modify PROJECT.md.
 

@@ -103,25 +103,9 @@ If any check is true → block parallel, use sequential automatically.
 
 ⸻
 
-## Decision: [Title]
-
-**Date:** YYYY-MM-DD
-**Status:** ACCEPTED | SUPERSEDED
-
-**Context:**
-<!-- Why this decision was needed -->
-
-**Decision:**
-<!-- What was decided -->
-
-**Consequences:**
-<!-- What this means for the project -->
-
-⸻
-
 ## Decision: Anthropic Managed Agents for Web-Based Code Editing
 
-**Date:** YYYY-MM-DD
+**Date:** 2026-06-23
 **Status:** ACCEPTED
 
 **Context:**

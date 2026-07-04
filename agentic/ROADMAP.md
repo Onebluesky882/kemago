@@ -96,6 +96,7 @@ Success Indicators:
   - The card payment (Stripe) code had a version mismatch that stopped the whole project from passing its build check. Fixed.
   - The setup instructions only told a new project to run 1 out of 17 required database setup steps — every other feature (forum, agent tracking, purchases, roadmap, etc.) would have been broken from day one. Rewrote the instructions with the full, correct steps in the right order.
   - The internal "what's already built, don't rebuild it" reference list was missing the Telegram, Discord, and crypto payment features — fixed so future work won't recreate them by mistake.
+- Did a full recheck of the internal rulebook itself (not the app — the instructions that guide how this project gets built). Found two spots where the written instructions described a safety check that no longer actually exists (it was removed a while back but the instructions were never updated to match) and one leftover blank placeholder in the decision log. Both fixed so the instructions now match reality. Left the still-blank project-info template files exactly as they are, as requested — they're meant to stay blank until someone starts a brand-new project from this template.
 
 ---
 

@@ -15,6 +15,7 @@ Conductor Branch: main
 | stage-3-agent-cost-and-monitor-dashboard | apps/api/src/domains/agent, apps/admin | none | COMPLETE |
 | stage-4-discord-and-nowpayments-services | apps/api/src/domains/discord, apps/api/src/domains/nowpayments | none | COMPLETE |
 | stage-5-service-readiness-audit | apps/api/src/domains/agent, apps/api/src/domains/user, apps/api/src/domains/payment, packages/db/migrations, CLAUDE.md | none | COMPLETE |
+| stage-6-governance-recheck | agentic/AGENT_RULES.md, agentic/DECISIONS.md | none | COMPLETE |
 
 ---
 
@@ -124,6 +125,25 @@ Conductor Branch: main
 - Verified: `tsc --noEmit` clean, `pnpm test` 8/8 files, 30/30 tests passing, after all fixes.
 
 **Next:** None outstanding from this audit. Lower-priority items noted but not fixed (out of scope for this pass, flagged for a future stage if the client wants them): `agent` domain still has no test file (most complex domain — SSE streaming, cost calc, raw D1 writes); Stripe payment service has a backend but zero frontend checkout UI in `apps/web`; DB access is inconsistent between Drizzle-managed tables (auth/purchases/forum/roadmap) and raw-SQL-managed tables (agent_logs/agent_sessions/setup_submissions) — no compile-time schema safety for the latter group.
+
+**Blockers:** None.
+
+---
+
+### stage-6-governance-recheck
+
+**Domain:** agentic/AGENT_RULES.md, agentic/DECISIONS.md
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Read all 16 files under `agentic/` plus `CLAUDE.md` end-to-end and cross-checked them against actual repo state (git history, `.claude/settings.json`, `.claude/hooks/`). Found and fixed 3 stale-documentation issues:
+- `AGENT_RULES.md`'s License Gate Rule claimed `license_status: active` is "enforced now — via hook" by `.claude/hooks/license-check.sh`. That hook was deliberately deleted in commit `2990989` ("chore: remove license check system") along with its `settings.json` entry, but this section was never updated to match — it still described a control that hasn't existed since that commit. Rewrote it to state the gate is currently a manual Conductor check (matching how `CONDUCTOR.md` and `SECURITY_RULES.md` already correctly described it).
+- `DECISIONS.md` had an unfilled `## Decision: [Title]` template stub (with a literal `Date: YYYY-MM-DD`) sitting between two real, accepted decisions instead of at the end of the file, where a `<!-- Add one section per decision -->` comment already serves that purpose. Removed the stray stub.
+- The "Anthropic Managed Agents for Web-Based Code Editing" decision had never had its `YYYY-MM-DD` placeholder filled in despite being `ACCEPTED`. Backfilled with `2026-06-23`, confirmed via `git log` (first commit touching `apps/api/src/domains/agent/`).
+
+**Also confirmed (no change made — client explicitly asked to leave as-is):** `PROJECT.md`, `ARCHITECTURE.md`, `CONTRACTS.md`, and `QUESTIONS.md` are still 100% unfilled template scaffolding (`[TBD]` throughout), and the full Conductor→Worker→worktree→gate-out→merge-approval ceremony described across `CONDUCTOR.md`/`START_HERE.md`/`AGENT_RULES.md`/`QUESTIONS.md` has never actually been exercised in this repo (`agentic/tasks/`, `gate-out/`, `merge-approval/`, `rejection/` contain only `.gitkeep`). All real work to date has happened directly on `main` via direct conversation, which does satisfy every rule that is actually hook-enforced (`client-type-check.sh`, `governance-english-only.sh`, `pipeline-roadmap-guard.sh`, `gate-out-typecheck.sh`, `merge-approval-guard.sh`, `no-main-branch.sh`) — the gap is only between documented *aspirational* ceremony and what's mechanically enforced, not a violation of anything that actually runs. Client confirmed this repo is meant to stay a distributable, pristine template on those four files — do not fill them in.
+
+**Next:** None. If a future stage wants the full Conductor ceremony actually exercised (worktrees, gate-out, merge-approval) rather than direct-on-main work, that's a workflow decision for Dev, not a text fix.
 
 **Blockers:** None.
 
