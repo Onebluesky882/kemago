@@ -12,7 +12,8 @@ Conductor Branch: main
 |-------|--------|------------|--------|
 | stage-1-setup | <!-- domain --> | none | PLANNING |
 | stage-2-claude-md-scope-rule | CLAUDE.md | none | COMPLETE |
-| stage-3-agent-cost-and-monitor-dashboard | apps/api/src/domains/agent, apps/admin | none | IN_PROGRESS |
+| stage-3-agent-cost-and-monitor-dashboard | apps/api/src/domains/agent, apps/admin | none | COMPLETE |
+| stage-4-discord-and-nowpayments-services | apps/api/src/domains/discord, apps/api/src/domains/nowpayments | none | COMPLETE |
 
 ---
 
@@ -71,6 +72,37 @@ Conductor Branch: main
 
 **Next:**
 - No open work on this stage. Future stage could add server-side auth to `/observability`'s `fetch` call (still uses `credentials: 'include'` without the Bearer wrapper) — noticed during this pass but left untouched as out of scope.
+
+**Blockers:** None.
+
+---
+
+### stage-4-discord-and-nowpayments-services
+
+**Domain:** apps/api/src/domains/discord, apps/api/src/domains/nowpayments
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:**
+- Confirmed the Telegram bot service already existed (`apps/api/src/domains/telegram/`, mounted at `/webhook/telegram` + `/webhook/notify`) — left untouched, no changes needed.
+- Added `apps/api/src/domains/discord/` — a Discord bot service following the same shape as `telegram`:
+  - `discord.route.ts` — `POST /api/discord/interactions` (Discord Interactions Endpoint: verifies the `X-Signature-Ed25519`/`X-Signature-Timestamp` headers via Web Crypto Ed25519, handles `PING` and a `/help` slash command stub with a `// TODO` for custom commands) and `POST /api/discord/notify` (send a message to a channel by ID — callable from any other route).
+  - `discord.service.ts` — `sendDiscordMessage()` (Discord REST `POST /channels/{id}/messages`) and `verifyDiscordRequest()` (Ed25519 signature check, no external deps — Cloudflare Workers' native Web Crypto supports the `Ed25519` algorithm).
+  - `discord.schema.ts` — zod schema for `/notify`.
+  - `discord.route.test.ts` — generates a real Ed25519 keypair via `node:crypto` at test time and signs requests for real, rather than mocking the crypto call; covers missing/invalid signature (401), `PING`, `/help`, unknown command, and `/notify` (incl. 400 on missing fields).
+- Added `apps/api/src/domains/nowpayments/` — a crypto-payment service mirroring `payment` (Stripe)'s shape:
+  - `nowpayments.route.ts` — `POST /api/nowpayments/invoice` (creates a NOWPayments-hosted invoice; caller supplies `ipnCallbackUrl`/`successUrl`/`cancelUrl`, same pattern as Stripe's `/checkout`), `GET /api/nowpayments/status/:paymentId`, `POST /api/nowpayments/webhook` (IPN receiver — verifies `x-nowpayments-sig` via HMAC-SHA512 over the recursively-key-sorted JSON body per NOWPayments' spec; order fulfillment left as a `// TODO`, same as the Stripe webhook's `purchases` table write, since there's no price→plan mapping defined for crypto yet).
+  - `nowpayments.handler.ts` — `createInvoice()`, `getPaymentStatus()`, `verifyIpnSignature()`.
+  - `nowpayments.schema.ts` — zod schemas for invoice creation.
+  - `nowpayments.route.test.ts` — mocks `fetch` for invoice creation/status, and generates a real HMAC-SHA512 signature via `node:crypto` to test the webhook guard (valid, invalid, and missing-signature cases).
+- Wired both routers into `apps/api/src/index.ts` (`/api/discord`, `/api/nowpayments`) and added their `Bindings` fields (`DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`, `NOWPAYMENTS_API_KEY`, `NOWPAYMENTS_IPN_SECRET`).
+- Documented the four new secret names in `apps/api/wrangler.toml`'s secrets comment block (same pattern as `BOT_TOKEN`/`TELEGRAM_SECRET_TOKEN`).
+- `tsc --noEmit` passes clean for the new code; `pnpm test` — 8 test files, 30 tests, all passing (up from 7 files before this stage). Two pre-existing, unrelated failures in `payment.handler.ts`/`payment.route.ts` (Stripe SDK `apiVersion` literal-type drift from a `stripe` package bump) were noticed but are out of scope for this stage — not introduced by this change.
+
+**Next:**
+- No UI was built for these two services (not requested) — no `/discord` or `/nowpayments` admin page exists yet, unlike `/agent` or `/observability`. Ask before adding one.
+- NOWPayments webhook fulfillment logic is a stub (`// TODO`) — needs the client's actual price→plan mapping before it can mark orders paid.
+- Discord slash commands need to be registered with Discord's API separately (not done here — typically a one-time script using `DISCORD_BOT_TOKEN` + `DISCORD_APPLICATION_ID`, which isn't yet a binding).
 
 **Blockers:** None.
 

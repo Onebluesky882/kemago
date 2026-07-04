@@ -87,6 +87,9 @@ Success Indicators:
 - The admin panel's Dashboard home page is now fully built: it shows system status, AI agent cost and usage at a glance, a cost trend chart, a success-rate gauge, and a feed of recent activity — with a 7/30/90-day range switch.
 - The new "Monitor" section is complete — three dedicated pages for Cost, System Health, and Errors, all reachable from the sidebar menu, styled like a technology monitoring dashboard.
 - Redesigned the admin login page and the whole admin panel to support both light mode and dark mode with a switch to toggle between them.
+- A Telegram bot connection already existed in this project and is ready to use — no new work needed there.
+- Added a Discord bot connection, ready for you to plug in your bot's keys and start using it.
+- Added a crypto payment connection (NOWPayments) — lets customers pay with cryptocurrency, alongside the existing card payment option. Ready for you to plug in your account keys.
 
 ---
 
@@ -109,6 +112,8 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 <!-- Conductor updates this section to summarize, in plain language, what happens next. -->
 
 - Monitor pages and Dashboard overview are done — no open items on this piece of work right now.
+- To go live with the Discord bot and crypto payments, you'll need to provide your own account keys (Discord bot token, NOWPayments account key) — ask when you're ready and we'll walk through it.
+- The crypto payment connection can receive payments but doesn't yet automatically mark an order as "paid" in the system — that logic needs your specific pricing plan rules before it's finished.
 - Awaiting your direction on what to build next.
 
 ---

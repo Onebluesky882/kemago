@@ -11,6 +11,8 @@ import { roadmapRouter } from './domains/roadmap/roadmap.route'
 import { agentRouter } from './domains/agent/agent.route'
 import { setupRouter } from './domains/setup/setup.route'
 import { telegramRouter } from './domains/telegram/telegram.route'
+import { discordRouter } from './domains/discord/discord.route'
+import { nowpaymentsRouter } from './domains/nowpayments/nowpayments.route'
 
 type Bindings = {
   DB: D1Database
@@ -30,6 +32,10 @@ type Bindings = {
   ANTHROPIC_ENV_ID: string
   BOT_TOKEN: string
   TELEGRAM_SECRET_TOKEN: string
+  DISCORD_PUBLIC_KEY: string
+  DISCORD_BOT_TOKEN: string
+  NOWPAYMENTS_API_KEY: string
+  NOWPAYMENTS_IPN_SECRET: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -55,5 +61,7 @@ app.route('/api/roadmap', roadmapRouter)
 app.route('/api/agent', agentRouter)
 app.route('/api/setup', setupRouter)
 app.route('/webhook', telegramRouter)
+app.route('/api/discord', discordRouter)
+app.route('/api/nowpayments', nowpaymentsRouter)
 
 export default app

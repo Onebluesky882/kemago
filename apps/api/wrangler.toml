@@ -26,6 +26,10 @@ GITHUB_TEMPLATE_REPO = ""
 # SITE_URL                   ← client's live website URL e.g. https://client-web.workers.dev
 # BOT_TOKEN                  ← from @BotFather on Telegram
 # TELEGRAM_SECRET_TOKEN      ← random string you set when registering webhook (openssl rand -hex 16)
+# DISCORD_PUBLIC_KEY         ← from your app's page in the Discord Developer Portal
+# DISCORD_BOT_TOKEN          ← from the Bot tab of your app in the Discord Developer Portal
+# NOWPAYMENTS_API_KEY        ← from your NOWPayments account dashboard
+# NOWPAYMENTS_IPN_SECRET     ← from your NOWPayments account's IPN settings
 
 [[r2_buckets]]
 binding = "BUCKET"
