@@ -32,9 +32,42 @@ const SERVICES = [
         <line x1="2" y1="10" x2="22" y2="10" />
       </svg>
     ),
-    title: 'Online Payments',
-    desc: 'Accept credit cards, debit cards, and more — secure and ready.',
-    tag: 'Payment',
+    title: 'Payment Gateway',
+    desc: 'Accept payments by card or cryptocurrency — secure checkout, ready to connect.',
+    tag: 'Payments',
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    ),
+    title: 'Security',
+    desc: 'Encrypted secrets, protected APIs, and verified requests — security built in from day one.',
+    tag: 'Security',
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5v6c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+        <path d="M3 11v6c0 1.66 4 3 9 3s9-1.34 9-3v-6" />
+      </svg>
+    ),
+    title: 'Database',
+    desc: 'A reliable, ready-to-use database for storing all of your app\'s data.',
+    tag: 'Database',
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      </svg>
+    ),
+    title: 'File Storage',
+    desc: 'Secure cloud storage for uploads — photos, documents, and files.',
+    tag: 'Storage',
   },
   {
     icon: (
@@ -46,6 +79,29 @@ const SERVICES = [
     title: 'Authentication',
     desc: 'Sign up, sign in, and manage user permissions out of the box.',
     tag: 'Auth',
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="8" width="16" height="12" rx="2" />
+        <path d="M12 8V4M8 4h8" />
+        <circle cx="9" cy="14" r="1" />
+        <circle cx="15" cy="14" r="1" />
+      </svg>
+    ),
+    title: 'AI Assistant',
+    desc: 'A built-in AI assistant that can help edit, update, and manage your site.',
+    tag: 'AI',
+  },
+  {
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+    ),
+    title: 'Chat Bot Integration',
+    desc: 'Connect a chat bot to talk with your customers on their favorite messaging app.',
+    tag: 'Bot',
   },
   {
     icon: (

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth.store'
 import { useAuth } from '@/hooks/use-auth'
+import { useApi } from '@/hooks/use-api'
 import { Navbar } from '@/components/navbar'
 import { BackButton } from '@/components/back-button'
 
@@ -15,6 +16,8 @@ type Post = {
   status: 'open' | 'closed'; createdAt: string
   category: string; user: { id: string; name: string }
 }
+
+type Purchase = { purchased: boolean; status?: string; githubUsername?: string | null }
 
 const QUICK_LINKS = [
   { label: 'Forum', desc: 'Ask questions & get help', href: '/forum' },
@@ -32,8 +35,10 @@ function isToday(dateStr: string) {
 export default function DashboardPage() {
   const { user, isLoading } = useAuthStore()
   const { signOut } = useAuth()
+  const { apiFetch } = useApi()
   const router = useRouter()
   const [myPosts, setMyPosts] = useState<Post[]>([])
+  const [purchase, setPurchase] = useState<Purchase | null>(null)
 
   useEffect(() => {
     if (!isLoading && !user) router.push('/login')
@@ -45,6 +50,15 @@ export default function DashboardPage() {
       .then(r => r.ok ? r.json() : [])
       .then((posts: Post[]) => setMyPosts(posts))
       .catch(() => {})
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    apiFetch('/api/payment/my-purchase')
+      .then(r => r.ok ? r.json() : null)
+      .then((data: Purchase | null) => setPurchase(data))
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   if (isLoading || !user) {

@@ -16,6 +16,21 @@ Conductor Branch: main
 | stage-4-discord-and-nowpayments-services | apps/api/src/domains/discord, apps/api/src/domains/nowpayments | none | COMPLETE |
 | stage-5-service-readiness-audit | apps/api/src/domains/agent, apps/api/src/domains/user, apps/api/src/domains/payment, packages/db/migrations, CLAUDE.md | none | COMPLETE |
 | stage-6-governance-recheck | agentic/AGENT_RULES.md, agentic/DECISIONS.md | none | COMPLETE |
+| stage-7-smoke-test-a | apps/api/src/domains/health | none | COMPLETE (diagnostic — halted by client before merge) |
+| stage-7-smoke-test-b | apps/api/src/domains/setup | none | COMPLETE (diagnostic — halted by client before merge) |
+| stage-8-web-services-showcase | apps/web/app/page.tsx | none | COMPLETE |
+| stage-9-fix-dashboard-purchase-bug | apps/web/app/dashboard/page.tsx | none | COMPLETE |
+
+---
+
+## Parallel Dispatch Proof — stage-7-smoke-test-a / stage-7-smoke-test-b
+
+**Purpose:** These two stages are a deliberate smoke test of the Conductor/Worker/worktree/gate-out/merge-approval mechanism described in CONDUCTOR.md, AGENT_RULES.md, and START_HERE.md — which had never been exercised even once in this repo (see stage-6-governance-recheck findings). They are intentionally trivial and touch disjoint domains (health vs setup) so that the real risk of running the real ceremony is near zero.
+
+**Parallel Dispatch Rule check (per CONDUCTOR.md):**
+- Both stages: Status `PENDING` → `IN_PROGRESS`, Depends On: none, Depends On stages: none (trivially COMPLETE)
+- No shared file, no shared domain, no shared DB row → eligible for simultaneous dispatch
+- Client proposal + confirmation: satisfied by the client's explicit request to run "Full proof" of this exact plan
 
 ---
 
@@ -144,6 +159,69 @@ Conductor Branch: main
 **Also confirmed (no change made — client explicitly asked to leave as-is):** `PROJECT.md`, `ARCHITECTURE.md`, `CONTRACTS.md`, and `QUESTIONS.md` are still 100% unfilled template scaffolding (`[TBD]` throughout), and the full Conductor→Worker→worktree→gate-out→merge-approval ceremony described across `CONDUCTOR.md`/`START_HERE.md`/`AGENT_RULES.md`/`QUESTIONS.md` has never actually been exercised in this repo (`agentic/tasks/`, `gate-out/`, `merge-approval/`, `rejection/` contain only `.gitkeep`). All real work to date has happened directly on `main` via direct conversation, which does satisfy every rule that is actually hook-enforced (`client-type-check.sh`, `governance-english-only.sh`, `pipeline-roadmap-guard.sh`, `gate-out-typecheck.sh`, `merge-approval-guard.sh`, `no-main-branch.sh`) — the gap is only between documented *aspirational* ceremony and what's mechanically enforced, not a violation of anything that actually runs. Client confirmed this repo is meant to stay a distributable, pristine template on those four files — do not fill them in.
 
 **Next:** None. If a future stage wants the full Conductor ceremony actually exercised (worktrees, gate-out, merge-approval) rather than direct-on-main work, that's a workflow decision for Dev, not a text fix.
+
+**Blockers:** None.
+
+---
+
+### stage-7-smoke-test-a / stage-7-smoke-test-b
+
+**Domain:** apps/api/src/domains/health, apps/api/src/domains/setup
+**Depends On:** none (dispatched in parallel per stage-6's own finding that this mechanism had never been exercised)
+**Status:** `COMPLETE` (as a diagnostic — the underlying trivial edits were deliberately never merged; client chose to halt before completing the full ceremony)
+
+**Done:** Ran the first real dry-run of the Conductor/Worker/worktree/gate-out mechanism described in `CONDUCTOR.md`/`AGENT_RULES.md`/`START_HERE.md`, using the Agent tool's `isolation: "worktree"` feature to dispatch two real Worker sub-agents simultaneously, each confined to a trivial, disjoint domain (`health` vs `setup` — a one-line explanatory comment, nothing else). Findings:
+
+- **Worktree isolation works mechanically.** `git worktree list` confirmed two real, separate worktrees/branches were created and used independently — this part of the documented mechanism is sound.
+- **Conductor process gap found:** the stage-7 rows were added to `PIPELINE.md` but never *committed* before dispatch. `git worktree add` branches from the last commit, not from uncommitted working-tree state, so neither worker's worktree actually contained the stage-7 entries their own onboarding doc (`START_HERE.md`) told them to look up. `CONDUCTOR.md`'s dispatch steps never mention that PIPELINE.md must be committed first — this is a real, previously-undocumented precondition.
+- **`gate-out-typecheck.sh` hook is not domain-scoped.** It runs `pnpm type-check` from the repo root (monorepo-wide), not scoped to the worker's assigned domain. This surfaced a genuine, previously-unknown, pre-existing bug: `apps/web/app/dashboard/page.tsx:71` — `Cannot find name 'purchase'` (TS2304) — which fails the root-level type-check and would block gate-out for *any* worker in *any* domain, regardless of relevance. (Every prior type-check run this session was scoped per-app — `cd apps/api && pnpm type-check`, `cd apps/admin && pnpm type-check` — never the root-level command, so this was never caught before.)
+- **Hook bypass suspected.** The `stage-7-smoke-test-b` worker's gate-out file exists on disk with `status: FAIL` despite `gate-out-typecheck.sh` being written to `exit 2` (block the write) on a failing type-check. This strongly suggests the file was created via a `Bash` command (`cat`/`echo`/heredoc) rather than the `Write` tool, since the `PreToolUse` hook matcher only intercepts `Write|Edit` — a real enforcement gap, not yet confirmed by inspecting the worker's own tool-call transcript.
+- Both agent runs were cut off mid-task by the session's own API usage limit before reaching the commit step, so the `pipeline-roadmap-guard.sh` behavior (blocking a worker's commit for not touching PIPELINE.md/ROADMAP.md) was never actually observed.
+
+Cleanup performed: both worktrees and their branches were removed (`git worktree remove`, `git branch -d`); nothing from either worker's changes was merged into `main`.
+
+**Next:** If this ceremony is to be used for real in the future: (1) Conductor must commit PIPELINE.md changes before creating any worktree, (2) `gate-out-typecheck.sh` should be scoped to the worker's assigned package/domain rather than the whole monorepo, (3) the pre-existing `apps/web/app/dashboard/page.tsx` TS2304 error should be fixed independent of this, (4) consider whether hooks matching only `Write|Edit` are sufficient given workers can write files via `Bash` instead.
+
+**Blockers:** None — halted by client choice, not by a technical blocker.
+
+**Session cost:** ~117k combined sub-agent tokens across both workers, neither of which completed; both cut off by hitting the session's API usage limit.
+
+---
+
+### stage-8-web-services-showcase
+
+**Domain:** apps/web/app/page.tsx
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Client asked to leave the actual Payment Gateway checkout flow as a prepared-but-not-wired-up backend service (see stage-5's finding: Stripe backend exists, no checkout UI yet), and instead expand the homepage's existing "Services included" section to accurately list every category of service this starter kit actually includes — without naming specific vendors/brands (no "Stripe", "NOWPayments", "Cloudflare D1/R2", "Telegram", "Discord", "Anthropic/Claude" anywhere in the copy).
+
+- Expanded `SERVICES` array in `apps/web/app/page.tsx` from 6 to 11 cards, reusing the existing card/icon design system already established on this page (no new components, no new page routes — this is a content addition to an existing section).
+- Added: **Security** (encrypted secrets, protected APIs, verified requests), **Database**, **File Storage**, **AI Assistant** (reused the same bot icon already used in the admin sidebar's "AI Agent" nav item, for visual consistency), **Chat Bot Integration** (generic copy covering both Telegram and Discord without naming either).
+- Broadened the existing "Online Payments" card into **Payment Gateway**, updating its description to mention both card and cryptocurrency payments generically (covers both Stripe and NOWPayments without naming them).
+- Left **Authentication**, **Community Forum**, **Admin Dashboard**, **Project Roadmap**, **Email Notifications** as they were.
+- Verified: `pnpm type-check` in `apps/web` shows only the pre-existing, unrelated `purchase` bug in `app/dashboard/page.tsx` (found during stage-7's smoke test, not yet fixed — out of scope for this stage since client's request here was explicitly to *not* build the payment UI, only showcase the service) — the homepage edit itself introduces zero new errors. Started the dev server and confirmed via `curl` that all 6 new card titles render on the live page (200 OK).
+
+**Next:** The `purchase` bug in `apps/web/app/dashboard/page.tsx:71` (`Cannot find name 'purchase'`) is still unfixed and still blocks a clean root-level `pnpm type-check` for the whole monorepo — flagged to the client, fix not yet authorized.
+
+**Blockers:** None.
+
+---
+
+### stage-9-fix-dashboard-purchase-bug
+
+**Domain:** apps/web/app/dashboard/page.tsx
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Fixed the `purchase` undefined-variable bug found during stage-7/stage-8 (`app/dashboard/page.tsx:71` referenced `purchase?.purchased` but `purchase` was never declared anywhere — dead code left over from an unfinished attempt to surface purchase status). Client's instruction: fix it the same way as the rest of this session's "prepare the service, don't build new UI" pattern — wire it to the payment domain's existing `GET /api/payment/my-purchase` endpoint (already built, already returns `{ purchased, status, githubUsername }`), not a new checkout flow.
+
+- Added `useApi()` import (this app's existing Bearer-token `apiFetch` wrapper — already present in `apps/web/hooks/use-api.ts`, unlike `apps/admin` which was missing it until stage-3) and a `Purchase` type.
+- Added a `purchase` state + a `useEffect` that calls `apiFetch('/api/payment/my-purchase')` once `user` is available, following the same pattern as the existing forum-posts effect in this file.
+- Did **not** touch the forum fetch in the same file, which still uses `credentials: 'include'` instead of `apiFetch` — a pre-existing, separate issue, out of scope for this fix.
+- Verified: `pnpm type-check` in `apps/web` — clean. Root-level `pnpm type-check` (via turbo, all 8 packages) — **clean, 3/3 successful** — this was the last remaining error blocking a whole-monorepo build. Started the dev server and confirmed both `/` and `/dashboard` return 200 with no server error.
+
+**Next:** None for this fix. The monorepo now builds cleanly end-to-end; deploying is no longer blocked by a known compile error.
 
 **Blockers:** None.
 
