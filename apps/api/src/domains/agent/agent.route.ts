@@ -13,21 +13,16 @@ type Bindings = {
   ANTHROPIC_ENV_ID: string
   DEPLOY_WEBHOOK_SECRET: string
   SITE_URL: string
+  ALLOWED_ORIGINS: string
 }
-
-const TRUSTED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  '',
-  '',
-]
 
 const agentRouter = new Hono<{ Bindings: Bindings }>()
 
 // Auth helper — returns user or null
 async function getUser(c: { req: { raw: Request }; env: Bindings }) {
   const db = createDb(c.env.DB)
-  const auth = createAuth(db, TRUSTED_ORIGINS)
+  const extra = (c.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)
+  const auth = createAuth(db, ['http://localhost:3000', 'http://localhost:3001', ...extra])
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
   return session?.user ?? null
 }

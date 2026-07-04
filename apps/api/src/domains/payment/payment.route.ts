@@ -24,19 +24,16 @@ type Bindings = {
   GITHUB_TOKEN: string
   GITHUB_REPO_OWNER: string
   GITHUB_TEMPLATE_REPO: string
+  ALLOWED_ORIGINS: string
 }
 
 const paymentRouter = new Hono<{ Bindings: Bindings }>()
 
-const TRUSTED_ORIGINS = [
-  'http://localhost:3000',
-  '',
-]
-
 // Check if current user has purchased — returns purchase status
 paymentRouter.get('/my-purchase', async (c) => {
   const db = createDb(c.env.DB)
-  const auth = createAuth(db, TRUSTED_ORIGINS)
+  const extra = (c.env.ALLOWED_ORIGINS ?? '').split(',').filter(Boolean)
+  const auth = createAuth(db, ['http://localhost:3000', 'http://localhost:3001', ...extra])
   const session = await auth.api.getSession({ headers: c.req.raw.headers })
   if (!session) return c.json({ purchased: false })
 
@@ -108,7 +105,7 @@ paymentRouter.post('/webhook', async (c) => {
     }
     const email = session.customer_email ?? session.customer_details?.email ?? ''
     if (email) {
-      const stripe = new Stripe(c.env.STRIPE_SECRET_KEY, { apiVersion: '2026-05-27.dahlia' })
+      const stripe = new Stripe(c.env.STRIPE_SECRET_KEY, { apiVersion: '2026-06-24.dahlia' })
       const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
         expand: ['line_items'],
       })

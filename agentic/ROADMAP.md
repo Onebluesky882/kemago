@@ -90,6 +90,12 @@ Success Indicators:
 - A Telegram bot connection already existed in this project and is ready to use — no new work needed there.
 - Added a Discord bot connection, ready for you to plug in your bot's keys and start using it.
 - Added a crypto payment connection (NOWPayments) — lets customers pay with cryptocurrency, alongside the existing card payment option. Ready for you to plug in your account keys.
+- Did a full readiness check across every feature in the system, to make sure a new project can start from this template and use what's already built without redoing any of it. Found and fixed 5 real problems:
+  - The Roadmap/feedback feature had no database table set up for it at all — it would have failed the very first time anyone tried to use it on a brand-new project. Fixed.
+  - Three features (session login check, AI agent, card payments) had a leftover placeholder setting that would have caused login/security checks to silently reject real traffic once the site went live on its real web address. Fixed.
+  - The card payment (Stripe) code had a version mismatch that stopped the whole project from passing its build check. Fixed.
+  - The setup instructions only told a new project to run 1 out of 17 required database setup steps — every other feature (forum, agent tracking, purchases, roadmap, etc.) would have been broken from day one. Rewrote the instructions with the full, correct steps in the right order.
+  - The internal "what's already built, don't rebuild it" reference list was missing the Telegram, Discord, and crypto payment features — fixed so future work won't recreate them by mistake.
 
 ---
 
@@ -114,6 +120,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 - Monitor pages and Dashboard overview are done — no open items on this piece of work right now.
 - To go live with the Discord bot and crypto payments, you'll need to provide your own account keys (Discord bot token, NOWPayments account key) — ask when you're ready and we'll walk through it.
 - The crypto payment connection can receive payments but doesn't yet automatically mark an order as "paid" in the system — that logic needs your specific pricing plan rules before it's finished.
+- Not urgent, but worth knowing: the card payment (Stripe) feature has no actual checkout page yet for customers to use — the backend works, but nobody's built the "click to pay" screen. Ask if you want that built.
 - Awaiting your direction on what to build next.
 
 ---

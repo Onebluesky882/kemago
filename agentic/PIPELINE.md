@@ -14,6 +14,7 @@ Conductor Branch: main
 | stage-2-claude-md-scope-rule | CLAUDE.md | none | COMPLETE |
 | stage-3-agent-cost-and-monitor-dashboard | apps/api/src/domains/agent, apps/admin | none | COMPLETE |
 | stage-4-discord-and-nowpayments-services | apps/api/src/domains/discord, apps/api/src/domains/nowpayments | none | COMPLETE |
+| stage-5-service-readiness-audit | apps/api/src/domains/agent, apps/api/src/domains/user, apps/api/src/domains/payment, packages/db/migrations, CLAUDE.md | none | COMPLETE |
 
 ---
 
@@ -103,6 +104,26 @@ Conductor Branch: main
 - No UI was built for these two services (not requested) — no `/discord` or `/nowpayments` admin page exists yet, unlike `/agent` or `/observability`. Ask before adding one.
 - NOWPayments webhook fulfillment logic is a stub (`// TODO`) — needs the client's actual price→plan mapping before it can mark orders paid.
 - Discord slash commands need to be registered with Discord's API separately (not done here — typically a one-time script using `DISCORD_BOT_TOKEN` + `DISCORD_APPLICATION_ID`, which isn't yet a binding).
+
+**Blockers:** None.
+
+---
+
+### stage-5-service-readiness-audit
+
+**Domain:** apps/api/src/domains/agent, apps/api/src/domains/user, apps/api/src/domains/payment, packages/db/migrations, CLAUDE.md
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Audited all 13 API domains for "can a new conductor pick this template up and use the services as-is, with no rebuilding." Found and fixed:
+- **Missing `roadmap.sql` migration** — `roadmap_phases`/`roadmap_tasks` tables (used by the protected `roadmap.route.ts`) had a Drizzle schema (`packages/db/src/schema/roadmap.ts`) but no corresponding `CREATE TABLE` migration anywhere. On a fresh D1 database the entire Roadmap service would 500 on first query. Added `packages/db/migrations/roadmap.sql` matching the Drizzle schema exactly.
+- **`trustedOrigins` hardcoded with blank placeholders in 3 domains** — `agent.route.ts`, `user.route.ts`, `payment.route.ts` had a module-level `TRUSTED_ORIGINS` array with two literal `''` entries and did not read `ALLOWED_ORIGINS` from the environment, unlike `auth.route.ts`/`forum.route.ts`/`roadmap.route.ts` which correctly do. `user.route.ts` didn't even declare `ALLOWED_ORIGINS` in its `Bindings` type. This meant `/api/user/me` (the session-check endpoint every frontend page's auth guard calls), `/api/agent/*`, and `/api/payment/*` would never trust the real deployed frontend origin once `ALLOWED_ORIGINS` is filled in per the First-Deploy Checklist. Fixed all three to derive trusted origins from `c.env.ALLOWED_ORIGINS`, same pattern as `auth.route.ts`.
+- **Stripe `apiVersion` type-check failure** — `payment.handler.ts` and `payment.route.ts` pinned `'2026-05-27.dahlia'`, but the installed `stripe` package (`22.3.0`) only accepts `'2026-06-24.dahlia'` as a type. `tsc --noEmit` failed on this before the fix (pre-existing, not introduced by prior stages — just never caught because `pnpm test` doesn't type-check). Updated both literals; `tsc --noEmit` now passes clean across the whole `apps/api` package.
+- **First-Deploy Checklist in `CLAUDE.md` only ran `auth.sql`** — there are 17 migration files total (16 pre-existing + the new `roadmap.sql`), and several are `ALTER TABLE` statements that depend on earlier `CREATE TABLE` files. Alphabetical order does **not** match dependency order (e.g. `agent-cost.sql` sorts before `observability.sql`, which creates the table `agent-cost.sql` alters; same issue with `agent-deploy.sql` vs `agent.sql`, and `auth-role.sql` vs `auth.sql`). Rewrote the checklist step to loop through all 17 files in explicit, dependency-correct order, with a note not to glob `*.sql`.
+- **`CLAUDE.md`'s "Already provided / Do NOT create" table was missing 3 real services** — Telegram, Discord, and NOWPayments existed in code but weren't listed, so a future conductor reading only that table would not know they exist and could rebuild them from scratch. Added all three rows.
+- Verified: `tsc --noEmit` clean, `pnpm test` 8/8 files, 30/30 tests passing, after all fixes.
+
+**Next:** None outstanding from this audit. Lower-priority items noted but not fixed (out of scope for this pass, flagged for a future stage if the client wants them): `agent` domain still has no test file (most complex domain — SSE streaming, cost calc, raw D1 writes); Stripe payment service has a backend but zero frontend checkout UI in `apps/web`; DB access is inconsistent between Drizzle-managed tables (auth/purchases/forum/roadmap) and raw-SQL-managed tables (agent_logs/agent_sessions/setup_submissions) — no compile-time schema safety for the latter group.
 
 **Blockers:** None.
 

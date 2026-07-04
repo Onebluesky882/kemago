@@ -166,10 +166,21 @@ wrangler secret put STRIPE_WEBHOOK_SECRET
 wrangler secret put ANTHROPIC_API_KEY
 ```
 
-### 3. Run database migration
+### 3. Run database migrations
+
+Run every file in `packages/db/migrations/` — **in this exact order** (later files `ALTER TABLE` columns onto tables created by earlier ones; running out of order fails):
+
 ```bash
-wrangler d1 execute YOUR_APP_NAME-db --remote --file ../../packages/db/migrations/auth.sql
+cd packages/db/migrations
+for f in auth.sql auth-role.sql forum.sql forum_category.sql forum_image_url.sql \
+         forum_nested_reply.sql forum_pin.sql forum_post_number.sql forum_status.sql \
+         roadmap.sql observability.sql agent.sql agent-cost.sql agent-deploy.sql \
+         purchases.sql purchases_plan.sql setup.sql; do
+  wrangler d1 execute YOUR_APP_NAME-db --remote --file "$f"
+done
 ```
+
+If a new migration file is added later, append it to the end of this list (or earlier, right after the base table it alters) — never just glob `*.sql`, since alphabetical order does not match dependency order here (e.g. `agent-cost.sql` sorts before `observability.sql`, which creates the table it alters).
 
 ### 4. Set `NEXT_PUBLIC_API_URL` in web + admin
 ```bash
@@ -203,6 +214,9 @@ This template ships with fully working services. Before writing any new code, ve
 | AI agent | `/api/agent` (Anthropic) | new LLM wrapper |
 | Forum/comments | `/api/forum` | new comments table |
 | Roadmap/feedback | `/api/roadmap` | new feedback system |
+| Telegram bot | `/webhook/telegram`, `/webhook/notify` | new Telegram integration |
+| Discord bot | `/api/discord/interactions`, `/api/discord/notify` | new Discord integration |
+| Crypto payments | `/api/nowpayments` (NOWPayments) | new crypto payment logic |
 
 If a service listed above doesn't fit the client's need, extend it — never replace it.
 
