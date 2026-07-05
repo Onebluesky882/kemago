@@ -266,3 +266,32 @@ body { line-height: 1.5; }
   border-top: 1px solid var(--border);
   margin: 0;
 }
+
+/* ── Setup wizard field ───────────────────────── */
+
+.setup-field {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.setup-field::placeholder {
+  color: var(--text-faint);
+}
+
+.setup-field:hover {
+  border-color: var(--accent-line);
+}
+
+.setup-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-line);
+}

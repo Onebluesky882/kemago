@@ -227,6 +227,26 @@ Cleanup performed: both worktrees and their branches were removed (`git worktree
 
 ---
 
+---
+
+### stage-10-setup-page-redesign
+
+**Domain:** apps/web/app/setup/page.tsx, apps/web/components/setup/*, apps/web/app/globals.css
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Restyled the customer onboarding/setup wizard (question screen, review/summary screen, thank-you screen) to use this project's actual established design tokens and utility classes from `globals.css` (`--accent` pink, `.card`, `.btn-primary`, `.btn-secondary`, `.dot-grid`, `.icon-box`, `.tag`, `.anim-fade-up`) instead of the hardcoded blue/gray hex values it shipped with, which did not match the rest of the site (homepage already uses these tokens/classes). No functional logic was changed — i18n label map, `canProceed` validation, `isFirstStep` back-to-home behavior, `isSubmitting` state, and the `POST /api/setup` submit flow are untouched.
+
+- `OptionButton.tsx`: token-based colors, added a `multi` prop so multi-select questions render a checkbox-style indicator (SVG check) and single-select questions render a radio-style indicator, hover/focus states added.
+- `ProgressBar.tsx`: token-based track/fill colors, step counter now uses the site's existing `.tag` pill style, tabular-nums for the percentage.
+- `QuestionCard.tsx`: added a new `.setup-field` class (in `globals.css`) for text/textarea inputs with proper focus ring, added a per-question `anim-fade-up` entrance.
+- `page.tsx`: all three screens (question, summary, thank-you) now render inside `.card`/`.dot-grid`, nav buttons use `.btn-primary`/`.btn-secondary`.
+- Verified: `pnpm --filter @gover-agent/web type-check` — clean (exit 0). Not yet checked in a running browser — a manual visual pass is still recommended before this is shown to a client.
+
+**Next:** Run the dev server and visually confirm the wizard at 375px/768px/1280px per `DESIGN_SYSTEM.md`'s mobile-first rule — not done as part of this pass.
+
+**Blockers:** None.
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

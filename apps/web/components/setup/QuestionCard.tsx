@@ -21,14 +21,15 @@ export function QuestionCard({
   const currentValue = answers[step.id]
 
   return (
-    <div>
+    <div key={step.id} className="anim-fade-up">
       <h2
         style={{
           fontSize: '22px',
           fontWeight: 600,
-          color: '#111827',
-          marginBottom: '24px',
-          lineHeight: 1.4,
+          color: 'var(--text)',
+          marginBottom: '20px',
+          lineHeight: 1.35,
+          textWrap: 'balance',
         }}
       >
         {step.question}
@@ -40,15 +41,7 @@ export function QuestionCard({
           value={typeof currentValue === 'string' ? currentValue : ''}
           onChange={(e) => onTextChange(step.id, e.target.value)}
           placeholder="Type your answer..."
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            fontSize: '16px',
-            border: '2px solid #E5E7EB',
-            borderRadius: '8px',
-            outline: 'none',
-            boxSizing: 'border-box',
-          }}
+          className="setup-field"
         />
       )}
 
@@ -58,21 +51,13 @@ export function QuestionCard({
           onChange={(e) => onTextChange(step.id, e.target.value)}
           placeholder="Type your answer..."
           rows={4}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            fontSize: '16px',
-            border: '2px solid #E5E7EB',
-            borderRadius: '8px',
-            outline: 'none',
-            resize: 'vertical',
-            boxSizing: 'border-box',
-          }}
+          className="setup-field"
+          style={{ resize: 'vertical' }}
         />
       )}
 
       {step.type === 'single' && step.options && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {step.options.map((opt) => (
             <OptionButton
               key={opt.value}
@@ -86,7 +71,7 @@ export function QuestionCard({
       )}
 
       {step.type === 'multi' && step.options && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {step.options.map((opt) => {
             const selected = Array.isArray(currentValue) && currentValue.includes(opt.value)
             return (
@@ -95,6 +80,7 @@ export function QuestionCard({
                 label={opt.label}
                 value={opt.value}
                 selected={selected}
+                multi
                 onClick={(val) => onMultiToggle(step.id, val)}
               />
             )

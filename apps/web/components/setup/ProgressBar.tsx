@@ -7,24 +7,33 @@ export function ProgressBar({ current, total }: Props) {
   const percent = Math.min(100, Math.round((current / total) * 100))
 
   return (
-    <div style={{ width: '100%', marginBottom: '24px' }}>
+    <div style={{ width: '100%' }}>
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: '8px',
-          fontSize: '14px',
-          color: '#666',
         }}
       >
-        <span>Step {current} of {total}</span>
-        <span>{percent}%</span>
+        <span className="tag tag-accent" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          Step {current} of {total}
+        </span>
+        <span
+          style={{
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {percent}%
+        </span>
       </div>
       <div
         style={{
           width: '100%',
-          height: '6px',
-          backgroundColor: '#E5E7EB',
+          height: '5px',
+          backgroundColor: 'var(--border)',
           borderRadius: '999px',
           overflow: 'hidden',
         }}
@@ -33,9 +42,9 @@ export function ProgressBar({ current, total }: Props) {
           style={{
             width: `${percent}%`,
             height: '100%',
-            backgroundColor: '#2563EB',
+            backgroundColor: 'var(--accent)',
             borderRadius: '999px',
-            transition: 'width 0.3s ease',
+            transition: 'width 300ms ease',
           }}
         />
       </div>

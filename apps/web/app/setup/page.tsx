@@ -32,15 +32,15 @@ export default function SetupPage() {
   // Thank-you screen
   if (submitted) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', padding: '24px' }}>
-        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+      <div className="dot-grid" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', backgroundColor: 'var(--bg)' }}>
+        <div className="anim-fade-up" style={{ textAlign: 'center', maxWidth: '400px' }}>
+          <div className="icon-box" style={{ margin: '0 auto 20px', color: 'var(--green)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>{lbl('thankYouTitle')}</h1>
-          <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.6' }}>{lbl('thankYouBody')}</p>
+          <h1 style={{ fontSize: '26px', fontWeight: 700, color: 'var(--text)', marginBottom: '10px', textWrap: 'balance' }}>{lbl('thankYouTitle')}</h1>
+          <p style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: '1.6' }}>{lbl('thankYouBody')}</p>
         </div>
       </div>
     )
@@ -50,32 +50,40 @@ export default function SetupPage() {
   if (isSummary) {
     const { STEPS } = require('@/hooks/use-setup')
     return (
-      <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '32px 24px' }}>
-        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+      <div className="dot-grid" style={{ minHeight: '100vh', padding: '32px 24px', backgroundColor: 'var(--bg)' }}>
+        <div className="anim-fade-up" style={{ maxWidth: '560px', margin: '0 auto' }}>
           <button
+            type="button"
             onClick={goBack}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#64748b', fontSize: '14px', cursor: 'pointer', marginBottom: '24px', padding: 0 }}
+            className="btn-secondary"
+            style={{ border: 'none', background: 'none', padding: '4px 0', marginBottom: '20px' }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
             {lbl('back')}
           </button>
 
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0f172a', marginBottom: '24px' }}>{lbl('summaryTitle')}</h1>
+          <span className="tag tag-accent" style={{ marginBottom: '12px', display: 'inline-flex' }}>{lbl('summaryTitle')}</span>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text)', marginBottom: '24px', textWrap: 'balance' }}>{lbl('summaryTitle')}</h1>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
             {STEPS.map((s: any, i: number) => {
               const val = answers[s.id as keyof typeof answers]
               const display = Array.isArray(val) ? val.join(', ') : val
               if (!display) return null
               return (
-                <div key={s.id} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  key={s.id}
+                  className="card"
+                  style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}
+                >
                   <div>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>{t(s.question, s.questionTranslations)}</p>
-                    <p style={{ fontSize: '14px', color: '#0f172a', fontWeight: 500 }}>{display}</p>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{t(s.question, s.questionTranslations)}</p>
+                    <p style={{ fontSize: '14px', color: 'var(--text)', fontWeight: 500 }}>{display}</p>
                   </div>
                   <button
+                    type="button"
                     onClick={() => { for (let j = currentStep; j > i; j--) goBack() }}
-                    style={{ fontSize: '12px', color: '#6366f1', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', padding: 0, flexShrink: 0 }}
+                    style={{ fontSize: '12px', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', padding: 0, flexShrink: 0 }}
                   >
                     {lbl('summaryEdit')}
                   </button>
@@ -85,10 +93,22 @@ export default function SetupPage() {
           </div>
 
           <button
+            type="button"
             onClick={submit}
             disabled={isSubmitting}
-            style={{ width: '100%', padding: '14px', background: isSubmitting ? '#94a3b8' : '#1e293b', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 600, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+            className="btn-primary"
+            style={{ width: '100%', justifyContent: 'center', opacity: isSubmitting ? 0.6 : 1, cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
           >
+            {isSubmitting && (
+              <span
+                aria-hidden="true"
+                style={{
+                  width: '14px', height: '14px', borderRadius: '999px',
+                  border: '2px solid rgba(255,255,255,0.35)', borderTopColor: 'currentColor',
+                  animation: 'spin-slow 700ms linear infinite',
+                }}
+              />
+            )}
             {isSubmitting ? lbl('submitting') : lbl('submit')}
           </button>
         </div>
@@ -106,26 +126,26 @@ export default function SetupPage() {
   })()
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '32px 24px' }}>
+    <div className="dot-grid" style={{ minHeight: '100vh', padding: '32px 24px', backgroundColor: 'var(--bg)' }}>
       <div style={{ maxWidth: '560px', margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
           <button
+            type="button"
             onClick={() => isFirstStep ? router.back() : goBack()}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: '#64748b', fontSize: '14px', cursor: 'pointer', padding: 0 }}
+            aria-label={isFirstStep ? 'Back to previous page' : lbl('back')}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '14px', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-            {isFirstStep ? '' : lbl('back')}
           </button>
           <div style={{ flex: 1 }}>
             <ProgressBar current={currentStep + 1} total={totalSteps} />
           </div>
-          <span style={{ fontSize: '13px', color: '#94a3b8', whiteSpace: 'nowrap' }}>{currentStep + 1} / {totalSteps}</span>
         </div>
 
         {/* Question */}
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '32px', marginBottom: '24px' }}>
+        <div className="card" style={{ padding: '32px', marginBottom: '20px' }}>
           <QuestionCard
             step={{
               ...step,
@@ -148,17 +168,14 @@ export default function SetupPage() {
 
         {/* Next button */}
         <button
+          type="button"
           onClick={goNext}
           disabled={!canProceed}
+          className="btn-primary"
           style={{
             width: '100%',
-            padding: '14px',
-            background: canProceed ? '#1e293b' : '#e2e8f0',
-            color: canProceed ? '#fff' : '#94a3b8',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '16px',
-            fontWeight: 600,
+            justifyContent: 'center',
+            opacity: canProceed ? 1 : 0.4,
             cursor: canProceed ? 'pointer' : 'not-allowed',
           }}
         >
