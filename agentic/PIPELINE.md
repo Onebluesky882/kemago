@@ -20,6 +20,8 @@ Conductor Branch: main
 | stage-7-smoke-test-b | apps/api/src/domains/setup | none | COMPLETE (diagnostic — halted by client before merge) |
 | stage-8-web-services-showcase | apps/web/app/page.tsx | none | COMPLETE |
 | stage-9-fix-dashboard-purchase-bug | apps/web/app/dashboard/page.tsx | none | COMPLETE |
+| stage-10-setup-page-redesign | apps/web/app/setup/page.tsx, apps/web/components/setup/*, apps/web/app/globals.css | none | COMPLETE |
+| stage-11-chat-ops-core-package | packages/chat-ops-core, README.md | none | COMPLETE |
 
 ---
 
@@ -244,6 +246,23 @@ Cleanup performed: both worktrees and their branches were removed (`git worktree
 - Verified: `pnpm --filter @gover-agent/web type-check` — clean (exit 0). Not yet checked in a running browser — a manual visual pass is still recommended before this is shown to a client.
 
 **Next:** Run the dev server and visually confirm the wizard at 375px/768px/1280px per `DESIGN_SYSTEM.md`'s mobile-first rule — not done as part of this pass.
+
+**Blockers:** None.
+
+### stage-11-chat-ops-core-package
+
+**Domain:** packages/chat-ops-core, README.md
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Client had an untracked, already-written chat-bot toolkit sitting at `apps/api/src/domains/chat-ops-core` (Telegram/LINE/Meta webhook verification + parsing, identity linking, command router, Groq NLP text-to-JSON parsing — 9 test files, 54 tests, all colocated). That location was wrong on two counts: (1) the pnpm workspace glob is `apps/*` and `packages/*` — a folder nested three levels inside `apps/api/src` is not a recognized workspace member at all, so `@gover-agent/chat-ops-core` could not be imported by any other package; (2) the package's own `package.json`, `tsconfig.json` (`extends: "../config/tsconfig/cloudflare.json"`), and README already assumed a `packages/chat-ops-core` path — the relative `extends` only resolves correctly one level up from `packages/*`, confirming this was authored for that location and simply dropped in the wrong place.
+- Moved the whole directory to `packages/chat-ops-core` (plain `mv`, not `git mv` — the source was untracked) after deleting its stray `node_modules/` and `.turbo/` (gitignored build artifacts that shouldn't have been present pre-move).
+- Ran `pnpm install` — confirmed `@gover-agent/chat-ops-core` is now resolved as a real workspace package.
+- Verified `pnpm --filter @gover-agent/chat-ops-core run type-check` and `test` both pass clean (54/54 tests), and a full root `pnpm type-check` (turbo, all packages) still passes with zero errors after the move.
+- This is a pure library (webhook verify/parse, identity resolution, command dispatch, Groq parsing) with **no HTTP routes** — client explicitly chose not to wire an actual `/api/line/webhook` or `/api/meta/webhook` domain in this pass. A future stage can build one by following the wiring examples already written into `packages/chat-ops-core/README.md`.
+- Updated root `README.md`: added `chat-ops-core` to the `packages/` tree listing, and added an "Adding a new chat bot" subsection under "Extending the Template" pointing future conductors at this package instead of writing webhook verification from scratch.
+
+**Next:** No HTTP domain wired yet (LINE/Meta webhooks) — only Telegram has a live route (`apps/api/src/domains/telegram`) and Discord (`apps/api/src/domains/discord`) predate this package and don't use it. If the client wants a LINE or Meta bot live, build `apps/api/src/domains/line` (or `meta`) as `schema.ts`/`handler.ts`/`route.ts` importing from `@gover-agent/chat-ops-core`, mounted in `apps/api/src/index.ts` — same pattern as every other domain. `CLAUDE.md`'s "Already provided" table was not updated in this pass (client asked only for the README) — worth adding a row there too once/if a real route exists.
 
 **Blockers:** None.
 

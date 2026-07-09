@@ -61,11 +61,12 @@ apps/
   api/          Hono — Cloudflare Worker (all API domains)
 
 packages/
-  auth/         Better Auth config + client
-  db/           Drizzle schema + D1 client + migrations
-  email/        Resend templates (welcome, reset, notification)
-  ui/           Shared React components
-  config/       Shared tsconfig + Biome config
+  auth/           Better Auth config + client
+  db/             Drizzle schema + D1 client + migrations
+  email/          Resend templates (welcome, reset, notification)
+  ui/             Shared React components
+  config/         Shared tsconfig + Biome config
+  chat-ops-core/  Chat-bot building blocks (Telegram, LINE, Meta webhooks + identity linking + command router + Groq NLP parsing) — no HTTP routes, import into any app/domain that needs a chat bot
 
 agentic/        AI governance system (Conductor + Worker workflow)
   QUESTIONS.md        Developer setup questionnaire
@@ -195,6 +196,19 @@ Mount in `apps/api/src/index.ts`:
 import { myRouter } from './domains/my-domain/my-domain.route'
 app.route('/api/my-domain', myRouter)
 ```
+
+### Adding a new chat bot (Telegram, LINE, Meta/Messenger/Instagram)
+
+`packages/chat-ops-core` already handles the platform-specific plumbing every
+chat bot needs — webhook signature verification, message parsing, identity
+linking, command routing, and Groq-based text parsing. Import it into a new
+domain's `route.ts` rather than writing webhook verification from scratch:
+
+```ts
+import { verifyLineWebhookSignature, extractLineMessages } from '@gover-agent/chat-ops-core'
+```
+
+See `packages/chat-ops-core/README.md` for full wiring examples per platform.
 
 ### Adding a new admin page
 

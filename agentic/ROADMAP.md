@@ -101,6 +101,8 @@ Success Indicators:
 - Ran a real, small-scale test of the "team of AI helpers working at the same time" system this template is designed to support, to see if it actually works or if it was only ever written down on paper. Result: the core idea (two helpers working in fully separate copies of the project at once) does work. But the test also uncovered two real problems: one safety check that's supposed to stop a helper from finishing bad work would have wrongly blocked a helper over an unrelated issue somewhere else entirely in the project, and that same safety check may be possible to sneak around. Both are now written down as known issues to fix before this multi-helper system is relied on for real work. The test itself was intentionally stopped partway through once enough was learned, so nothing from it was kept in the live project.
 - Fixed the "My Account" page crash found earlier — it now correctly checks and shows whether you've purchased/unlocked the app, using the payment system that was already built. The whole website now passes its full build check with zero errors, so it's ready to deploy again.
 - Updated the public homepage's "what's included" section so it now honestly lists every service this starter kit offers — security, payments (card and crypto), database, file storage, an AI assistant, and chat bot support — described in plain terms, without naming the specific outside companies behind each one. The payment feature itself is still backend-only as noted above; this only updates how it's presented on the page.
+- Restyled the "tell us about your business" onboarding form so it visually matches the rest of the site instead of using old, mismatched colors.
+- Added a new shared toolkit for building chat bots (Telegram, LINE, and Facebook/Instagram messaging) into the project's reusable building blocks — it was already written but wasn't hooked up correctly, so it was fixed and documented. No new chat bot is turned on yet; this just makes it ready to build one faster whenever you want a LINE or Instagram/Facebook bot in addition to the existing Telegram and Discord ones.
 
 ---
 
@@ -126,6 +128,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 - To go live with the Discord bot and crypto payments, you'll need to provide your own account keys (Discord bot token, NOWPayments account key) — ask when you're ready and we'll walk through it.
 - The crypto payment connection can receive payments but doesn't yet automatically mark an order as "paid" in the system — that logic needs your specific pricing plan rules before it's finished.
 - Not urgent, but worth knowing: the card payment (Stripe) feature has no actual checkout page yet for customers to use — the backend works, but nobody's built the "click to pay" screen. Ask if you want that built.
+- The new chat bot toolkit is ready but not turned into a working bot yet — say the word if you want a LINE or Instagram/Facebook bot actually connected and live (Telegram and Discord already are).
 - Awaiting your direction on what to build next.
 
 ---

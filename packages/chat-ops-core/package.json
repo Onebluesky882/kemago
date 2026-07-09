@@ -1,0 +1,18 @@
+{
+  "name": "@gover-agent/chat-ops-core",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@gover-agent/config": "workspace:*",
+    "@cloudflare/workers-types": "latest",
+    "typescript": "latest",
+    "vitest": "^4.1.9"
+  }
+}
