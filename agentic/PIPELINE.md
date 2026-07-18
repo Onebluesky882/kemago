@@ -23,6 +23,7 @@ Conductor Branch: main
 | stage-10-setup-page-redesign | apps/web/app/setup/page.tsx, apps/web/components/setup/*, apps/web/app/globals.css | none | COMPLETE |
 | stage-11-chat-ops-core-package | packages/chat-ops-core, README.md | none | COMPLETE |
 | stage-13-api-docs-scaffold | apps/api/src/domains/docs, .claude/hooks | none | COMPLETE |
+| stage-14-new-domain-privacy-prompt | .claude/hooks | stage-13-api-docs-scaffold | COMPLETE |
 
 ---
 
@@ -301,6 +302,25 @@ Cleanup performed: both worktrees and their branches were removed (`git worktree
 - Manually tested all 3 hook branches by staging synthetic edits and piping the hook's expected JSON stdin shape directly (not by actually committing): (1) excluded-domain route changed without docs update → exit 0 (pass), (2) non-excluded route changed without docs update → exit 2 (blocked), (3) an excluded domain's path string added into `docs.route.ts` → exit 2 (blocked). All test edits were reverted before this commit; `git status` confirmed clean.
 
 **Next:** No existing route has been migrated to `createRoute`/zod-openapi yet — `/docs/openapi.json` is currently an empty spec. Future stages should migrate routes domain-by-domain as they're touched (the hook will now force this to happen incrementally rather than never). If a domain other than `auth` needs to be kept out of public docs (e.g. a future admin-only domain), add its folder name to `.claude/hooks/api-docs-guard.exclude.txt` — no script changes needed.
+
+**Blockers:** None.
+
+---
+
+### stage-14-new-domain-privacy-prompt
+
+**Domain:** .claude/hooks
+**Depends On:** stage-13-api-docs-scaffold
+**Status:** `COMPLETE`
+
+**Done:** Client asked whether the conductor proactively asks the developer which new domains should stay private — it did not; `api-docs-guard.exclude.txt` from stage-13 only reacts at commit time and requires the developer to edit the file manually. Added a second, earlier hook that asks at creation time instead.
+
+- Added `.claude/hooks/new-domain-privacy-check.sh` — a `PreToolUse` hook (matcher `Write|Edit`, same trigger as `client-type-check.sh`) that fires only when a `Write` targets a `*.route.ts` path under `apps/api/src/domains/<domain>/` that does **not** exist on disk yet, and `<domain>` has no other route file present (i.e. this is genuinely the first file of a brand-new domain). It blocks (`exit 2`) with instructions telling the conductor to ask the developer "public in docs, or private?" before creating the file, then record the answer into either `api-docs-guard.confirmed-public.txt` (new file, tracks domains explicitly approved for public docs) or the existing `api-docs-guard.exclude.txt` (stage-13), and only then retry the write.
+- Editing an existing route file, or adding a second file to an already-established domain, is a no-op pass-through (`exit 0`) — the prompt only fires once per new domain, not on every write.
+- Registered in `.claude/settings.json` alongside the other `Write|Edit` guards.
+- Tested all 4 branches directly (piping synthetic Write-tool JSON into the script, not by actually invoking the Write tool): (1) brand-new domain `billing` → blocked with the ask-the-developer instructions, (2) new file inside an already-established domain (`user`) → pass, (3) edit of an existing file (`health.route.ts`) → pass, (4) a domain pre-listed in `api-docs-guard.exclude.txt` → pass (no repeat prompt). Reverted the test mutation to `api-docs-guard.exclude.txt` before committing; `git status` confirmed clean.
+
+**Next:** This only covers domains created via the `Write` tool inside a Claude Code session — it cannot stop a developer from creating a domain folder directly with a shell command outside the harness (same class of gap noted for `gate-out-typecheck.sh` in stage-7's findings). Not fixed here; flagged for awareness only.
 
 **Blockers:** None.
 
