@@ -402,7 +402,7 @@ Detection: project has `opennextjs-cloudflare` in `package.json` dependencies or
 
 ## CORS — ALLOWED_ORIGINS Rule
 
-The API backend runs on `fullstack-builder-api.onebluesky882.workers.dev`.
+The API backend runs on `YOUR_APP_NAME-api.YOUR_ACCOUNT.workers.dev`.
 
 When setting `ALLOWED_ORIGINS` in `apps/api/wrangler.toml`, the conductor must add **only the client's frontend URLs** — nothing else.
 
@@ -411,7 +411,7 @@ When setting `ALLOWED_ORIGINS` in `apps/api/wrangler.toml`, the conductor must a
 ALLOWED_ORIGINS = "https://client-web.workers.dev,https://client-admin.workers.dev"
 
 # ❌ wrong — do not add unrelated domains, backend URLs, or wildcard
-ALLOWED_ORIGINS = "https://fullstack-builder-api.onebluesky882.workers.dev"
+ALLOWED_ORIGINS = "https://YOUR_APP_NAME-api.YOUR_ACCOUNT.workers.dev"
 ALLOWED_ORIGINS = "*"
 ```
 

@@ -3,7 +3,7 @@
 # Protects client data from accidental loss
 
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('command',''))" 2>/dev/null || echo "")
+COMMAND=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); ti=d.get('tool_input') or {}; print(ti.get('command','') or d.get('command',''))" 2>/dev/null || echo "")
 
 # Only check Bash tool calls
 if [ -z "$COMMAND" ]; then

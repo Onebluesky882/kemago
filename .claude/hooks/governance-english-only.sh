@@ -4,7 +4,7 @@
 
 INPUT=$(cat)
 
-FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('file_path',''))" 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); ti=d.get('tool_input') or {}; print(ti.get('file_path','') or d.get('file_path',''))" 2>/dev/null || echo "")
 
 # Only enforce on governance files
 case "$FILE_PATH" in
