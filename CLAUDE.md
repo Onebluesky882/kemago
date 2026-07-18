@@ -132,6 +132,32 @@ Never use emoji in UI code. Use inline SVG only.
 
 ---
 
+## Styling — Tailwind Only for React
+
+This project uses React (Next.js 15 + React 19). All styling must use **Tailwind CSS utility classes only**.
+
+```tsx
+// ❌ wrong — CSS Modules
+import styles from './Button.module.css'
+<button className={styles.primary}>Save</button>
+
+// ❌ wrong — styled-components / emotion / CSS-in-JS
+const Button = styled.button`background: blue;`
+
+// ❌ wrong — inline style objects
+<button style={{ background: 'blue', padding: '8px' }}>Save</button>
+
+// ✅ correct — Tailwind utility classes
+<button className="bg-blue-600 px-4 py-2 rounded text-white">Save</button>
+```
+
+**Rules:**
+- No `.module.css` files, no styled-components/emotion, no inline `style={{...}}`
+- The only global CSS file is `app/globals.css` (Tailwind directives + design tokens) — never add component-level CSS files
+- If a new app package is added, install `tailwindcss` (see `apps/web/package.json` for the reference setup) rather than any other styling library
+
+---
+
 ## Design — Ask Before Building
 
 Before writing any UI code, ask the client:
