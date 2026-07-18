@@ -266,6 +266,23 @@ Cleanup performed: both worktrees and their branches were removed (`git worktree
 
 **Blockers:** None.
 
+### stage-12-mobile-app-uniwind
+
+**Domain:** apps/mobile
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Added `apps/mobile`, a new Expo (Expo Router) app for the mobile client, scaffolded from the official `with-router-uniwind` template. Styling uses **Uniwind only** (Tailwind CSS v4 bindings for React Native, from the creators of Unistyles) — no StyleSheet, no CSS-in-JS, matching this repo's "Tailwind only" styling rule extended to the mobile app.
+- Package renamed from the template default `mobile` to `@gover-agent/mobile` to match workspace naming (`@gover-agent/web`, `@gover-agent/admin`, `@gover-agent/api`); added `type-check` (`tsc --noEmit`) and `lint` (`biome check .`) scripts so it participates in the existing turbo `type-check`/`lint` pipelines like every other app.
+- Removed emoji from the placeholder home screen (`src/app/index.tsx`) — this repo's "no emoji in UI code, inline SVG only" rule applies here too.
+- The template ships `uniwind-types.d.ts` (className typings) generated on first Metro bundle, not on `pnpm install` — ran `npx expo export --platform ios` once to generate it, then added it plus a standard `expo-env.d.ts` (both already covered by `apps/mobile/.gitignore` per Expo convention) so `tsc --noEmit` resolves `.css` imports and RN `className` props. Verified `pnpm --filter @gover-agent/mobile run type-check` passes clean.
+- Removed `apps/mobile/.claude/` (an Expo-template-generated plugin config, inert in this monorepo since Claude Code only reads `.claude/settings.json` from the invocation root) and `apps/mobile/AGENTS.md` / `apps/mobile/CLAUDE.md` (the latter only contained an `@AGENTS.md` import) at the client's request — governance stays controlled from the repo root only, no per-app governance files.
+- `pnpm --filter @gover-agent/mobile run lint` currently fails, but so does `pnpm --filter @gover-agent/web run lint` — a pre-existing, repo-wide `biome.json` incompatibility with the installed Biome CLI version (deprecated `linter.rules.recommended` field, unknown `files.ignore` key), unrelated to this change and out of scope for this stage.
+
+**Next:** No screens beyond the placeholder home route exist yet. Future work: wire up navigation/tabs, connect to the existing `apps/api` auth/session endpoints (`POST /api/auth/login`, `GET /api/user/me`) the same way `apps/web` does via Bearer token (per this repo's cross-domain auth rule), and decide whether `packages/ui` needs a React Native-compatible sibling or whether mobile screens stay independent.
+
+**Blockers:** None.
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

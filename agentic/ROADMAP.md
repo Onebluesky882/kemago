@@ -103,6 +103,7 @@ Success Indicators:
 - Updated the public homepage's "what's included" section so it now honestly lists every service this starter kit offers — security, payments (card and crypto), database, file storage, an AI assistant, and chat bot support — described in plain terms, without naming the specific outside companies behind each one. The payment feature itself is still backend-only as noted above; this only updates how it's presented on the page.
 - Restyled the "tell us about your business" onboarding form so it visually matches the rest of the site instead of using old, mismatched colors.
 - Added a new shared toolkit for building chat bots (Telegram, LINE, and Facebook/Instagram messaging) into the project's reusable building blocks — it was already written but wasn't hooked up correctly, so it was fixed and documented. No new chat bot is turned on yet; this just makes it ready to build one faster whenever you want a LINE or Instagram/Facebook bot in addition to the existing Telegram and Discord ones.
+- Started the mobile app. It's a real, running starter screen you can open on your phone today (via the Expo Go app) — the same "Tailwind-only" styling approach used on the website is now used on mobile too, so the look can stay consistent across web and phone. No real screens (login, dashboard, etc.) are built into it yet — just the foundation.
 
 ---
 
