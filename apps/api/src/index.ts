@@ -13,6 +13,7 @@ import { setupRouter } from './domains/setup/setup.route'
 import { telegramRouter } from './domains/telegram/telegram.route'
 import { discordRouter } from './domains/discord/discord.route'
 import { nowpaymentsRouter } from './domains/nowpayments/nowpayments.route'
+import { docs } from './domains/docs/docs.route'
 
 type Bindings = {
   DB: D1Database
@@ -63,5 +64,6 @@ app.route('/api/setup', setupRouter)
 app.route('/webhook', telegramRouter)
 app.route('/api/discord', discordRouter)
 app.route('/api/nowpayments', nowpaymentsRouter)
+app.route('/docs', docs)
 
 export default app

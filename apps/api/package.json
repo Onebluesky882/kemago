@@ -18,6 +18,8 @@
     "@gover-agent/auth": "workspace:*",
     "@gover-agent/db": "workspace:*",
     "@gover-agent/email": "workspace:*",
+    "@hono/zod-openapi": "^1.5.1",
+    "@scalar/hono-api-reference": "^0.11.11",
     "better-auth": "^1.6.19",
     "hono": "latest",
     "stripe": "^22.2.1",

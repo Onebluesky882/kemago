@@ -1,7 +1,7 @@
 ---
 status: DRAFT
 owner: CONDUCTOR
-last_updated: 2026-06-25
+last_updated: 2026-07-18
 ---
 
 # ROADMAP.md
@@ -104,6 +104,7 @@ Success Indicators:
 - Restyled the "tell us about your business" onboarding form so it visually matches the rest of the site instead of using old, mismatched colors.
 - Added a new shared toolkit for building chat bots (Telegram, LINE, and Facebook/Instagram messaging) into the project's reusable building blocks — it was already written but wasn't hooked up correctly, so it was fixed and documented. No new chat bot is turned on yet; this just makes it ready to build one faster whenever you want a LINE or Instagram/Facebook bot in addition to the existing Telegram and Discord ones.
 - Started the mobile app. It's a real, running starter screen you can open on your phone today (via the Expo Go app) — the same "Tailwind-only" styling approach used on the website is now used on mobile too, so the look can stay consistent across web and phone. No real screens (login, dashboard, etc.) are built into it yet — just the foundation.
+- Added a ready-to-use API documentation page (a clean, browsable reference showing what the backend can do) — nothing is listed on it yet since no endpoints have been added to it, but the tooling is installed and working. Also added an automatic safety check: any time someone tries to save a code change, the system now double-checks that backend changes come with matching documentation, and it permanently blocks sensitive areas (like login/authentication) from ever showing up in that public documentation page by mistake.
 
 ---
 
@@ -130,6 +131,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 - The crypto payment connection can receive payments but doesn't yet automatically mark an order as "paid" in the system — that logic needs your specific pricing plan rules before it's finished.
 - Not urgent, but worth knowing: the card payment (Stripe) feature has no actual checkout page yet for customers to use — the backend works, but nobody's built the "click to pay" screen. Ask if you want that built.
 - The new chat bot toolkit is ready but not turned into a working bot yet — say the word if you want a LINE or Instagram/Facebook bot actually connected and live (Telegram and Discord already are).
+- The new API documentation page is empty so far — endpoints get added to it over time as they're worked on, not all at once.
 - Awaiting your direction on what to build next.
 
 ---

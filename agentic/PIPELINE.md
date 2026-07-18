@@ -22,6 +22,7 @@ Conductor Branch: main
 | stage-9-fix-dashboard-purchase-bug | apps/web/app/dashboard/page.tsx | none | COMPLETE |
 | stage-10-setup-page-redesign | apps/web/app/setup/page.tsx, apps/web/components/setup/*, apps/web/app/globals.css | none | COMPLETE |
 | stage-11-chat-ops-core-package | packages/chat-ops-core, README.md | none | COMPLETE |
+| stage-13-api-docs-scaffold | apps/api/src/domains/docs, .claude/hooks | none | COMPLETE |
 
 ---
 
@@ -280,6 +281,26 @@ Cleanup performed: both worktrees and their branches were removed (`git worktree
 - `pnpm --filter @gover-agent/mobile run lint` currently fails, but so does `pnpm --filter @gover-agent/web run lint` — a pre-existing, repo-wide `biome.json` incompatibility with the installed Biome CLI version (deprecated `linter.rules.recommended` field, unknown `files.ignore` key), unrelated to this change and out of scope for this stage.
 
 **Next:** No screens beyond the placeholder home route exist yet. Future work: wire up navigation/tabs, connect to the existing `apps/api` auth/session endpoints (`POST /api/auth/login`, `GET /api/user/me`) the same way `apps/web` does via Bearer token (per this repo's cross-domain auth rule), and decide whether `packages/ui` needs a React Native-compatible sibling or whether mobile screens stay independent.
+
+**Blockers:** None.
+
+---
+
+### stage-13-api-docs-scaffold
+
+**Domain:** apps/api/src/domains/docs, .claude/hooks
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Client asked for API documentation tooling to be installed and left ready-to-use (no migration of existing routes requested). Installed `@hono/zod-openapi` (`^1.5.1`, peer-compatible with the installed `hono@4.12.30` and `zod@4.4.3`) and `@scalar/hono-api-reference` (`^0.11.11`) in `apps/api`.
+- Added `apps/api/src/domains/docs/docs.route.ts` — an empty `OpenAPIHono` app (no routes migrated yet, existing plain-Hono routers untouched) serving `GET /docs` (Scalar UI) and `GET /docs/openapi.json` (spec), with a commented example showing the `createRoute` + `docs.openapi(...)` pattern for documenting a route later.
+- Mounted at `app.route('/docs', docs)` in `apps/api/src/index.ts` — additive only, no existing route path or behavior changed.
+- Verified via a temporary vitest smoke test (`docs.fetch()` against `/openapi.json` and `/`) since `wrangler dev` can't run locally until the template's `wrangler.toml` placeholders (`YOUR_APP_NAME-api`, empty `bucket_name`) are filled in by the real conductor; test file deleted after confirming both routes return 200.
+- Added `.claude/hooks/api-docs-guard.sh` (registered as a `Bash`-matcher `PreToolUse` hook in `.claude/settings.json`, same pattern as `pipeline-roadmap-guard.sh`) — blocks `git commit` when a staged `apps/api/src/domains/*/*.route.ts` file has no corresponding update to `docs.route.ts` in the same commit.
+- Added `.claude/hooks/api-docs-guard.exclude.txt` — a per-line list of domain folder names (under `apps/api/src/domains/`) that are exempt from the "must document" rule **and** are actively blocked from ever being referenced inside `docs.route.ts`, for routes that must never appear in the public spec (credentials/session internals, admin-only, etc.). Seeded with `auth` per the client's own example. The hook's second guard scans the staged diff of `docs.route.ts` for any excluded domain name and blocks the commit if found, even if the domain is exempt from the first guard.
+- Manually tested all 3 hook branches by staging synthetic edits and piping the hook's expected JSON stdin shape directly (not by actually committing): (1) excluded-domain route changed without docs update → exit 0 (pass), (2) non-excluded route changed without docs update → exit 2 (blocked), (3) an excluded domain's path string added into `docs.route.ts` → exit 2 (blocked). All test edits were reverted before this commit; `git status` confirmed clean.
+
+**Next:** No existing route has been migrated to `createRoute`/zod-openapi yet — `/docs/openapi.json` is currently an empty spec. Future stages should migrate routes domain-by-domain as they're touched (the hook will now force this to happen incrementally rather than never). If a domain other than `auth` needs to be kept out of public docs (e.g. a future admin-only domain), add its folder name to `.claude/hooks/api-docs-guard.exclude.txt` — no script changes needed.
 
 **Blockers:** None.
 

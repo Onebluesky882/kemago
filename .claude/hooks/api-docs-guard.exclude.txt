@@ -1,0 +1,11 @@
+# api-docs-guard exclude list
+#
+# One domain name per line — matches apps/api/src/domains/<name>/*.route.ts
+# Route files under a listed domain are:
+#   1. exempt from the "must update docs.route.ts" requirement, AND
+#   2. must NOT be added to docs.route.ts / the public OpenAPI spec
+# Use this for endpoints that should never be publicly documented
+# (auth internals, admin-only routes, credential/session handling, etc.)
+#
+# Add one domain name per line, e.g.:
+auth

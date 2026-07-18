@@ -71,6 +71,15 @@
             "command": "bash .claude/hooks/pipeline-roadmap-guard.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/api-docs-guard.sh"
+          }
+        ]
       }
     ]
   }
