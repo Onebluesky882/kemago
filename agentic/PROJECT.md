@@ -37,7 +37,7 @@ license_status: inactive
 ## Config
 
 ```
-conductor_branch: main
+conductor_branch: <conductor-branch>
 owner_email:
 ```
 

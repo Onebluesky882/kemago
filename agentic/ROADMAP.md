@@ -1,7 +1,7 @@
 ---
 status: DRAFT
 owner: CONDUCTOR
-last_updated: <!-- YYYY-MM-DD -->
+last_updated: 2026-07-18
 ---
 
 # ROADMAP.md
