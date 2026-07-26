@@ -168,6 +168,56 @@ Do not start designing without a reference or explicit style direction.
 
 ---
 
+## SEO — Required on Every Next.js Page
+
+If the client's project uses Next.js, every page must be SEO-friendly. This is not optional and does not need to be asked for separately — treat it as part of building the page.
+
+**Every page (`app/**/page.tsx`) must export metadata:**
+
+```ts
+// app/about/page.tsx
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'About Us | YourApp',
+  description: 'A concise, unique description of this specific page (~150-160 chars).',
+  openGraph: {
+    title: 'About Us | YourApp',
+    description: 'A concise, unique description of this specific page.',
+    url: 'https://yourapp.com/about',
+    images: ['/og-image.png'],
+  },
+}
+```
+
+For dynamic routes, use `generateMetadata` instead of a static export:
+
+```ts
+// app/blog/[slug]/page.tsx
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const post = await getPost(params.slug)
+  return {
+    title: `${post.title} | YourApp`,
+    description: post.excerpt,
+  }
+}
+```
+
+**Site-wide setup — required once per project, at `apps/web`:**
+
+- `app/layout.tsx` — root `metadata` with default title template (`title: { default, template }`), site description, and `metadataBase: new URL('https://yourapp.com')`
+- `app/sitemap.ts` — generates `sitemap.xml` listing all public routes
+- `app/robots.ts` — generates `robots.txt`, disallowing private routes (`/dashboard`, `/payment/*`, admin paths)
+- Semantic HTML in every page — one `<h1>` per page, meaningful heading hierarchy, `alt` text on every `<img>`/`next/image`
+- Use `next/image` for all images (not `<img>`) so Next.js handles responsive sizing and lazy loading
+
+**Rules:**
+- Do not ship a Next.js page without a `title` and `description` — a client-facing page with no metadata is an incomplete page, not a follow-up task.
+- Titles and descriptions must be unique per page — never copy the homepage's metadata onto inner pages.
+- This applies to `apps/web` and `apps/admin` whenever they are public-facing; purely internal admin tools behind auth can skip Open Graph tags but still need `title`/`description`.
+
+---
+
 ## First-Deploy Checklist (Next.js + Cloudflare Workers)
 
 When a conductor clones this template and deploys for the first time, complete these steps **in order** before handing off to the client:
