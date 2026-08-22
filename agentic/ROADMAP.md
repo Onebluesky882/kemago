@@ -87,6 +87,7 @@ Success Indicators:
 - The bank-slip verification helper (checks payment QR codes) has been rewritten in the same programming language as the rest of the app, so it's easier to maintain going forward. No change to how it behaves.
 - The project's build tools and the styling library used on the website, admin panel, and mobile app were all updated to their newest versions.
 - Decided the mobile app comes first, with its own backend server that runs on your own computer for now (instead of paid cloud hosting) — keeps early costs low
+- The app's four main screens are built and working: Feed, Events, Chat, and Profile, with bottom-tab navigation between them. Right now they show sample neighborhood content (not real data yet) so the look and feel can be reviewed before the real server is connected
 
 ---
 
@@ -98,7 +99,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 |----|------|------|--------|
 | M-001 | Backend foundation | Get the server and database running | PLANNING |
 | M-002 | Login and accounts | People can create an account and log in | PLANNING |
-| M-003 | App screens ready | Feed, Events, Profile, and Chat screens are built | PLANNING |
+| M-003 | App screens ready | Feed, Events, Profile, and Chat screens are built | COMPLETE |
 | M-004 | Feed working | People can post and browse local updates | PLANNING |
 | M-005 | Events working | People can find, create, and join local events | PLANNING |
 | M-006 | Profile working | People can view and edit their profile | PLANNING |

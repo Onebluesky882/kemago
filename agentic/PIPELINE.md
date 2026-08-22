@@ -127,12 +127,17 @@ Verified: `pnpm --version` → `11.22.0`; `pnpm ls tailwindcss -r` → `4.3.3` i
 
 **Domain:** apps/mobile
 **Depends On:** stage-1-setup
-**Status:** `PLANNING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
-- [ ] Expo Router navigation shell with 4 tabs: Feed, Event, Profile, Chat
-- [ ] Design system / theming baseline in place
-- [ ] Placeholder screens render for all 4 tabs
+- [x] Expo Router navigation shell with 4 tabs: Feed, Event, Profile, Chat
+- [x] Design system / theming baseline in place
+- [x] Placeholder screens render for all 4 tabs
+
+**Done:** Built the mobile shell in `apps/mobile/src`. Structure: `app/` (expo-router routes only, thin) → `screens/` (page composition) → `components/` (ui/, feed/, events/, chat/, profile/, icons/) → `store/` (Zustand global state: `useAuthStore`, `useFeedFilterStore`) → `hooks/` (local `useState` logic: `useComposePost`) → `lib/mockData.ts` (no backend yet, per stage-4 still PLANNING) → `theme/colors.ts` + `global.css` `@theme` tokens (Nextdoor-inspired warm/green palette, confirmed with client). Added deps: `zustand`, `react-native-svg` (icons — no emoji, per CLAUDE.md), `react-native-safe-area-context`, `react-native-web`+`react-dom` (for web-preview verification only). Tab icons are custom inline SVG. All 4 screens use real neighborhood-flavored mock content (not lorem ipsum), per DESIGN_SYSTEM.md.
+**Verified:** `pnpm type-check` clean; `expo start --web` booted, drove all 4 tabs + category filter + compose-post with Playwright — screenshots captured, zero console errors.
+**Next:** Dispatch stage-4-backend-scaffold (Go backend) so stage-5-auth → stage-7..10 can wire the screens to real data instead of `lib/mockData.ts`.
+**Blockers:** none
 
 **Dispatch-In:** `tasks/stage-6-mobile-shell.md`
 **Gate-Out:** `gate-out/stage-6-mobile-shell.md`

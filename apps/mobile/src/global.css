@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @import "uniwind";
+
+@theme {
+  --color-bg: #faf8f4;
+  --color-surface: #ffffff;
+  --color-border: #e7e2d8;
+  --color-text: #1c1c1a;
+  --color-text-muted: #767267;
+  --color-brand: #1f7a4d;
+  --color-brand-hover: #17603c;
+  --color-brand-soft: #e6f2ea;
+  --color-accent: #c65a2e;
+}
