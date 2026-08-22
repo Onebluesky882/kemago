@@ -85,6 +85,7 @@ Success Indicators:
 
 - TBD
 - The bank-slip verification helper (checks payment QR codes) has been rewritten in the same programming language as the rest of the app, so it's easier to maintain going forward. No change to how it behaves.
+- The project's build tools and the styling library used on the website, admin panel, and mobile app were all updated to their newest versions.
 
 ---
 
