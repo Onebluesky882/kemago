@@ -2,7 +2,7 @@
 
 Status: PLANNING
 Owner: CONDUCTOR
-Conductor Branch: <conductor-branch>
+Conductor Branch: main
 
 ---
 
@@ -10,7 +10,16 @@ Conductor Branch: <conductor-branch>
 
 | Stage | Domain | Depends On | Status |
 |-------|--------|------------|--------|
-| stage-1-setup | <!-- domain --> | none | PLANNING |
+| stage-1-setup | agentic/ (governance) | none | COMPLETE |
+| stage-2-slip-verification-service-ts | packages/slip-verification-service | none | COMPLETE |
+| stage-3-dependency-updates | root, apps/web, apps/admin, apps/mobile | none | COMPLETE |
+| stage-4-backend-scaffold | new Go backend service | stage-1-setup | PLANNING |
+| stage-5-auth | Go backend, apps/mobile | stage-4-backend-scaffold | PLANNING |
+| stage-6-mobile-shell | apps/mobile | stage-1-setup | PLANNING |
+| stage-7-feed | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
+| stage-8-event | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
+| stage-9-profile | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
+| stage-10-chat | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
 
 ---
 
@@ -18,13 +27,18 @@ Conductor Branch: <conductor-branch>
 
 ### stage-1-setup
 
-**Domain:** <!-- e.g. root, apps/*, packages/* -->
+**Domain:** agentic/ (governance)
 **Depends On:** none
-**Status:** `PLANNING`
+**Status:** `COMPLETE`
 
 **Acceptance Criteria:**
-- [ ] <!-- criterion 1 -->
-- [ ] <!-- criterion 2 -->
+- [x] QUESTIONS.md fully answered (Q0–Q7 + Cloudflare/scope follow-ups)
+- [x] PROJECT.md, DECISIONS.md, ARCHITECTURE.md, CONTRACTS.md, PIPELINE.md, ROADMAP.md updated
+- [x] conductor-branch placeholder replaced with `main` everywhere
+
+**Done:** Walked the client through QUESTIONS.md (Thai language session). Project: Coarea, a local-first social app (feed/community/events). Client is a developer, mobile-first (Expo/React Native + TypeScript), backend in Go self-hosted via OrbStack, PostgreSQL database — a deliberate deviation from the template's default Hono-on-Cloudflare-Workers/D1 stack (recorded in DECISIONS.md → Coarea Tech Stack). `apps/web`/`apps/admin` deprioritized until client asks. Governance files updated accordingly.
+**Next:** Dispatch stage-4-backend-scaffold and stage-6-mobile-shell (independent, can run in parallel — no shared files).
+**Blockers:** none
 
 **Dispatch-In:** `tasks/stage-1-setup.md`
 **Gate-Out:** `gate-out/stage-1-setup.md`
@@ -70,6 +84,123 @@ Verified: `pnpm --version` → `11.22.0`; `pnpm ls tailwindcss -r` → `4.3.3` i
 
 **Next:** `apps/web` and `apps/admin` `type-check` currently fail with `TS2883` ("inferred type ... cannot be named without a reference to 'Element'") across several components — pre-existing incompatibility between TypeScript 7 and the `@types/react: "latest"` pin, surfaced by this install but unrelated to the dependency bumps above. Needs explicit scoping/approval before fixing (either pin `@types/react` or add explicit return types).
 **Blockers:** none for this stage; the TS2883 issue above is a separate follow-up, not yet actioned
+
+---
+
+### stage-4-backend-scaffold
+
+**Domain:** new Go backend service
+**Depends On:** stage-1-setup
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] Go module scaffolded (location TBD — e.g. `apps/backend` or `services/api`)
+- [ ] PostgreSQL container running via OrbStack, migrations tooling chosen (e.g. `golang-migrate`)
+- [ ] Health check endpoint (`GET /healthz`)
+- [ ] CORS policy defined for mobile app origin(s)
+- [ ] `go test`, `gofmt`, `golangci-lint` wired up
+
+**Dispatch-In:** `tasks/stage-4-backend-scaffold.md`
+**Gate-Out:** `gate-out/stage-4-backend-scaffold.md`
+**Merge-Approval:** `merge-approval/stage-4-backend-scaffold.md`
+
+---
+
+### stage-5-auth
+
+**Domain:** Go backend, apps/mobile
+**Depends On:** stage-4-backend-scaffold
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] `POST /v1/auth/register`, `POST /v1/auth/login` implemented per CONTRACTS.md → Auth
+- [ ] Bearer token (JWT) issuance + validation middleware, no cookies (SECURITY_RULES.md)
+- [ ] Mobile app: login/register screens, token storage, authenticated `apiFetch` wrapper
+
+**Dispatch-In:** `tasks/stage-5-auth.md`
+**Gate-Out:** `gate-out/stage-5-auth.md`
+**Merge-Approval:** `merge-approval/stage-5-auth.md`
+
+---
+
+### stage-6-mobile-shell
+
+**Domain:** apps/mobile
+**Depends On:** stage-1-setup
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] Expo Router navigation shell with 4 tabs: Feed, Event, Profile, Chat
+- [ ] Design system / theming baseline in place
+- [ ] Placeholder screens render for all 4 tabs
+
+**Dispatch-In:** `tasks/stage-6-mobile-shell.md`
+**Gate-Out:** `gate-out/stage-6-mobile-shell.md`
+**Merge-Approval:** `merge-approval/stage-6-mobile-shell.md`
+
+---
+
+### stage-7-feed
+
+**Domain:** Go backend, apps/mobile
+**Depends On:** stage-5-auth, stage-6-mobile-shell
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] `GET /v1/feed`, `POST /v1/feed` implemented per CONTRACTS.md → Feed
+- [ ] Mobile Feed screen: list posts, create post
+
+**Dispatch-In:** `tasks/stage-7-feed.md`
+**Gate-Out:** `gate-out/stage-7-feed.md`
+**Merge-Approval:** `merge-approval/stage-7-feed.md`
+
+---
+
+### stage-8-event
+
+**Domain:** Go backend, apps/mobile
+**Depends On:** stage-5-auth, stage-6-mobile-shell
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] `GET /v1/events`, `POST /v1/events`, `POST /v1/events/:id/join` implemented per CONTRACTS.md → Event
+- [ ] Mobile Event screen: browse, create, join events/missions
+
+**Dispatch-In:** `tasks/stage-8-event.md`
+**Gate-Out:** `gate-out/stage-8-event.md`
+**Merge-Approval:** `merge-approval/stage-8-event.md`
+
+---
+
+### stage-9-profile
+
+**Domain:** Go backend, apps/mobile
+**Depends On:** stage-5-auth, stage-6-mobile-shell
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] `GET /v1/users/me`, `PATCH /v1/users/me` implemented per CONTRACTS.md → Profile
+- [ ] Mobile Profile screen: view + edit profile
+
+**Dispatch-In:** `tasks/stage-9-profile.md`
+**Gate-Out:** `gate-out/stage-9-profile.md`
+**Merge-Approval:** `merge-approval/stage-9-profile.md`
+
+---
+
+### stage-10-chat
+
+**Domain:** Go backend, apps/mobile
+**Depends On:** stage-5-auth, stage-6-mobile-shell
+**Status:** `PLANNING`
+
+**Acceptance Criteria:**
+- [ ] `GET /v1/chats`, `GET /v1/chats/:id/messages`, `POST /v1/chats/:id/messages` implemented per CONTRACTS.md → Chat
+- [ ] Mobile Chat screen: conversation list + message thread
+
+**Dispatch-In:** `tasks/stage-10-chat.md`
+**Gate-Out:** `gate-out/stage-10-chat.md`
+**Merge-Approval:** `merge-approval/stage-10-chat.md`
 
 ---
 

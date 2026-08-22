@@ -127,4 +127,35 @@ Use **Anthropic Managed Agents** (`/v1/agents`, `/v1/sessions`) with a `github_r
 
 ⸻
 
-<!-- Add one section per decision -->
+## Decision: Coarea Tech Stack
+
+**Date:** 2026-08-23
+**Status:** ACCEPTED
+
+**Context:**
+Coarea is a greenfield, mobile-first, local social app (feed, community, events/missions). Setup was walked through via QUESTIONS.md. The client requested a Go backend and self-hosted infrastructure, which deviates from this template's default Hono-on-Cloudflare-Workers backend.
+
+**Decision:**
+
+| Setting | Value |
+|---|---|
+| Primary language | Go (backend), TypeScript (frontend) |
+| Frontend | Mobile app — React Native / Expo (`apps/mobile`) — priority over `apps/web` / `apps/admin` |
+| Backend | Go, self-hosted via OrbStack (containers) — **not** Cloudflare Workers/Hono |
+| Database | PostgreSQL, run as a container on OrbStack — **not** Cloudflare D1 |
+| Auth | Bearer token (JWT), implemented natively in Go — `packages/auth` (Hono-based) does not apply to the Go backend; the no-cookies / Bearer-only principle from SECURITY_RULES.md still applies |
+| Deployment | Backend: self-host on OrbStack; Mobile: Expo/EAS → App Store / Google Play |
+| Package manager | pnpm (frontend/monorepo tooling) |
+| Linting/Formatting | Biome (TypeScript/mobile); `gofmt` + `golangci-lint` (Go backend) |
+| Testing | Vitest + Playwright (frontend); `go test` (backend) |
+| State management | TanStack Query + Zustand (mobile) |
+| Naming conventions | PascalCase components, camelCase functions, kebab-case files, UPPER_SNAKE_CASE constants (frontend); standard Go conventions (`gofmt`-enforced) for backend |
+
+**Consequences:**
+- `apps/web` and `apps/admin` are deprioritized — no Cloudflare Pages/Workers deploy work is scheduled for them until the client asks
+- A new backend service (Go) needs to be scaffolded — it does not yet exist in `apps/api` (which is currently Hono/TS per the template)
+- `packages/auth` (Bearer-token Hono middleware) cannot be reused as-is by the Go backend; a Go-native equivalent is required
+- CORS/ALLOWED_ORIGINS rules from CLAUDE.md (workers.dev cross-domain rules) do not apply to the self-hosted Go backend — a Go-appropriate CORS policy is needed instead
+- First-Deploy Checklist in CLAUDE.md (wrangler.toml, D1 migrations, Cloudflare secrets) does not apply to this backend track — a self-host deploy checklist (Postgres migrations, Docker/OrbStack compose, env vars) needs to be written separately when backend work starts
+
+⸻

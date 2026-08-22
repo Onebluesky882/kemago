@@ -1,24 +1,27 @@
 # PROJECT.md
 
 ## Project Name
-<!-- Replace with your project name -->
+Coarea
 
 ## Goal
-<!-- One paragraph describing what this project does and why -->
+Coarea is a local-first social app that brings neighborhood news, community, and events into one place, helping people nearby meet, share stories, and take part in local activities together.
 
 ## Tech Stack
-<!-- List languages, frameworks, and key tools -->
+Mobile app: React Native / Expo + TypeScript (`apps/mobile`). Backend: Go, self-hosted via OrbStack. Database: PostgreSQL. Auth: Bearer token (JWT), Go-native. Package manager: pnpm. See DECISIONS.md → Coarea Tech Stack for full detail.
 
 ## Team / Agents
 <!-- List assigned agents and their domains -->
 
+## Target Users
+General public in a given local area/neighborhood — goal is broad, high-volume adoption (mass consumer app, not a niche audience).
+
 ## Current Stage
-<!-- Which pipeline stage is currently active -->
+Greenfield — starting from scratch (project status per Q4)
 
 ---
 
 ## Status
-<!-- ACTIVE | PAUSED | COMPLETE -->
+ACTIVE
 
 ---
 
@@ -37,8 +40,8 @@ license_status: inactive
 ## Config
 
 ```
-conductor_branch: <conductor-branch>
-owner_email:
+conductor_branch: main
+owner_email: wansing05@gmail.com
 ```
 
 <!-- conductor_branch: the branch all PRs merge into — default is "main" -->

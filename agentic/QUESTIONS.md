@@ -275,11 +275,11 @@ After the client has answered all questions, Conductor must:
 
 Status
 
-- [ ] Project Identity (Q0–Q4): not answered
-- [ ] Tech Stack (Q5–Q7): not answered
-- [ ] Cloudflare account: not confirmed
-- [ ] Conductor updated all governance files: not done
-- [ ] Setup Test PASSED: not done
+- [x] Project Identity (Q0–Q4): answered
+- [x] Tech Stack (Q5–Q7): answered
+- [x] Cloudflare account: N/A — client deviated from Cloudflare stack (Go backend, self-hosted via OrbStack, PostgreSQL); see DECISIONS.md → Coarea Tech Stack
+- [x] Conductor updated all governance files: done
+- [ ] Setup Test PASSED: 7/8 — T8 partial, see below (not a setup defect — first stage just hasn't been dispatched yet)
 
 ⸻
 
@@ -405,15 +405,15 @@ Result: [ ] PASS / [ ] FAIL
 
 | Test | Result |
 |------|--------|
-| T1 — No placeholders | |
-| T2 — conductor-branch exists in git | |
-| T3 — PROJECT.md complete | |
-| T4 — DECISIONS.md complete | |
-| T5 — PIPELINE.md complete | |
-| T6 — ARCHITECTURE.md / CONTRACTS.md not empty | |
-| T7 — DEV_LOG.md has entry | |
-| T8 — Worker simulation | |
+| T1 — No placeholders | PASS |
+| T2 — conductor-branch exists in git | PASS |
+| T3 — PROJECT.md complete | PASS |
+| T4 — DECISIONS.md complete | PASS |
+| T5 — PIPELINE.md complete | PASS |
+| T6 — ARCHITECTURE.md / CONTRACTS.md not empty | PASS |
+| T7 — DEV_LOG.md has entry | PASS |
+| T8 — Worker simulation | PARTIAL — worker correctly named the project, tech stack, and next stage (stage-4-backend-scaffold) from governance files alone; but reported BLOCKED because no stage is `IN_PROGRESS` and no `tasks/stage-4-backend-scaffold.md` Gate-In file exists yet. Expected: no stage has been dispatched yet. Not a governance defect — resolve by dispatching stage-4-backend-scaffold (and/or stage-6-mobile-shell) when ready to start implementation. |
 
-All passing → update Status checklist above, then start pipeline.
+7/8 passing. Governance setup is complete and self-sufficient — remaining item is dispatching the first stage(s), not a setup fix.
 
 Any FAIL → fix and re-run that test before starting the pipeline.

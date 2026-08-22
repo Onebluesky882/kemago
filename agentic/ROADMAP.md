@@ -21,7 +21,7 @@ Intended for: Product Owners, Project Managers, Architects, Developers, Future C
 
 ## Project Vision
 
-[Describe the long-term vision of the project here.]
+Coarea is a local-first social app: a single place for people to see what's happening nearby — local news, community activity, and events — and to easily join in. First version ships as a mobile app.
 
 ---
 
@@ -29,9 +29,9 @@ Intended for: Product Owners, Project Managers, Architects, Developers, Future C
 
 What problem does this project solve?
 
-- Problem 1
-- Problem 2
-- Problem 3
+- General social apps mix everyone together — it's hard to find what's actually happening near you
+- People miss local events, deals, and news because there's no single place to look
+- Neighbors have no easy way to find and join local activities together
 
 ---
 
@@ -39,21 +39,21 @@ What problem does this project solve?
 
 ### Goal 1
 
-Description: [TBD]
+Description: Get people using the app to see and share what's happening in their area.
 
 Success Criteria:
-- [ ] TBD
-- [ ] TBD
-- [ ] TBD
+- [ ] Mobile app live on the App Store and Google Play
+- [ ] People can post updates and browse local activity
+- [ ] People can find and join local events
 
 ### Goal 2
 
-Description: [TBD]
+Description: Grow the number of people actively using the app in a given area.
 
 Success Criteria:
-- [ ] TBD
-- [ ] TBD
-- [ ] TBD
+- [ ] Steady growth in new sign-ups
+- [ ] People come back and use the app regularly
+- [ ] People are posting and joining events, not just browsing
 
 ---
 
@@ -61,21 +61,21 @@ Success Criteria:
 
 ### Objective 1
 
-Description: [TBD]
+Description: Ship a simple, working mobile app fast — four core areas: Feed, Events, Profile, Chat.
 
 Success Indicators:
-- [ ] TBD
-- [ ] TBD
-- [ ] TBD
+- [ ] Feed, Events, Profile, and Chat are all working
+- [ ] Login and account creation work smoothly
+- [ ] App feels fast and easy to use
 
 ### Objective 2
 
-Description: [TBD]
+Description: Keep the technical foundation simple and self-hosted, so it's cheap to run early on.
 
 Success Indicators:
-- [ ] TBD
-- [ ] TBD
-- [ ] TBD
+- [ ] Backend runs reliably on self-hosted infrastructure
+- [ ] No unnecessary paid cloud services in the early stage
+- [ ] Easy to move to bigger hosting later if the app grows
 
 ---
 
@@ -83,9 +83,10 @@ Success Indicators:
 
 <!-- Conductor updates this section to summarize, in plain language, what has been delivered so far. -->
 
-- TBD
+- Project setup is complete: what Coarea is, who it's for, and how it will be built has been agreed and written down
 - The bank-slip verification helper (checks payment QR codes) has been rewritten in the same programming language as the rest of the app, so it's easier to maintain going forward. No change to how it behaves.
 - The project's build tools and the styling library used on the website, admin panel, and mobile app were all updated to their newest versions.
+- Decided the mobile app comes first, with its own backend server that runs on your own computer for now (instead of paid cloud hosting) — keeps early costs low
 
 ---
 
@@ -95,9 +96,13 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 
 | ID | Name | Goal | Status |
 |----|------|------|--------|
-| M-001 | TBD | TBD | PLANNING |
-| M-002 | TBD | TBD | PLANNING |
-| M-003 | TBD | TBD | PLANNING |
+| M-001 | Backend foundation | Get the server and database running | PLANNING |
+| M-002 | Login and accounts | People can create an account and log in | PLANNING |
+| M-003 | App screens ready | Feed, Events, Profile, and Chat screens are built | PLANNING |
+| M-004 | Feed working | People can post and browse local updates | PLANNING |
+| M-005 | Events working | People can find, create, and join local events | PLANNING |
+| M-006 | Profile working | People can view and edit their profile | PLANNING |
+| M-007 | Chat working | People can message each other | PLANNING |
 
 **Status values:** PLANNING · APPROVED · IN_PROGRESS · COMPLETE · CANCELLED
 
@@ -107,16 +112,18 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 
 <!-- Conductor updates this section to summarize, in plain language, what happens next. -->
 
-- TBD
+- Build the server that will power the app (backend foundation)
+- Build the basic app screens: Feed, Events, Profile, Chat
+- Add login and account creation
 
 ---
 
 ## Success Metrics
 
 The project will be considered successful when:
-- [ ] TBD
-- [ ] TBD
-- [ ] TBD
+- [ ] The mobile app is live on the App Store and Google Play
+- [ ] People can sign up, post, browse events, and chat without issues
+- [ ] People are actively coming back and using the app
 
 ---
 
@@ -124,9 +131,9 @@ The project will be considered successful when:
 
 ### Risk 1
 
-Description: [TBD]
+Description: The backend runs on your own computer (self-hosted) for now, not a cloud service — if that computer is off or loses internet, the app goes down.
 
-Mitigation: [TBD]
+Mitigation: Fine for early testing/development; move to a proper server or cloud host before inviting real users at scale.
 
 ---
 
@@ -144,10 +151,12 @@ Mitigation: [TBD]
 ## Project Scope
 
 **In Scope:**
-- [TBD]
+- Mobile app (Feed, Events, Profile, Chat)
+- Self-hosted backend server and database
 
-**Out of Scope:**
-- [TBD]
+**Out of Scope (for now):**
+- Website and admin panel (`apps/web`, `apps/admin`) — revisit once the mobile app is live
+- Cloud hosting for the backend — using your own computer for now
 
 ---
 
