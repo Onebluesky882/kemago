@@ -1,19 +1,23 @@
 import { useState } from "react";
 
-// Local UI state only — no backend yet (see agentic/PIPELINE.md stage-7-feed).
-// Swap `submit`'s body for a real POST /v1/feed call once the Go backend exists.
+// Writes now go through the local-first SQLite/localStorage repo (see
+// src/lib/db/postsRepo.*) — onSubmit is genuinely async, so submit awaits
+// it before clearing isSubmitting to actually prevent a double post.
 export function useComposePost() {
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canSubmit = text.trim().length > 0 && !isSubmitting;
 
-  function submit(onSubmit: (body: string) => void) {
+  async function submit(onSubmit: (body: string) => void | Promise<void>) {
     if (!canSubmit) return;
     setIsSubmitting(true);
-    onSubmit(text.trim());
-    setText("");
-    setIsSubmitting(false);
+    try {
+      await onSubmit(text.trim());
+      setText("");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return { text, setText, isSubmitting, canSubmit, submit };

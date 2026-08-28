@@ -1,38 +1,54 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, ScrollView, Text, View } from "react-native";
 import { CategoryChip } from "../../components/feed/CategoryChip";
 import { ComposeBar } from "../../components/feed/ComposeBar";
 import { PostCard } from "../../components/feed/PostCard";
 import { EmptyState } from "../../components/ui/EmptyState";
-import { posts as mockPosts, type Post } from "../../lib/mockData";
+import { getAllPosts, initPostsStore, insertPost } from "../../lib/db/postsRepo";
+import { currentUser, posts as seedPosts, type Post } from "../../lib/mockData";
 import { useFeedFilterStore, type FeedFilter } from "../../store/useFeedFilterStore";
 
 const filters: FeedFilter[] = ["All", "General", "Recommendations", "Lost & Found", "Safety"];
 
 export function FeedScreen() {
   const { filter, setFilter } = useFeedFilterStore();
-  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      await initPostsStore(seedPosts);
+      const stored = await getAllPosts();
+      if (!cancelled) setPosts(stored);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const visiblePosts = useMemo(
     () => (filter === "All" ? posts : posts.filter((p) => p.category === filter)),
     [posts, filter],
   );
 
-  function handlePost(body: string) {
-    setPosts((prev) => [
-      {
+  const handlePost = useCallback(
+    async (body: string) => {
+      const newPost: Post = {
         id: `p_${Date.now()}`,
-        author: "Jordan Lee",
-        neighborhood: "Elm Street",
-        category: "General",
+        author: currentUser.name,
+        authorVerified: currentUser.verified,
+        neighborhood: currentUser.neighborhood,
+        category: filter === "All" ? "General" : filter,
         body,
         postedAt: "Just now",
         likeCount: 0,
         replyCount: 0,
-      },
-      ...prev,
-    ]);
-  }
+      };
+      await insertPost(newPost);
+      setPosts((prev) => [newPost, ...prev]);
+    },
+    [filter],
+  );
 
   return (
     <View className="flex-1 bg-bg">

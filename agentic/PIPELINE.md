@@ -20,6 +20,7 @@ Conductor Branch: main
 | stage-8-event | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
 | stage-9-profile | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
 | stage-10-chat | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
+| stage-11-mobile-jobs-sport-clubs | apps/mobile | stage-6-mobile-shell | COMPLETE |
 
 ---
 
@@ -206,6 +207,35 @@ Verified: `pnpm --version` → `11.22.0`; `pnpm ls tailwindcss -r` → `4.3.3` i
 **Dispatch-In:** `tasks/stage-10-chat.md`
 **Gate-Out:** `gate-out/stage-10-chat.md`
 **Merge-Approval:** `merge-approval/stage-10-chat.md`
+
+---
+
+### stage-11-mobile-jobs-sport-clubs
+
+**Domain:** apps/mobile
+**Depends On:** stage-6-mobile-shell
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Three new tabs added to the shell: Jobs & Announcements, Sport, My Clubs (screens, cards, mock data — same pattern as stage-6)
+- [x] Global product rules surfaced in UI: verified badge next to every author/host/poster, no avatar upload (initials-only, unchanged), private/public profile toggle on Profile
+- [x] Local-first data layer for Feed: `lib/db/postsRepo.{native,web}.ts` (react-native-nitro-sqlite on iOS/Android, localStorage on web), `sync_outbox` table, `lib/sync/syncEngine.ts` stub
+- [x] Auth/profile state persisted on-device: `useAuthStore` wrapped in zustand `persist()`, backed by `lib/storage/zustandStorage.{native,web}.ts` (MMKV / localStorage)
+- [x] Fixed two bugs found in review: `FeedScreen.handlePost` no longer hardcodes category "General"; `useComposePost.submit` now awaits `onSubmit` so the double-submit guard is real
+
+**Done:** Extended the stage-6 tab shell with three more sections and a local-first storage foundation. Platform-specific files (`.native.ts`/`.web.ts`) were used only where iOS/Android and web genuinely need different code — both `react-native-nitro-sqlite` and `react-native-mmkv` are NitroModules with no web build, so each has a `.native.ts` (real implementation), a `.web.ts` (localStorage equivalent, same function shapes), and a bare `.ts` fallback that just re-exports `.native` (Metro always prefers the platform-specific file at runtime; the bare file exists only so `tsc` can resolve the import — a `moduleSuffixes` tsconfig change was tried first and reverted because it broke NativeWind's `className` prop typing project-wide). Everything else stayed a single shared file, per Expo's own platform-file guidance (only split on genuine divergence).
+
+Also fixed a native iOS build break unrelated to this feature but blocking verification: `expo-modules-core` (up to the current latest, 57.0.14) only supports `react-native-worklets` `^0.7.4`–`^0.10.0`, while `react-native-reanimated@4.6.0` requires `0.12.x` exactly — no worklets version satisfies both. Pinned `react-native-worklets` to `0.10.1` and `react-native-reanimated` to `4.5.2` via `pnpm-workspace.yaml` → `overrides` (whose new-pnpm home is the workspace file, not `package.json`'s now-ignored `pnpm.overrides`). Verified with a real `xcodebuild` — `BUILD SUCCEEDED`.
+
+Mid-task, `apps/mobile` was accidentally deleted and a git checkout reverted `pnpm-workspace.yaml`/`DECISIONS.md` along with it; everything in this stage was rebuilt from conversation history and re-verified (`pnpm type-check` clean, `xcodebuild` succeeds) before this commit.
+
+**Verified:** `pnpm type-check` clean across the monorepo (the one pre-existing failure, `apps/api`'s Stripe API-version type error, predates this stage and is unrelated); `xcodebuild` `BUILD SUCCEEDED` on iOS Simulator after a full `expo prebuild` regeneration.
+**Next:** Jobs/Sport/Clubs have no backend contract yet — needs its own stage before `+ create` flows are real. stage-7..10 (Feed/Event/Profile/Chat backend wiring) still block on stage-5-auth and the Go backend not existing yet (see stage-4-backend-scaffold, about to be dispatched with Fiber v3 + Bun ORM + Postgres + Redis + a separate WebSocket service).
+**Blockers:** none — `apps/mobile/ios/` (CocoaPods-generated Xcode project) is intentionally left untracked, matching how it was before this stage; regenerate via `expo prebuild --platform ios` if missing.
+
+**Dispatch-In:** `tasks/stage-11-mobile-jobs-sport-clubs.md`
+**Gate-Out:** `gate-out/stage-11-mobile-jobs-sport-clubs.md`
+**Merge-Approval:** `merge-approval/stage-11-mobile-jobs-sport-clubs.md`
 
 ---
 

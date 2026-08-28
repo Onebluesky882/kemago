@@ -144,6 +144,7 @@ Coarea is a greenfield, mobile-first, local social app (feed, community, events/
 | Backend | Go, self-hosted via OrbStack (containers) — **not** Cloudflare Workers/Hono |
 | Database | PostgreSQL, run as a container on OrbStack — **not** Cloudflare D1 |
 | Auth | Bearer token (JWT), implemented natively in Go — `packages/auth` (Hono-based) does not apply to the Go backend; the no-cookies / Bearer-only principle from SECURITY_RULES.md still applies |
+| ORM (backend) | [Bun](https://bun.uptrace.dev/) — Go SQL-first ORM, targets PostgreSQL (matches the Database row above); not to be confused with the Bun JS runtime |
 | Deployment | Backend: self-host on OrbStack; Mobile: Expo/EAS → App Store / Google Play |
 | Package manager | pnpm (frontend/monorepo tooling) |
 | Linting/Formatting | Biome (TypeScript/mobile); `gofmt` + `golangci-lint` (Go backend) |

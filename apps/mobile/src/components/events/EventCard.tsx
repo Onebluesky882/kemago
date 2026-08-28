@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import { Card } from "../ui/Card";
+import { VerifiedBadge } from "../ui/VerifiedBadge";
 import type { LocalEvent } from "../../lib/mockData";
 
 export function EventCard({ event }: { event: LocalEvent }) {
@@ -9,10 +10,11 @@ export function EventCard({ event }: { event: LocalEvent }) {
       <Text className="text-base font-semibold text-text mb-1">{event.title}</Text>
       <Text className="text-sm text-text-muted mb-3">{event.location}</Text>
 
-      <View className="flex-row items-center justify-between">
+      <View className="flex-row items-center gap-1">
         <Text className="text-xs text-text-muted">
           Hosted by {event.host} · {event.goingCount} going
         </Text>
+        {event.hostVerified ? <VerifiedBadge size={12} /> : null}
       </View>
     </Card>
   );

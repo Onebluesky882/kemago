@@ -2,6 +2,7 @@ import { Text, View } from "react-native";
 import { Avatar } from "../ui/Avatar";
 import { Badge } from "../ui/Badge";
 import { Card } from "../ui/Card";
+import { VerifiedBadge } from "../ui/VerifiedBadge";
 import type { Post } from "../../lib/mockData";
 
 const categoryTone: Record<Post["category"], "brand" | "accent" | "neutral"> = {
@@ -17,7 +18,10 @@ export function PostCard({ post }: { post: Post }) {
       <View className="flex-row items-center mb-3">
         <Avatar initials={initialsOf(post.author)} />
         <View className="ml-3 flex-1">
-          <Text className="text-sm font-semibold text-text">{post.author}</Text>
+          <View className="flex-row items-center gap-1">
+            <Text className="text-sm font-semibold text-text">{post.author}</Text>
+            {post.authorVerified ? <VerifiedBadge size={12} /> : null}
+          </View>
           <Text className="text-xs text-text-muted">
             {post.neighborhood} · {post.postedAt}
           </Text>

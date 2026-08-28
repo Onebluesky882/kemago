@@ -1,6 +1,18 @@
 packages:
   - "apps/*"
   - "packages/*"
+overrides:
+  # expo-modules-core (up to at least 57.0.14, the current latest) only supports
+  # react-native-worklets ^0.7.4-^0.10.0, but react-native-reanimated@4.6.0
+  # requires worklets 0.12.x exactly — those two ranges never overlap, so no
+  # single worklets version satisfies both. Pinning reanimated back to 4.5.2
+  # (peer range: worklets 0.10.x-0.11.x) makes 0.10.1 satisfy everyone.
+  # Without this pin, pnpm resolves the unconstrained "*" peer range from
+  # @expo/ui to the latest 0.12.x, whose WorkletRuntime API (runSync/...)
+  # doesn't match the executeSync/schedule calls expo-modules-core's native
+  # bridge expects, breaking the iOS/Android native build.
+  react-native-worklets: 0.10.1
+  react-native-reanimated: 4.5.2
 allowBuilds:
   esbuild: true
   sharp: true

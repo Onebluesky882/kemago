@@ -11,6 +11,9 @@
       "expo-status-bar"
     ],
     "name": "mobile",
-    "slug": "mobile"
+    "slug": "mobile",
+    "ios": {
+      "bundleIdentifier": "com.wansing05.mobile"
+    }
   }
 }

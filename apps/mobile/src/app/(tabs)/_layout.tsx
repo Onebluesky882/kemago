@@ -1,5 +1,13 @@
 import { Tabs } from "expo-router";
-import { ChatIcon, EventsIcon, FeedIcon, ProfileIcon } from "../../components/icons/TabIcons";
+import {
+  ChatIcon,
+  ClubsIcon,
+  EventsIcon,
+  FeedIcon,
+  JobsIcon,
+  ProfileIcon,
+  SportIcon,
+} from "../../components/icons/TabIcons";
 import { colors } from "../../theme/colors";
 
 export default function TabsLayout() {
@@ -29,6 +37,27 @@ export default function TabsLayout() {
         options={{
           title: "Events",
           tabBarIcon: ({ color }) => <EventsIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="jobs"
+        options={{
+          title: "Jobs",
+          tabBarIcon: ({ color }) => <JobsIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="sport"
+        options={{
+          title: "Sport",
+          tabBarIcon: ({ color }) => <SportIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="clubs"
+        options={{
+          title: "Clubs",
+          tabBarIcon: ({ color }) => <ClubsIcon color={color} />,
         }}
       />
       <Tabs.Screen
