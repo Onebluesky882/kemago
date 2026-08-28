@@ -5,7 +5,10 @@ import (
 	"regexp"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/uptrace/bun"
 
+	"github.com/onebluesky882/coarea/backend/api-go/internal/authtoken"
+	"github.com/onebluesky882/coarea/backend/api-go/internal/db"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/otp"
 )
 
@@ -17,10 +20,12 @@ var phoneRe = regexp.MustCompile(`^(\+?66|0)\d{9}$`)
 
 type OTPHandler struct {
 	service *otp.Service
+	db      *bun.DB
+	issuer  *authtoken.Issuer
 }
 
-func NewOTPHandler(service *otp.Service) *OTPHandler {
-	return &OTPHandler{service: service}
+func NewOTPHandler(service *otp.Service, bunDB *bun.DB, issuer *authtoken.Issuer) *OTPHandler {
+	return &OTPHandler{service: service, db: bunDB, issuer: issuer}
 }
 
 type requestOTPBody struct {
@@ -60,10 +65,17 @@ func (h *OTPHandler) Verify(c fiber.Ctx) error {
 	err := h.service.Verify(c.Context(), body.Phone, body.Code)
 	switch {
 	case err == nil:
-		// TODO(stage-5-auth): upsert the user row (mark verified = true)
-		// and issue the real Bearer/JWT token here once packages/auth's
-		// Go-native equivalent exists (see DECISIONS.md → Coarea Tech Stack).
-		return c.JSON(fiber.Map{"verified": true})
+		user, dbErr := db.UpsertVerifiedUser(c.Context(), h.db, body.Phone)
+		if dbErr != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to record verification"})
+		}
+
+		token, tokenErr := h.issuer.Issue(user.ID, user.Phone)
+		if tokenErr != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to issue token"})
+		}
+
+		return c.JSON(fiber.Map{"verified": true, "token": token})
 	case errors.Is(err, otp.ErrIncorrectCode):
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "incorrect code"})
 	case errors.Is(err, otp.ErrNotFound):

@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 
+	"github.com/onebluesky882/coarea/backend/api-go/internal/authtoken"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/config"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/db"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/handlers"
@@ -13,6 +15,8 @@ import (
 	"github.com/onebluesky882/coarea/backend/api-go/internal/redisclient"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/sms"
 )
+
+const jwtTTL = 30 * 24 * time.Hour
 
 func main() {
 	ctx := context.Background()
@@ -40,7 +44,8 @@ func main() {
 
 	smsClient := sms.NewClient(cfg.ThaibulkSMSKey, cfg.ThaibulkSMSSecret, cfg.SMSSender)
 	otpService := otp.NewService(redisClient, smsClient)
-	otpHandler := handlers.NewOTPHandler(otpService)
+	tokenIssuer := authtoken.NewIssuer(cfg.JWTSecret, jwtTTL)
+	otpHandler := handlers.NewOTPHandler(otpService, database, tokenIssuer)
 
 	app := fiber.New()
 
@@ -53,6 +58,10 @@ func main() {
 	// dashboard for this app (GET method, /api/otp) — see TODO.md.
 	api.Get("/otp", otpHandler.DeliveryWebhook)
 	api.Post("/otp", otpHandler.DeliveryWebhook)
+
+	// Proves RequireAuth end-to-end: GET /api/me with a valid Bearer token
+	// (from otp/verify's response) returns the token's own claims.
+	api.Get("/me", handlers.RequireAuth(tokenIssuer), handlers.Me)
 
 	log.Printf("api-go listening on :%s", cfg.Port)
 	if err := app.Listen(":" + cfg.Port); err != nil {

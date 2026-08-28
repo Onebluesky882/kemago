@@ -12,6 +12,7 @@ type Config struct {
 	ThaibulkSMSKey    string
 	ThaibulkSMSSecret string
 	SMSSender         string
+	JWTSecret         string
 }
 
 func Load() (*Config, error) {
@@ -22,6 +23,7 @@ func Load() (*Config, error) {
 		ThaibulkSMSKey:    os.Getenv("THAIBULK_SMS_KEY"),
 		ThaibulkSMSSecret: os.Getenv("THAIBULK_SMS_SECRET"),
 		SMSSender:         getEnv("SMS_SENDER", "Coarea"),
+		JWTSecret:         os.Getenv("JWT_SECRET"),
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -29,6 +31,9 @@ func Load() (*Config, error) {
 	}
 	if cfg.ThaibulkSMSKey == "" || cfg.ThaibulkSMSSecret == "" {
 		return nil, fmt.Errorf("THAIBULK_SMS_KEY and THAIBULK_SMS_SECRET are required")
+	}
+	if cfg.JWTSecret == "" {
+		return nil, fmt.Errorf("JWT_SECRET is required")
 	}
 
 	return cfg, nil

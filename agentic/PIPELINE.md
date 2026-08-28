@@ -271,6 +271,34 @@ Mid-task, `apps/mobile` was accidentally deleted and a git checkout reverted `pn
 
 ---
 
+### stage-13-backend-jwt-issuance
+
+**Domain:** backend/api-go
+**Depends On:** stage-12-backend-otp-scaffold
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] OTP verify success issues a real Bearer/JWT token (previously just returned `{"verified": true}`)
+- [x] `internal/authtoken` — minimal HS256 JWT issue/verify via `golang-jwt/jwt/v5`
+- [x] `internal/db/users.go` — upserts the user row (Postgres, via Bun) on successful verify
+- [x] `RequireAuth` middleware + `GET /api/me` as a working protected-route example
+- [x] OrbStack confirmed running; full stack (`docker compose up -d --build`) verified live, not just `docker compose config`
+
+**Done:** Evaluated `github.com/Authula/authula` (client-suggested) by cloning the actual repo — it's a real Go framework on Fiber v3.3.0 (compatible with our v3.5.0) with a genuine plugin architecture, but its `jwt` plugin requires adopting its `session` plugin, JWKS key rotation with encrypted key storage, and its own migration set — not a drop-in single function call. It also has no phone/SMS OTP plugin at all (only TOTP authenticator-app 2FA), so it wouldn't have replaced stage-12's OTP work anyway. Client confirmed: use Authula for JWT/session scope only if simple, else write it ourselves — given the real integration cost, wrote a minimal `internal/authtoken` instead (HS256, no rotation, ~60 lines). Revisit Authula (or `internal/authtoken` → refresh tokens) if rotation/revocation becomes a real requirement.
+
+Fixed a routing bug caught during live testing: `api.Get("/me", handlers.Me, handlers.RequireAuth(...))` runs handlers in argument order, so `Me` was executing *before* `RequireAuth` — reversed to `RequireAuth` then `Me`.
+
+**Verified live** (OrbStack was running this time): `docker compose up -d --build` → all 4 containers up, postgres/redis healthy. `GET /api/me` unauthenticated → 401. Seeded a code directly in Redis and called `/api/otp/verify` → user row created in Postgres, real JWT returned; that JWT against `GET /api/me` → correct claims back. Reusing the same code → 404 (single-use confirmed). Wrong code → 401. A real OTP *request* against a fake test number correctly failed at ThaiBulkSMS and rolled back the Redis code (confirms stage-12's rollback-on-send-failure logic) — real SMS sends themselves still untested pending an approved `SMS_SENDER` name.
+
+**Next:** CORS middleware, real migration tool, first tests, `golangci-lint`, daily per-phone OTP request cap, a real approved sender name to test actual SMS delivery. See `backend/TODO.md`.
+**Blockers:** none
+
+**Dispatch-In:** `tasks/stage-13-backend-jwt-issuance.md`
+**Gate-Out:** `gate-out/stage-13-backend-jwt-issuance.md`
+**Merge-Approval:** `merge-approval/stage-13-backend-jwt-issuance.md`
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

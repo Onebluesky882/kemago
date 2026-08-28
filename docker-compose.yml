@@ -43,6 +43,7 @@ services:
       THAIBULK_SMS_KEY: ${THAIBULK_SMS_KEY}
       THAIBULK_SMS_SECRET: ${THAIBULK_SMS_SECRET}
       SMS_SENDER: ${SMS_SENDER}
+      JWT_SECRET: ${JWT_SECRET}
     ports:
       - "${PORT}:${PORT}"
 
