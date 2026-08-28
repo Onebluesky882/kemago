@@ -13,5 +13,5 @@ func Me(c fiber.Ctx) error {
 	if !ok {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "missing claims"})
 	}
-	return c.JSON(fiber.Map{"user_id": claims.UserID, "phone": claims.Phone})
+	return c.JSON(fiber.Map{"user_id": claims.UserID, "identifier": claims.Identifier})
 }

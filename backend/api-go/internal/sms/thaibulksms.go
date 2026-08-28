@@ -78,8 +78,9 @@ func (e *APIError) Error() string {
 }
 
 // Send sends a single SMS to a Thai phone number (any of the formats
-// ThaiBulkSMS accepts: 0812345678, 66812345678, +66812345678).
-func (c *Client) Send(ctx context.Context, msisdn, message string) (*sendResponse, error) {
+// ThaiBulkSMS accepts: 0812345678, 66812345678, +66812345678). Satisfies
+// the Sender interface (see sender.go).
+func (c *Client) Send(ctx context.Context, msisdn, message string) error {
 	form := url.Values{}
 	form.Set("msisdn", msisdn)
 	form.Set("message", message)
@@ -87,7 +88,7 @@ func (c *Client) Send(ctx context.Context, msisdn, message string) (*sendRespons
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, sendURL, strings.NewReader(form.Encode()))
 	if err != nil {
-		return nil, fmt.Errorf("thaibulksms: build request: %w", err)
+		return fmt.Errorf("thaibulksms: build request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
@@ -95,36 +96,36 @@ func (c *Client) Send(ctx context.Context, msisdn, message string) (*sendRespons
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("thaibulksms: request failed: %w", err)
+		return fmt.Errorf("thaibulksms: request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("thaibulksms: read response: %w", err)
+		return fmt.Errorf("thaibulksms: read response: %w", err)
 	}
 
 	if resp.StatusCode >= 400 {
 		var errResp errorResponse
 		if jsonErr := json.Unmarshal(body, &errResp); jsonErr == nil && errResp.Error.Name != "" {
-			return nil, &APIError{
+			return &APIError{
 				HTTPStatus:  resp.StatusCode,
 				Code:        errResp.Error.Code,
 				Name:        errResp.Error.Name,
 				Description: errResp.Error.Description,
 			}
 		}
-		return nil, fmt.Errorf("thaibulksms: unexpected status %d: %s", resp.StatusCode, string(body))
+		return fmt.Errorf("thaibulksms: unexpected status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var result sendResponse
 	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, fmt.Errorf("thaibulksms: decode response: %w", err)
+		return fmt.Errorf("thaibulksms: decode response: %w", err)
 	}
 	if len(result.BadPhoneNumberList) > 0 {
 		bad := result.BadPhoneNumberList[0]
-		return &result, fmt.Errorf("thaibulksms: rejected %s: %s", bad.Number, bad.Message)
+		return fmt.Errorf("thaibulksms: rejected %s: %s", bad.Number, bad.Message)
 	}
 
-	return &result, nil
+	return nil
 }

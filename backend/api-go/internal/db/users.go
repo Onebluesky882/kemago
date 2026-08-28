@@ -6,15 +6,15 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// UpsertVerifiedUser creates the user row for phone if it doesn't exist,
-// or marks an existing one verified — called right after a successful OTP
-// verify (see internal/handlers/otp.go).
-func UpsertVerifiedUser(ctx context.Context, bunDB *bun.DB, phone string) (*User, error) {
-	user := &User{Phone: phone, Verified: true, IsPublic: true}
+// UpsertVerifiedUser creates the user row for identifier if it doesn't
+// exist, or marks an existing one verified — called right after a
+// successful OTP verify (see internal/handlers/otp.go).
+func UpsertVerifiedUser(ctx context.Context, bunDB *bun.DB, identifier string) (*User, error) {
+	user := &User{Identifier: identifier, Verified: true, IsPublic: true}
 
 	_, err := bunDB.NewInsert().
 		Model(user).
-		On("CONFLICT (phone) DO UPDATE").
+		On("CONFLICT (identifier) DO UPDATE").
 		Set("verified = EXCLUDED.verified").
 		Returning("*").
 		Exec(ctx)

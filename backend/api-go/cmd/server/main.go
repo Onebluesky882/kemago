@@ -10,10 +10,10 @@ import (
 	"github.com/onebluesky882/coarea/backend/api-go/internal/authtoken"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/config"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/db"
+	"github.com/onebluesky882/coarea/backend/api-go/internal/email"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/handlers"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/otp"
 	"github.com/onebluesky882/coarea/backend/api-go/internal/redisclient"
-	"github.com/onebluesky882/coarea/backend/api-go/internal/sms"
 )
 
 const jwtTTL = 30 * 24 * time.Hour
@@ -42,8 +42,13 @@ func main() {
 	}
 	defer redisClient.Close()
 
-	smsClient := sms.NewClient(cfg.ThaibulkSMSKey, cfg.ThaibulkSMSSecret, cfg.SMSSender)
-	otpService := otp.NewService(redisClient, smsClient)
+	// Active OTP provider — swap by changing this one line. Email (Resend)
+	// is active to avoid per-message SMS cost while volume is low. Both
+	// SMS paths are fully built and one line away:
+	//   otp.NewSMSMKTOTPProvider(cfg.SMSMKTAPIKey, cfg.SMSMKTSecretKey, cfg.SMSMKTProjectKey)
+	//   otp.NewSelfGenProvider(sms.NewClient(...)/sms.NewSMSMKTClient(...), 5*time.Minute)
+	otpProvider := otp.NewEmailOTPProvider(email.NewClient(cfg.ResendAPIKey, cfg.EmailFrom), 5*time.Minute)
+	otpService := otp.NewService(redisClient, otpProvider)
 	tokenIssuer := authtoken.NewIssuer(cfg.JWTSecret, jwtTTL)
 	otpHandler := handlers.NewOTPHandler(otpService, database, tokenIssuer)
 

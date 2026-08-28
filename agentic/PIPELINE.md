@@ -24,6 +24,7 @@ Conductor Branch: main
 | stage-12-backend-otp-scaffold | backend/api-go, backend/ws-go | stage-1-setup | COMPLETE |
 | stage-13-backend-jwt-issuance | backend/api-go | stage-12-backend-otp-scaffold | COMPLETE |
 | stage-14-mobile-auth-flow | apps/mobile, backend/api-go | stage-11-mobile-jobs-sport-clubs, stage-13-backend-jwt-issuance | COMPLETE |
+| stage-15-otp-provider-abstraction | backend/api-go | stage-14-mobile-auth-flow | COMPLETE (apps/mobile now out of sync — see detail) |
 
 ---
 
@@ -323,6 +324,36 @@ Fixed a routing bug caught during live testing: `api.Get("/me", handlers.Me, han
 **Dispatch-In:** `tasks/stage-14-mobile-auth-flow.md`
 **Gate-Out:** `gate-out/stage-14-mobile-auth-flow.md`
 **Merge-Approval:** `merge-approval/stage-14-mobile-auth-flow.md`
+
+---
+
+### stage-15-otp-provider-abstraction
+
+**Domain:** backend/api-go
+**Depends On:** stage-14-mobile-auth-flow
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] `otp.Provider` interface introduced — `Service` now owns only cooldown/attempt-limiting/session-storage; a provider owns code generation/delivery/checking. Swapping providers is a one-line change in `main.go`; the HTTP contract (`identifier`/`code`) doesn't change.
+- [x] Three providers built: `SelfGenProvider` (our own Redis codes over any `sms.Sender`), `SMSMKTOTPProvider` (SMSMKT's managed OTP product), `EmailOTPProvider` (our own codes via Resend email) — see `backend/TODO.md` for which is active
+- [x] `internal/sms/smsmkt.go` — SMSMKT's plain send-message API, confirmed live (format validated via real requests, `code: "100"` = validation error, `"000"` = success)
+- [x] `internal/email/resend.go` — Resend REST API client, same provider `packages/email` already uses elsewhere in the repo
+- [x] `db.User.Phone` renamed to `db.User.Identifier` — the column now holds whatever the active provider verified (email today, phone number when that's active)
+- [x] Request/verify body field renamed `phone` → `identifier` throughout the backend
+
+**Done:** Client asked to evaluate two more SMS/OTP vendors (Godysms, SMSMKT) after ThaiBulkSMS turned out to have 0 account credit. Godysms's actual send endpoint 404'd and its dashboard didn't expose a docs page for the plain-SMS API in time; SMSMKT did, and had real credit (confirmed via a live `get-credit` call, 10 credits). SMSMKT turned out to offer both a plain SMS API (`send-message`, needs its own NBTC-approved sender name — none exists on this account yet) and a managed OTP product (`otp-send`/`otp-validate`, tied to a `project_key` from a pre-approved OTP Project the client already had). Client chose the managed OTP path for speed — this is a deliberate, acknowledged exception to "keep OTP logic ours," made possible without giving up provider-swappability because it fits behind the same `otp.Provider` interface as everything else.
+
+**A real SMS was sent to the client's own phone number and confirmed received** — the first fully-verified real OTP delivery this project has had (ThaiBulkSMS never got past 0 credit; SMSMKT's own send-message path never got an approved sender). Hit and fixed one real bug along the way: SMSMKT's `otp-send` response has `ref_code` typed as an int in their docs but returns as a string live — decode failed until the field was retyped to `json.RawMessage` (it's unused, so no need to actually parse it correctly, just not choke on it).
+
+Immediately after confirming SMS delivery, the client asked to switch the *active* provider again — to email via Resend, to avoid per-message SMS cost while volume is low, with phone OTP to come back later. This is what motivated introducing the `Provider` abstraction now rather than continuing to hardcode "SMS-shaped" logic into `otp.Service`: `EmailOTPProvider` reuses the exact same code-generation logic as `SelfGenProvider`, and switching back to any of the three built providers is one line in `main.go`.
+
+**Verified:** `go build`/`go vet`/`gofmt` clean on `backend/api-go`. Container starts cleanly against the live stack with `RESEND_API_KEY` configured (previous env-var misconfigurations for other providers crash-looped the container immediately on missing required config, so a clean start is a real signal here). **Not yet verified:** no real email has been sent yet — `POST /api/otp/request` against the email provider hasn't been called live, only the SMS-based providers before it were confirmed end-to-end.
+**Next:** Send a real test OTP email once the client provides an address to test with. **`apps/mobile` was not updated in this stage and is now out of sync** — it still sends `{"phone": ...}" and only accepts phone-number input; the backend now expects `{"identifier": ...}` validated as an email address. Reconcile before the mobile sign-in flow is tried again live. See `backend/TODO.md` and `apps/mobile/TODO.md` for the full gap list.
+**Blockers:** none for the backend; mobile/backend contract mismatch noted above blocks a live mobile sign-in until fixed.
+
+**Dispatch-In:** `tasks/stage-15-otp-provider-abstraction.md`
+**Gate-Out:** `gate-out/stage-15-otp-provider-abstraction.md`
+**Merge-Approval:** `merge-approval/stage-15-otp-provider-abstraction.md`
 
 ---
 

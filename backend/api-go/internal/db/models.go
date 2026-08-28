@@ -10,14 +10,19 @@ import (
 // User mirrors the "verified" / "isPublic" fields already mocked in
 // apps/mobile/src/lib/mockData.ts — this is the real row those fields will
 // eventually read from once the mobile app wires up to this API.
+//
+// Identifier is whatever the active otp.Provider verified — an email
+// address today (otp.EmailOTPProvider), a phone number when that's
+// swapped back in (see main.go). Deliberately not split into separate
+// email/phone columns until both need to coexist on one account.
 type User struct {
 	bun.BaseModel `bun:"table:users,alias:u"`
 
-	ID        int64     `bun:"id,pk,autoincrement"`
-	Phone     string    `bun:"phone,unique,notnull"`
-	Verified  bool      `bun:"verified,notnull,default:false"`
-	IsPublic  bool      `bun:"is_public,notnull,default:true"`
-	CreatedAt time.Time `bun:"created_at,notnull,default:current_timestamp"`
+	ID         int64     `bun:"id,pk,autoincrement"`
+	Identifier string    `bun:"identifier,unique,notnull"`
+	Verified   bool      `bun:"verified,notnull,default:false"`
+	IsPublic   bool      `bun:"is_public,notnull,default:true"`
+	CreatedAt  time.Time `bun:"created_at,notnull,default:current_timestamp"`
 }
 
 // Migrate creates tables if they don't exist yet. This is a plain

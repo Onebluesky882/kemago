@@ -14,8 +14,8 @@ import (
 )
 
 type Claims struct {
-	UserID int64  `json:"user_id"`
-	Phone  string `json:"phone"`
+	UserID     int64  `json:"user_id"`
+	Identifier string `json:"identifier"`
 	jwt.RegisteredClaims
 }
 
@@ -28,11 +28,11 @@ func NewIssuer(secret string, ttl time.Duration) *Issuer {
 	return &Issuer{secret: []byte(secret), ttl: ttl}
 }
 
-func (i *Issuer) Issue(userID int64, phone string) (string, error) {
+func (i *Issuer) Issue(userID int64, identifier string) (string, error) {
 	now := time.Now()
 	claims := Claims{
-		UserID: userID,
-		Phone:  phone,
+		UserID:     userID,
+		Identifier: identifier,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(i.ttl)),

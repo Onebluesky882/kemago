@@ -42,11 +42,12 @@ Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 - [ ] Backend + contract not yet defined in CONTRACTS.md — needs a stage before this is real
 
 ## Auth (sign-in / sign-up)
-- [x] Phone-only flow — no separate signup/signin, `UpsertVerifiedUser` on the backend handles both: `(auth)/signin.tsx` (phone entry) → `(auth)/verify.tsx` (6-digit code) → real JWT from `backend/api-go`'s `/api/otp/*`
+- [x] Single flow — no separate signup/signin, `UpsertVerifiedUser` on the backend handles both: `(auth)/signin.tsx` → `(auth)/verify.tsx` (6-digit code) → real JWT from `backend/api-go`'s `/api/otp/*`
 - [x] `lib/api/authApi.ts` — `requestOtp`/`verifyOtp` against `EXPO_PUBLIC_API_URL` (defaults to `http://localhost:3000`; needs an override for Android emulator/physical device — see `lib/api/config.ts`)
 - [x] Session (`token`, `phone`, `isAuthenticated`) persisted via `useAuthStore` + zustand `persist` (MMKV/localStorage) — explicit product decision to keep it simple, not expo-secure-store
 - [x] Root `_layout.tsx` `AuthGate` — waits for persist hydration, redirects signed-out users to `(auth)/signin` and signed-in users away from the `(auth)` group; `app/index.tsx` gives `/` an unambiguous entry now that both `(auth)` and `(tabs)` groups exist
 - [x] Resend-code cooldown UI matches the backend's actual 60s cooldown
+- [ ] **MISMATCH — needs a follow-up pass:** the backend switched its active OTP provider from phone/SMS to email (`backend/TODO.md`) and renamed its request body field `phone` → `identifier`, validating email format now. This mobile screen still only exists for phone number input (`SignInScreen.tsx`'s regex, `useAuthStore`'s `phone` field, `authApi.ts` still sends `{ phone }`) — it has **not been updated to send email or to use the new `identifier` field**, so sign-in will fail against the backend as currently deployed until this is reconciled.
 - [ ] **Not yet run against a real device/simulator** — only `tsc` type-checked, no live Expo session verified the redirect flow or a real end-to-end sign-in
 - [ ] No sign-out UI anywhere yet (`useAuthStore.signOut()` exists but nothing calls it)
 - [ ] Token stored in plaintext MMKV/localStorage per explicit direction — move to expo-secure-store (Keychain/Keystore) if this needs to harden past MVP
