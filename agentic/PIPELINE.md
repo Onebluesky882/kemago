@@ -13,7 +13,7 @@ Conductor Branch: main
 | stage-1-setup | agentic/ (governance) | none | COMPLETE |
 | stage-2-slip-verification-service-ts | packages/slip-verification-service | none | COMPLETE |
 | stage-3-dependency-updates | root, apps/web, apps/admin, apps/mobile | none | COMPLETE |
-| stage-4-backend-scaffold | new Go backend service | stage-1-setup | PLANNING |
+| stage-4-backend-scaffold | new Go backend service | stage-1-setup | IN_PROGRESS |
 | stage-5-auth | Go backend, apps/mobile | stage-4-backend-scaffold | PLANNING |
 | stage-6-mobile-shell | apps/mobile | stage-1-setup | PLANNING |
 | stage-7-feed | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
@@ -21,6 +21,7 @@ Conductor Branch: main
 | stage-9-profile | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
 | stage-10-chat | Go backend, apps/mobile | stage-5-auth, stage-6-mobile-shell | PLANNING |
 | stage-11-mobile-jobs-sport-clubs | apps/mobile | stage-6-mobile-shell | COMPLETE |
+| stage-12-backend-otp-scaffold | backend/api-go, backend/ws-go | stage-1-setup | COMPLETE |
 
 ---
 
@@ -92,14 +93,17 @@ Verified: `pnpm --version` → `11.22.0`; `pnpm ls tailwindcss -r` → `4.3.3` i
 
 **Domain:** new Go backend service
 **Depends On:** stage-1-setup
-**Status:** `PLANNING`
+**Status:** `IN_PROGRESS`
 
 **Acceptance Criteria:**
-- [ ] Go module scaffolded (location TBD — e.g. `apps/backend` or `services/api`)
-- [ ] PostgreSQL container running via OrbStack, migrations tooling chosen (e.g. `golang-migrate`)
-- [ ] Health check endpoint (`GET /healthz`)
-- [ ] CORS policy defined for mobile app origin(s)
-- [ ] `go test`, `gofmt`, `golangci-lint` wired up
+- [x] Go module scaffolded — location decided: `backend/api-go` (REST API) + `backend/ws-go` (separate WebSocket service, per client request). See stage-12-backend-otp-scaffold for the actual implementation.
+- [~] PostgreSQL container running via OrbStack (`docker-compose.yml` at repo root) — migrations tooling is still a bootstrap `CREATE TABLE IF NOT EXISTS` (`backend/api-go/internal/db/models.go`), not a real tool like `golang-migrate` yet
+- [x] Health check endpoint — `GET /health` on both services (criteria originally said `/healthz`; `/health` was used instead, no functional difference)
+- [ ] CORS policy defined for mobile app origin(s) — not implemented yet, needed before `apps/mobile` calls this API directly
+- [~] `gofmt` wired and clean; `go vet` clean. `go test` and `golangci-lint` NOT set up yet — no tests written so far
+
+**Next:** CORS middleware, `golangci-lint` config, first tests, real migration tool. Then stage-5-auth can implement actual Bearer/JWT issuance (stage-12's OTP verify currently just returns `{"verified": true}` with no session/token).
+**Blockers:** none
 
 **Dispatch-In:** `tasks/stage-4-backend-scaffold.md`
 **Gate-Out:** `gate-out/stage-4-backend-scaffold.md`
@@ -236,6 +240,34 @@ Mid-task, `apps/mobile` was accidentally deleted and a git checkout reverted `pn
 **Dispatch-In:** `tasks/stage-11-mobile-jobs-sport-clubs.md`
 **Gate-Out:** `gate-out/stage-11-mobile-jobs-sport-clubs.md`
 **Merge-Approval:** `merge-approval/stage-11-mobile-jobs-sport-clubs.md`
+
+---
+
+### stage-12-backend-otp-scaffold
+
+**Domain:** backend/api-go, backend/ws-go
+**Depends On:** stage-1-setup
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] `backend/api-go` — Fiber v3 REST API, Bun ORM + Postgres (`internal/db`), Redis client (`internal/redisclient`), config loader (`internal/config`)
+- [x] `backend/ws-go` — separate WebSocket service (plain `net/http` + `github.com/coder/websocket`, not Fiber — see Blockers)
+- [x] Phone OTP auth built from scratch on top of ThaiBulkSMS's plain SMS send API (not their managed "SMS OTP Ready to Use" product — its API contract wasn't published where it could be checked; building it ourselves keeps the SMS provider swappable): `POST /api/otp/request`, `POST /api/otp/verify`, `GET/POST /api/otp` (ThaiBulkSMS delivery-report webhook, matches the URL already registered in their dashboard for this app)
+- [x] `docker-compose.yml` at repo root: postgres, redis, api, ws — reads the root `.env` automatically
+- [x] `go build`, `go vet`, `gofmt` clean on both modules (`backend/go.work` ties them together for local tooling)
+
+**Done:** Scaffolded both Go services requested by the client, consolidated under `backend/` (not `apps/`) per explicit request to keep all backend code in one place. `backend/api-go/internal/sms/thaibulksms.go` was built against ThaiBulkSMS's actual developer manual (`API-v2-th.pdf`) — endpoint, auth scheme, and field names confirmed from the PDF, not guessed: `POST https://api-v2.thaibulksms.com/sms`, HTTP Basic Auth (API Key/Secret as username/password), form body (`msisdn`, `message`, `sender`), JSON success/error response shapes. `backend/api-go/internal/otp/otp.go` owns the OTP lifecycle (6-digit code, Redis-backed with 5 min TTL, 60s request cooldown, 5-attempt verify limit) independently of the SMS transport, so swapping providers later (THSMS, Thaibulksms's own managed OTP product, etc.) only touches `internal/sms`.
+
+`backend/ws-go` could not use `gofiber/contrib/websocket` — that package only supports Fiber v2 (pulls in `fiber/v2` as a dependency), and Fiber v3 core ships no websocket middleware yet. Built on plain `net/http` + `github.com/coder/websocket` instead; `internal/hub` is an in-memory, single-instance room broadcaster (chat-oriented, for stage-10-chat later).
+
+**Verified:** `go build ./api-go/... ./ws-go/...`, `go vet`, and `gofmt -l` all clean from `backend/` (workspace mode — bare `./...` doesn't work at the go.work root itself, needs the per-module pattern). `docker compose config` validates the full stack and env substitution. **NOT verified:** `docker compose up` — OrbStack's daemon wasn't running (`docker socket not found`) when this was built, so the containers have never actually been started. No `go test` exists yet either.
+
+**Next:** Start OrbStack and run `docker compose up -d --build` to confirm all 4 containers actually come up healthy — do this before relying on any of this being deployable. Then: CORS middleware (mobile app can't call this yet), real Bearer/JWT issuance on OTP verify success (currently just returns `{"verified": true}`), a real migration tool, first tests, `golangci-lint`. See `backend/TODO.md` for the full checklist.
+**Blockers:** OrbStack daemon not running in the environment this was built in — `docker compose up` is untested. `gofiber/contrib/websocket` has no Fiber v3 release; revisit `backend/ws-go`'s transport choice if that changes.
+
+**Dispatch-In:** `tasks/stage-12-backend-otp-scaffold.md`
+**Gate-Out:** `gate-out/stage-12-backend-otp-scaffold.md`
+**Merge-Approval:** `merge-approval/stage-12-backend-otp-scaffold.md`
 
 ---
 
