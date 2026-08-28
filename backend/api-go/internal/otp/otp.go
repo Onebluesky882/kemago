@@ -10,6 +10,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"time"
 
@@ -70,6 +71,7 @@ func (s *Service) Request(ctx context.Context, phone string) error {
 
 	message := fmt.Sprintf("Coarea verification code: %s (valid %d min)", code, int(codeTTL.Minutes()))
 	if _, err := s.smsClient.Send(ctx, phone, message); err != nil {
+		log.Printf("otp: sms send failed for %s: %v", phone, err)
 		// Roll back the stored code so the user isn't locked into a code
 		// that was never actually delivered.
 		s.redis.Del(ctx, codeKey)

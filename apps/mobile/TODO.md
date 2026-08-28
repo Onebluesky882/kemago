@@ -41,6 +41,17 @@ Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 - [ ] Browse-all-clubs (vs. "my clubs") view
 - [ ] Backend + contract not yet defined in CONTRACTS.md — needs a stage before this is real
 
+## Auth (sign-in / sign-up)
+- [x] Phone-only flow — no separate signup/signin, `UpsertVerifiedUser` on the backend handles both: `(auth)/signin.tsx` (phone entry) → `(auth)/verify.tsx` (6-digit code) → real JWT from `backend/api-go`'s `/api/otp/*`
+- [x] `lib/api/authApi.ts` — `requestOtp`/`verifyOtp` against `EXPO_PUBLIC_API_URL` (defaults to `http://localhost:3000`; needs an override for Android emulator/physical device — see `lib/api/config.ts`)
+- [x] Session (`token`, `phone`, `isAuthenticated`) persisted via `useAuthStore` + zustand `persist` (MMKV/localStorage) — explicit product decision to keep it simple, not expo-secure-store
+- [x] Root `_layout.tsx` `AuthGate` — waits for persist hydration, redirects signed-out users to `(auth)/signin` and signed-in users away from the `(auth)` group; `app/index.tsx` gives `/` an unambiguous entry now that both `(auth)` and `(tabs)` groups exist
+- [x] Resend-code cooldown UI matches the backend's actual 60s cooldown
+- [ ] **Not yet run against a real device/simulator** — only `tsc` type-checked, no live Expo session verified the redirect flow or a real end-to-end sign-in
+- [ ] No sign-out UI anywhere yet (`useAuthStore.signOut()` exists but nothing calls it)
+- [ ] Token stored in plaintext MMKV/localStorage per explicit direction — move to expo-secure-store (Keychain/Keystore) if this needs to harden past MVP
+- [ ] No token expiry handling — a 401 from an authenticated request doesn't currently sign the user out or refresh anything (no refresh tokens exist yet either, see `backend/TODO.md`)
+
 ## Chat
 - [x] Conversation list (mock data)
 - [ ] Thread/message view
@@ -52,7 +63,7 @@ Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 - [x] Private/public visibility toggle, persisted on-device (`useAuthStore` + zustand `persist`, MMKV/localStorage)
 - [ ] Edit profile fields
 - [ ] Sync isPublic to `PATCH /v1/users/me` once backend exists (stage-9-profile) — device storage is the source of truth until then
-- [ ] Once real auth exists: keep the Bearer token OUT of this persisted store — use a secure keychain API for the token, persist only non-sensitive profile/UI state here
+- [x] Real auth now exists (see Auth section) — token IS in this persisted store, per explicit direction (not the secure-keychain approach originally planned here)
 
 ## Local-first data layer (`lib/db/`, `lib/sync/`)
 - [x] `postsRepo.native.ts` — react-native-nitro-sqlite, schema + migrate + seed
@@ -71,8 +82,8 @@ Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 - [ ] AI moderation before publish — blocked on the user supplying a prohibited-content list
 
 ## Platform-specific files
-- [x] `moduleSuffixes` configured in `tsconfig.json` to mirror Metro's `.native`/`.web` resolution
 - [x] `lib/db/postsRepo.*` and `lib/storage/zustandStorage.*` are the only splits so far (genuine native-vs-web divergence — nitro-sqlite and MMKV are native-only NitroModules)
+- [x] Each has a bare fallback (`postsRepo.ts`, `zustandStorage.ts`) that just re-exports `.native` — lets `tsc` resolve the extensionless import without a `moduleSuffixes` tsconfig change (that approach was tried and reverted: it broke NativeWind's `className` prop typing project-wide)
 - [ ] Do not split any other component/module unless it hits the same kind of real platform divergence (see memory: coarea-mobile-platform-files)
 
 ## Known bugs fixed this pass
