@@ -6,3 +6,7 @@
 //   Android emulator: http://10.0.2.2:3000
 //   Physical device:  http://<your-lan-ip>:3000
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+
+// backend/better-auth (Bun + Better Auth, deployed separately to Railway) —
+// owns auth/session/profile. Not the same service as API_BASE_URL above.
+export const AUTH_BASE_URL = process.env.EXPO_PUBLIC_AUTH_URL ?? "http://localhost:3002";

@@ -357,6 +357,49 @@ Immediately after confirming SMS delivery, the client asked to switch the *activ
 
 ---
 
+### stage-16-auth-migration-to-better-auth
+
+**Domain:** backend/better-auth (new), apps/mobile, backend/api-go (removed)
+**Depends On:** stage-15-otp-provider-abstraction
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Mobile login switched from phone to email input, wired to a real OTP send/verify flow
+- [x] Session persists on-device (zustand + MMKV, unchanged) and slides forward on continued use — no re-login required within a rolling 30-day window
+- [x] Post-login "complete your profile" step (name field) gates first-time users before `(tabs)`, backed by a real `profileComplete` flag
+- [x] `backend/api-go`'s OTP/JWT/profile stack replaced by `backend/better-auth` (Bun + Better Auth + Drizzle + Postgres), per direct client decision to let Better Auth's own plugins own all auth CRUD
+- [x] Log out button (ProfileScreen) invalidates the server session and clears persisted client state — verified both halves independently
+
+**Done:** This stage covers a full session of interactive work, not a single dispatched task — summarized here for continuity.
+
+Started as a scoped fix: the mobile app still showed phone-number sign-in (`SignInScreen`/`VerifyOtpScreen`) while stage-15 had already switched the backend to email OTP, and `authApi.ts` still POSTed `{"phone": ...}` against a backend expecting `{"identifier": ...}` — real login was silently broken. Fixed that, added a 30-day rolling session (`POST /api/auth/refresh` on `backend/api-go`) and a post-login profile-completion step (`name`/`neighborhood`, `profile_complete` flag on `db.User`), all verified live against the real Postgres/Redis containers with 27 new Go tests.
+
+Mid-session, client asked to evaluate `github.com/Authula/authula` again (previously rejected in stage-13) with the constraint "we only do GET, Authula owns CRUD." Cloned the real repo and found it fits the stack well (Fiber v3, Bun ORM, Postgres) but has no email-OTP-code plugin — only `magic-link` (email link) and `totp` (authenticator 2FA). Reported this gap; client redirected to **Better Auth's own `emailOTP` plugin** instead (`packages/email` already existed, `better-auth` was already a dependency in `packages/auth` for the other TS backend, client knew this) — a new standalone service `backend/better-auth` (Bun runtime, targeting Railway deploy), using Drizzle (not the built-in Kysely adapter, not Prisma — client explicitly asked to match `packages/auth`'s existing ORM choice) against a new Postgres schema (`user`/`session`/`account`/`verification`, D1/SQLite schema in `packages/db` can't be reused outside Cloudflare Workers).
+
+`backend/api-go` was then deleted entirely at the client's direction, after live-testing the replacement end-to-end first. This session's uncommitted Go work (the refresh/profile-completion feature above) is preserved in a git stash (`backend/api-go: this session's OTP/refresh/profile work...`), not on disk — recoverable via `git stash list` if ever needed, but superseded by `backend/better-auth`.
+
+Two real bugs found and fixed post-migration:
+1. Postgres volume still had the pre-stage-15 `phone` column — `db.Migrate`'s `CREATE TABLE IF NOT EXISTS` never touches existing tables. Fixed with a one-time conditional `ALTER TABLE ... RENAME COLUMN` (this was on `backend/api-go`, now moot since that service is gone, but the same class of bug is worth watching for in `backend/better-auth`'s Drizzle migrations too).
+2. React Native's `fetch` sends a literal `Origin: null` header, which Better Auth's origin-check middleware treats as `MISSING_OR_NULL_ORIGIN` and rejects with 403 on endpoints it force-validates (e.g. `update-user`). Fixed via `advanced.disableCSRFCheck: true` — this service is Bearer-only with no cookies anywhere, so there's no real CSRF surface to protect.
+
+Also fixed the Resend sandbox restriction blocking real email delivery (`EMAIL_FROM` was still `onboarding@resend.dev`, which only delivers to the account owner's own address) by switching to `dikapay.app`, a domain already verified on the same Resend account, as a demo stand-in until Coarea has its own verified domain.
+
+**Verified live** (OrbStack running, real Postgres/Redis, real Resend sends): full OTP request→verify→session→update-profile→sign-out loop tested via curl matching the mobile client's exact request shapes, at each stage of the pivot (raw `pg`, then again after converting to Drizzle). A real email was confirmed received by the client on `wansing05@gmail.com`. `tsc --noEmit` clean on `apps/mobile` and `backend/better-auth`. `docker compose config` validates with `backend/api-go`'s `api` service removed.
+
+**Next:**
+- `backend/better-auth` still needs its actual Railway deployment (service is Railway-ready — reads `PORT`/`DATABASE_URL` from env, has a Dockerfile with repo-root build context — but was only run locally via `bun src/server.ts` in this session)
+- No password/session revocation UI beyond the one Log out button; no "log out of all devices"
+- `EMAIL_FROM` is still the demo `dikapay.app` domain — swap for Coarea's own verified domain before real users see it
+- The stray `backend/api-go/internal/authtoken` reasoning ("no refresh tokens/rotation, revisit Authula if that becomes a real requirement") is now moot — `backend/better-auth`'s session plugin (`updateAge`) covers the same rolling-session need natively
+
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client, not a formal Conductor-dispatched task
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

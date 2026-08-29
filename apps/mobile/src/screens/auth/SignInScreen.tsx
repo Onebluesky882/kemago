@@ -5,23 +5,23 @@ import { PrimaryButton } from "../../components/ui/PrimaryButton";
 import { requestOtp, AuthApiError } from "../../lib/api/authApi";
 import { colors } from "../../theme/colors";
 
-// Same shape the backend accepts — 0-prefixed 10 digits or 66/+66 forms.
-const phoneRe = /^(\+?66|0)\d{9}$/;
+// Same shape the backend accepts (see backend/api-go/internal/handlers/otp.go).
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SignInScreen() {
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = phoneRe.test(phone.trim()) && !loading;
+  const canSubmit = emailRe.test(email.trim()) && !loading;
 
   async function handleSubmit() {
     if (!canSubmit) return;
     setLoading(true);
     setError(null);
     try {
-      await requestOtp(phone.trim());
-      router.push({ pathname: "/verify", params: { phone: phone.trim() } });
+      await requestOtp(email.trim());
+      router.push({ pathname: "/verify", params: { email: email.trim() } });
     } catch (e) {
       setError(e instanceof AuthApiError ? e.message : "Something went wrong. Try again.");
     } finally {
@@ -33,16 +33,18 @@ export function SignInScreen() {
     <View className="flex-1 bg-bg justify-center px-6">
       <Text className="text-2xl font-bold text-text mb-1.5">Welcome to Coarea</Text>
       <Text className="text-sm text-text-muted mb-8">
-        Enter your phone number — we'll text you a code to sign in.
+        Enter your email — we'll send you a code to sign in.
       </Text>
 
-      <Text className="text-xs font-medium text-text-muted mb-1.5">Phone number</Text>
+      <Text className="text-xs font-medium text-text-muted mb-1.5">Email address</Text>
       <TextInput
-        value={phone}
-        onChangeText={setPhone}
-        placeholder="0812345678"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="you@example.com"
         placeholderTextColor={colors.textMuted}
-        keyboardType="phone-pad"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
         autoFocus
         className="border border-border rounded-lg px-3.5 py-3 text-base text-text bg-surface mb-2"
       />

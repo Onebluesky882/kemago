@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "backend/better-auth"
 overrides:
   # expo-modules-core (up to at least 57.0.14, the current latest) only supports
   # react-native-worklets ^0.7.4-^0.10.0, but react-native-reanimated@4.6.0
@@ -14,6 +15,11 @@ overrides:
   react-native-worklets: 0.10.1
   react-native-reanimated: 4.5.2
 allowBuilds:
+  # Pulled in transitively by @better-auth/cli (backend/better-auth), which
+  # supports multiple DB drivers — we only use Postgres via `pg`, so
+  # neither of these needs its native build step.
+  '@prisma/client': false
+  better-sqlite3: false
   esbuild: true
   sharp: true
   workerd: true

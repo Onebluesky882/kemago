@@ -10,12 +10,25 @@ type AuthState = {
   isPublic: boolean;
   setIsPublic: (isPublic: boolean) => void;
 
-  // Real session, from backend/api-go's OTP verify (see lib/api/authApi.ts).
+  // Real session, from backend/better-auth's OTP sign-in (see lib/api/authApi.ts).
+  // The token value itself never changes on renewal — Better Auth extends
+  // the same token's expiry server-side (session.updateAge) rather than
+  // issuing a new one, so there's no setToken action here.
   token: string | null;
-  phone: string | null;
+  email: string | null;
   isAuthenticated: boolean;
-  signIn: (token: string, phone: string) => void;
+  signIn: (token: string, email: string) => void;
   signOut: () => void;
+
+  // Whether GET /api/auth/get-session has confirmed the user filled in their info
+  // yet (see lib/api/authApi.ts). null = not checked this session — the
+  // root layout's AuthGate holds routing until this resolves, so a
+  // returning user with a complete profile never flashes through the
+  // complete-profile screen. Reset to null on every sign-in/out since it's
+  // server truth, not something to trust from a stale persisted value.
+  profileComplete: boolean | null;
+  profileName: string | null;
+  setProfile: (p: { name: string; profileComplete: boolean }) => void;
 };
 
 // Persisted on-device via MMKV (native) / localStorage (web) — see
@@ -34,10 +47,21 @@ export const useAuthStore = create<AuthState>()(
       setIsPublic: (isPublic) => set({ isPublic }),
 
       token: null,
-      phone: null,
+      email: null,
       isAuthenticated: false,
-      signIn: (token, phone) => set({ token, phone, isAuthenticated: true }),
-      signOut: () => set({ token: null, phone: null, isAuthenticated: false }),
+      signIn: (token, email) => set({ token, email, isAuthenticated: true, profileComplete: null }),
+      signOut: () =>
+        set({
+          token: null,
+          email: null,
+          isAuthenticated: false,
+          profileComplete: null,
+          profileName: null,
+        }),
+
+      profileComplete: null,
+      profileName: null,
+      setProfile: ({ name, profileComplete }) => set({ profileName: name, profileComplete }),
     }),
     {
       name: "coarea-auth",

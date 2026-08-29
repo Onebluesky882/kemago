@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+.git
+.turbo
+**/.turbo
+apps
+backend/api-go
+backend/ws-go
+!backend/better-auth
+*.log
+.env
+!backend/better-auth/.env.example

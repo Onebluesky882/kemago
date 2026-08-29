@@ -6,12 +6,13 @@ import { requestOtp, verifyOtp, AuthApiError } from "../../lib/api/authApi";
 import { useAuthStore } from "../../store/useAuthStore";
 import { colors } from "../../theme/colors";
 
-// Matches the backend's own cooldown (backend/api-go/internal/otp/otp.go).
+// Matches backend/better-auth's emailOTP rate limit (see auth.ts).
 const RESEND_COOLDOWN_SECONDS = 60;
 
 export function VerifyOtpScreen() {
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const { email } = useLocalSearchParams<{ email: string }>();
   const signIn = useAuthStore((state) => state.signIn);
+  const setProfile = useAuthStore((state) => state.setProfile);
 
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,13 +29,14 @@ export function VerifyOtpScreen() {
   const canSubmit = code.trim().length === 6 && !loading;
 
   async function handleVerify() {
-    if (!canSubmit || !phone) return;
+    if (!canSubmit || !email) return;
     setLoading(true);
     setError(null);
     try {
-      const { token } = await verifyOtp(phone, code.trim());
-      signIn(token, phone);
-      router.replace("/(tabs)");
+      const { token, profile } = await verifyOtp(email, code.trim());
+      signIn(token, email);
+      setProfile({ name: profile.name, profileComplete: profile.profileComplete });
+      router.replace(profile.profileComplete ? "/(tabs)" : "/(auth)/complete-profile");
     } catch (e) {
       setError(e instanceof AuthApiError ? e.message : "Verification failed. Try again.");
     } finally {
@@ -43,11 +45,11 @@ export function VerifyOtpScreen() {
   }
 
   async function handleResend() {
-    if (resendIn > 0 || !phone || resending) return;
+    if (resendIn > 0 || !email || resending) return;
     setResending(true);
     setError(null);
     try {
-      await requestOtp(phone);
+      await requestOtp(email);
       setResendIn(RESEND_COOLDOWN_SECONDS);
     } catch (e) {
       setError(e instanceof AuthApiError ? e.message : "Couldn't resend — try again shortly.");
@@ -60,7 +62,7 @@ export function VerifyOtpScreen() {
     <View className="flex-1 bg-bg justify-center px-6">
       <Text className="text-2xl font-bold text-text mb-1.5">Enter the code</Text>
       <Text className="text-sm text-text-muted mb-8">
-        We sent a 6-digit code to {phone ?? "your phone"}.
+        We sent a 6-digit code to {email ?? "your email"}.
       </Text>
 
       <TextInput

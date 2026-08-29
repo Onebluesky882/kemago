@@ -1,6 +1,7 @@
-import { ScrollView, Switch, Text, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { ProfileHeader } from "../../components/profile/ProfileHeader";
 import { StatItem } from "../../components/profile/StatItem";
+import { signOutRequest } from "../../lib/api/authApi";
 import { useAuthStore } from "../../store/useAuthStore";
 import { colors } from "../../theme/colors";
 
@@ -8,6 +9,23 @@ export function ProfileScreen() {
   const user = useAuthStore((state) => state.user);
   const isPublic = useAuthStore((state) => state.isPublic);
   const setIsPublic = useAuthStore((state) => state.setIsPublic);
+  const token = useAuthStore((state) => state.token);
+  const signOut = useAuthStore((state) => state.signOut);
+
+  // Signs out on-device regardless of whether the server-side call
+  // succeeds — a network failure shouldn't trap the user in a signed-in
+  // UI they're trying to leave. AuthGate (_layout.tsx) then redirects to
+  // /(auth)/signin once isAuthenticated flips false.
+  async function handleLogout() {
+    if (token) {
+      try {
+        await signOutRequest(token);
+      } catch {
+        // best-effort — local sign-out below still happens
+      }
+    }
+    signOut();
+  }
 
   return (
     <ScrollView className="flex-1 bg-bg">
@@ -39,6 +57,15 @@ export function ProfileScreen() {
           trackColor={{ false: colors.border, true: colors.brand }}
           thumbColor="#ffffff"
         />
+      </View>
+
+      <View className="px-4 py-4">
+        <Pressable
+          onPress={handleLogout}
+          className="items-center rounded-full px-4 py-3 border border-accent"
+        >
+          <Text className="text-sm font-semibold text-accent">Log out</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );

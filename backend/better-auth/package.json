@@ -1,0 +1,25 @@
+{
+  "name": "@gover-agent/better-auth-service",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/server.ts",
+    "start": "bun src/server.ts",
+    "db:push": "drizzle-kit push",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gover-agent/email": "workspace:*",
+    "better-auth": "latest",
+    "drizzle-orm": "latest",
+    "pg": "latest"
+  },
+  "devDependencies": {
+    "@gover-agent/config": "workspace:*",
+    "@types/bun": "latest",
+    "@types/pg": "latest",
+    "drizzle-kit": "latest",
+    "typescript": "latest"
+  }
+}

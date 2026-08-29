@@ -27,32 +27,6 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
-    build:
-      context: ./backend/api-go
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      PORT: ${PORT}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      THAIBULK_SMS_KEY: ${THAIBULK_SMS_KEY}
-      THAIBULK_SMS_SECRET: ${THAIBULK_SMS_SECRET}
-      SMS_SENDER: ${SMS_SENDER}
-      JWT_SECRET: ${JWT_SECRET}
-      SMSMKT_API_KEY: ${SMSMKT_API_KEY}
-      SMSMKT_SECRET_KEY: ${SMSMKT_SECRET_KEY}
-      SMSMKT_PROJECT_KEY: ${SMSMKT_PROJECT_KEY}
-      SMSMKT_SENDER: ${SMSMKT_SENDER}
-      RESEND_API_KEY: ${RESEND_API_KEY}
-      EMAIL_FROM: ${EMAIL_FROM}
-    ports:
-      - "${PORT}:${PORT}"
-
   ws:
     build:
       context: ./backend/ws-go
