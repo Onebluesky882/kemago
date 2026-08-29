@@ -25,6 +25,7 @@ Conductor Branch: main
 | stage-13-backend-jwt-issuance | backend/api-go | stage-12-backend-otp-scaffold | COMPLETE |
 | stage-14-mobile-auth-flow | apps/mobile, backend/api-go | stage-11-mobile-jobs-sport-clubs, stage-13-backend-jwt-issuance | COMPLETE |
 | stage-15-otp-provider-abstraction | backend/api-go | stage-14-mobile-auth-flow | COMPLETE (apps/mobile now out of sync — see detail) |
+| stage-17-mobile-ios-gitignore | apps/mobile | none | COMPLETE |
 
 ---
 
@@ -395,6 +396,22 @@ Also fixed the Resend sandbox restriction blocking real email delivery (`EMAIL_F
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client, not a formal Conductor-dispatched task
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-17-mobile-ios-gitignore
+
+**Domain:** apps/mobile
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** `apps/mobile/ios/` (the `expo prebuild`-generated Xcode project, including a 1.2GB `Pods/` directory) was showing as 19 untracked files in `git status` despite never having been intentionally tracked (see stage-11's Blockers note — it was already meant to be untracked, just not codified). Added `ios/` to `apps/mobile/.gitignore` so it stops showing up as pending changes; confirmed no custom native code exists in it (`AppDelegate.swift`/`Podfile` are stock boilerplate) before ignoring the whole directory rather than cherry-picking `Pods/`/`build/`/`xcuserdata/`.
+**Next:** none — regenerate via `expo prebuild --platform ios` whenever the native project is needed locally.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
 **Gate-Out:** n/a
 **Merge-Approval:** n/a
 
