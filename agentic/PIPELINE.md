@@ -35,6 +35,7 @@ Conductor Branch: main
 | stage-24-clubs-polls-blocks-privacy | backend/api-go, backend/better-auth, apps/mobile | stage-23-rename-ws-go-to-api-go | COMPLETE |
 | stage-25-friends-room-membership | backend/api-go, apps/mobile | stage-24-clubs-polls-blocks-privacy | COMPLETE |
 | stage-26-friends-ui | apps/mobile | stage-25-friends-room-membership | COMPLETE |
+| stage-27-rooms-ui | apps/mobile | stage-26-friends-ui | COMPLETE |
 
 ---
 
@@ -644,6 +645,28 @@ Friends: new `internal/friends` package. `friendships` is a directed request row
 
 **Verified:** `pnpm --filter @kemago/mobile type-check` and `npx expo export --platform web` both clean, `/friends` route present in the export. Not re-tested live against the API this round — the underlying `/api/friends/*` endpoints were already fully live-verified in stage-25 with two real accounts, and the mobile code's expected response shapes (`userId`/`name`/`verified`/`createdAt`, `{status: "pending"|"accepted"}`) were checked directly against that stage's actual curl output rather than re-run.
 **Next:** Rooms/Groups screen — pending client decision on whether it's wanted.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-27-rooms-ui
+
+**Domain:** apps/mobile
+**Depends On:** stage-26-friends-ui
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] A screen to browse/create/join/leave rooms
+- [x] A way to see who's in a room
+
+**Done:** Client confirmed a dedicated Rooms screen was wanted (asked after stage-26 left it as an open question). Built `roomsApi.ts` + `RoomsScreen` (`app/rooms.tsx`, list/create/join/leave — same structure as `ClubsScreen`, since Room and Club are functionally identical join-a-group-of-people concepts, just without Club's leader/description/category fields) + `RoomMembersScreen` (`app/room/[id]/members.tsx`, same structure as `PostDetailScreen`/`BlockedUsersScreen`), reachable from a new "Rooms" row on `ProfileScreen` below "Friends" — a plain nav row, not a bottom tab, since Rooms doesn't have the same standing as Clubs in the product (client never asked for a Rooms tab, only the table + now the screen).
+
+**Verified:** `pnpm --filter @kemago/mobile type-check` and `npx expo export --platform web` both clean, `/rooms` and `/room/[id]/members` present in the export. Also live-tested directly against the real dev Postgres with one throwaway account: created a room via the exact `POST /api/rooms` call `roomsApi.ts` makes, confirmed the response shape (`id, name, memberCount, joined`) matches `ApiRoom` exactly, confirmed `GET /api/rooms` and `GET /api/rooms/:id/members` also match `roomsApi.ts`'s expected shapes byte-for-byte. Test account and room cleaned up afterward.
+**Next:** None — client said they'll test it themselves from here.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

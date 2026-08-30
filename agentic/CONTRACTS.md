@@ -85,7 +85,7 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 - `401` missing/invalid token
 - `422` validation error (missing `name`)
 
-**Not yet built:** no mobile screen/API client for room membership yet (Feed's "general" room posting doesn't need it) — this exists as a backend primitive the client asked for directly ("group member table relation กับ user"), ahead of any specific screen needing it.
+**Mobile (stage-27):** `roomsApi.ts` + a new `Rooms` screen (list/create/join/leave, reachable from Profile — no dedicated tab, unlike Clubs) and a room-detail members list.
 
 ⸻
 

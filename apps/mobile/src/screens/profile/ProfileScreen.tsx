@@ -93,6 +93,14 @@ export function ProfileScreen() {
       </Pressable>
 
       <Pressable
+        onPress={() => router.push("/rooms")}
+        className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
+      >
+        <Text className="text-sm font-semibold text-text">Rooms</Text>
+        <Text className="text-xs text-text-muted">View</Text>
+      </Pressable>
+
+      <Pressable
         onPress={() => router.push("/blocked-users")}
         className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
       >
