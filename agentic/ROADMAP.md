@@ -99,6 +99,9 @@ Success Indicators:
 - Poll-style posts now show up right in the Feed — anyone can add a "vote on this" question to a post, and everyone sees it appear live
 - A club's leader can now hand off leadership to another member right from the app (the ability existed before, just had no button)
 - Photo/video Stories are now fully working with real cloud storage — tested end to end with an actual file upload, save, and playback, not just a trial run
+- The app now has a fast-memory layer (Redis) behind the scenes: signing in feels snappier, spam posting/commenting/liking is now capped, and the live-update system is ready to run on more than one server at once as the app grows
+- Notifications now save permanently — friend requests, comments, and likes on your posts are recorded so you don't miss them if you weren't in the app at the time
+- The app now shows a notification bell with an unread count, and a screen to view and read them, right on the Feed tab
 
 ---
 

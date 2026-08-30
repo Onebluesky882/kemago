@@ -14,12 +14,15 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/uptrace/bun"
 
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/notifications"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/ratelimit"
 )
 
 const defaultRoomID = "general"
@@ -33,10 +36,11 @@ const feedChannel = "feed:all"
 type Handlers struct {
 	DB  *bun.DB
 	Hub *hub.Hub
+	RDB *redis.Client
 }
 
-func Register(mux *http.ServeMux, database *bun.DB, wsHub *hub.Hub) {
-	h := &Handlers{DB: database, Hub: wsHub}
+func Register(mux *http.ServeMux, database *bun.DB, wsHub *hub.Hub, rdb *redis.Client) {
+	h := &Handlers{DB: database, Hub: wsHub, RDB: rdb}
 	mux.HandleFunc("GET /api/rooms", h.listRooms)
 	mux.HandleFunc("POST /api/rooms", h.createRoom)
 	mux.HandleFunc("POST /api/rooms/{id}/join", h.joinRoom)
@@ -49,6 +53,18 @@ func Register(mux *http.ServeMux, database *bun.DB, wsHub *hub.Hub) {
 	mux.HandleFunc("POST /api/posts/{id}/comments", h.createComment)
 	mux.HandleFunc("POST /api/posts/{id}/like", h.likePost)
 	mux.HandleFunc("DELETE /api/posts/{id}/like", h.unlikePost)
+}
+
+// rateLimited checks (and reports 429 on) a per-user, per-action limit.
+// Returns true if the caller has already written a response and the
+// handler should return immediately.
+func (h *Handlers) rateLimited(w http.ResponseWriter, ctx context.Context, action, userID string, limit int, window time.Duration) bool {
+	key := "ratelimit:" + action + ":" + userID
+	if !ratelimit.Allow(ctx, h.RDB, key, limit, window) {
+		writeError(w, http.StatusTooManyRequests, "Too many requests, slow down")
+		return true
+	}
+	return false
 }
 
 func newID(prefix string) string {
@@ -230,6 +246,9 @@ func (h *Handlers) createPost(w http.ResponseWriter, r *http.Request) {
 	user, ok := authcheck.RequireUser(ctx, h.DB, r)
 	if !ok {
 		writeError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	if h.rateLimited(w, ctx, "post", user.ID, 10, time.Minute) {
 		return
 	}
 
@@ -473,15 +492,18 @@ func (h *Handlers) createComment(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-
-	postID := r.PathValue("id")
-	exists, err := h.postExists(ctx, postID)
-	if err != nil {
-		writeInternalError(w, err)
+	if h.rateLimited(w, ctx, "comment", user.ID, 20, time.Minute) {
 		return
 	}
-	if !exists {
+
+	postID := r.PathValue("id")
+	post, err := h.getPostByID(ctx, postID)
+	if err == sql.ErrNoRows {
 		writeError(w, http.StatusNotFound, "Post not found")
+		return
+	}
+	if err != nil {
+		writeInternalError(w, err)
 		return
 	}
 
@@ -501,6 +523,7 @@ func (h *Handlers) createComment(w http.ResponseWriter, r *http.Request) {
 
 	created := commentOut{ID: comment.ID, Author: user.Name, AuthorVerified: user.Verified, Body: comment.Body, CreatedAt: time.Now()}
 	h.broadcast(ctx, map[string]any{"type": "comment_created", "postId": postID, "comment": created})
+	notifications.Push(ctx, h.DB, post.AuthorID, "comment", user.ID, user.Name, &postID)
 	writeJSON(w, http.StatusCreated, map[string]any{"comment": created})
 }
 
@@ -511,15 +534,18 @@ func (h *Handlers) likePost(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-
-	postID := r.PathValue("id")
-	exists, err := h.postExists(ctx, postID)
-	if err != nil {
-		writeInternalError(w, err)
+	if h.rateLimited(w, ctx, "like", user.ID, 30, time.Minute) {
 		return
 	}
-	if !exists {
+
+	postID := r.PathValue("id")
+	post, err := h.getPostByID(ctx, postID)
+	if err == sql.ErrNoRows {
 		writeError(w, http.StatusNotFound, "Post not found")
+		return
+	}
+	if err != nil {
+		writeInternalError(w, err)
 		return
 	}
 
@@ -531,6 +557,7 @@ func (h *Handlers) likePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.broadcastLikeChanged(ctx, postID)
+	notifications.Push(ctx, h.DB, post.AuthorID, "like", user.ID, user.Name, &postID)
 	writeJSON(w, http.StatusOK, map[string]bool{"liked": true})
 }
 

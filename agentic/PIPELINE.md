@@ -865,6 +865,95 @@ Also changed the story object-key convention per client direction: `internal/sto
 
 ---
 
+### stage-35-redis-cache-ratelimit-pubsub
+
+**Domain:** backend/api-go
+
+**Depends On:** stage-33-r2-stories-upload-verified
+
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Session/token lookups cached (client asked for cache + session-store use cases)
+- [x] Rate limiting on the most abuse-prone write endpoints
+- [x] `internal/hub`'s broadcast path scales beyond one instance via Redis pub/sub (already flagged as a TODO in the package's own doc comment)
+
+**Done:** `redis:7-alpine` was already running in `docker-compose.yml` but nothing in the codebase connected to it. Added `github.com/redis/go-redis/v9` and wired a single client, created once in `cmd/server/main.go` from `REDIS_URL` (optional — nil client everywhere degrades each feature to its pre-Redis behavior rather than failing to start):
+- `internal/authcheck`: `UserForToken` (hit on every authenticated request) now checks a `session:<token>` Redis key before querying Postgres, populating it with a 60s TTL on a miss. Covers both "cache" and "session store" in the same place, since this was already the one function every request goes through. Tradeoff noted in code: a revoked session can still authenticate for up to 60s after being cached.
+- `internal/ratelimit` (new): fixed-window counter (`INCR` + `EXPIRE`) keyed per action+user. Wired into `internal/feed`'s three highest-abuse-potential writes: create post (10/min), create comment (20/min), like (30/min) — 429 on exceed.
+- `internal/hub`: `Broadcast` now publishes to a Redis channel (`hub:<room>`) instead of writing directly to locally-held connections; every instance subscribes (`PSUBSCRIBE hub:*`) and relays to its own local clients. Falls back to direct local delivery if `rdb` is nil or the publish call fails. The raw client-relay path (`Join`/`broadcast`, stage-10-chat's unauthenticated echo) deliberately stays local-only — it excludes the sending client by in-process pointer identity, which doesn't translate across instances, and that feature isn't production yet.
+
+**Verified live**: rebuilt/restarted the `ws` container with `REDIS_URL` set, confirmed the startup log ("redis: connected — session cache, rate limiting, and hub pub/sub scale-out active"). Re-ran the full realtime test from stage prior (2 real accounts, `feed:all` + personal channels) — all events (`post_created`, `comment_created`, `like_changed`, `friend_request`, `friend_accepted`) still delivered correctly now that they route through Redis. Confirmed rate limiting: 9 posts succeeded, the 10th+ got `429`. Confirmed via `redis-cli KEYS`/`TTL` that `session:*` and `ratelimit:*` keys were actually being written with the right TTLs. Test data (Postgres rows and Redis keys) cleared afterward.
+
+**Next:** Session cache has no invalidation on logout/ban — acceptable at this stage (60s max staleness) but worth revisiting if that becomes a real concern. `REDIS_URL` needs adding to `.env` for anyone pulling this fresh (already present in this environment's `.env`).
+
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-36-notifications-service
+
+**Domain:** backend/api-go
+
+**Depends On:** stage-35-redis-cache-ratelimit-pubsub
+
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] A `notifications` table persists an event every time something happens to a user (friend request/accept, comment, like), not just the live websocket push
+- [x] `GET /api/notifications` (list, most-recent-first, with unread count), mark-one-read, mark-all-read
+- [x] No mobile UI/badge yet — client scoped this stage as backend-only ("เพิ่ม service เลย")
+
+**Done:** New `internal/notifications` package, following the existing per-package convention (own `writeJSON`/`writeError` copies, raw SQL via `db.NewRaw` for reads, `Model()` builder for writes — matches `internal/friends`). Exports `Push(ctx, db, recipientID, kind, actorID, actorName, postID)`, a best-effort fire-and-forget insert (logs on failure, never fails the caller's request — same convention as `internal/feed`'s `broadcast` and `internal/friends`' `notify`) that silently no-ops on self-notifications (e.g. commenting on your own post). New `Notification` model + migration (`internal/db/models.go`, `migrate.go`), indexed on `(user_id, created_at DESC)`.
+
+Wired into the three places that already push a live websocket event to a specific user: `internal/friends`' `sendRequest` (both the "brand new request" and "mutual — auto-accept" branches) and `acceptRequest` call `notifications.Push` for `friend_request`/`friend_accepted` right alongside their existing `h.notify` (unchanged — the live push and the persisted history are separate concerns, not merged into one event shape, so no existing mobile realtime code needed touching). `internal/feed`'s `createComment` and `likePost` needed the post's `AuthorID` to know who to notify — both switched from the boolean-only `postExists` to `getPostByID` (already fetched `AuthorID`, just wasn't being kept) to avoid a second query.
+
+Endpoints: `GET /api/notifications` (last 50, newest first, `unreadCount`), `POST /api/notifications/{id}/read` (404 if the id doesn't belong to the caller — verified, not just filtered client-side), `POST /api/notifications/read-all`.
+
+**Verified live** against the real dev Postgres with two real accounts (not seeded): B commented on, liked, and friend-requested A — `GET /api/notifications` as A showed all three with `unreadCount: 3`; marked one read (`unreadCount` → 2, that one's `read: true`); mark-all-read (`unreadCount` → 0); confirmed B could NOT mark A's notification read (404, ownership enforced in the `WHERE`, not just hidden in the UI); confirmed A commenting on A's own post created zero notifications (self-notify skip). `go build`/`go vet`/`gofmt -l` clean. Test data cleaned up.
+
+**Next:** No mobile UI (badge, notifications screen) yet — client explicitly scoped this stage as backend-only. Build that whenever requested; `GET /api/notifications` is ready to consume as-is.
+
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-37-notifications-ui
+
+**Domain:** apps/mobile
+
+**Depends On:** stage-36-notifications-service
+
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Badge showing unread count, visible from the app
+- [x] A screen listing notifications, tap-to-mark-read, mark-all-read
+
+**Done:** `lib/api/notificationsApi.ts` (new, matches the `internal/notifications` response shape exactly: `{ notifications, unreadCount }`, each with `id/kind/actorId/actorName/postId?/read/createdAt`). `components/ui/NotificationBell.tsx` (new) — bell icon with a count badge (caps display at "9+"), fetches `unreadCount` on mount/sign-in, dropped into `FeedScreen`'s header (no shared header component exists across tabs — each screen owns its own, same as every other screen in this app) since Feed is the most-visited screen. Badge nudges itself via the existing `useFriendRealtime` hook for `friend_request`/`friend_accepted` (those have a personal websocket channel already); comment/like notifications aren't on a per-recipient channel today, so their badge update relies on the mount-time fetch rather than being instantly live — noted as a known gap rather than adding new server-side event scoping for this pass.
+
+`screens/notifications/NotificationsScreen.tsx` (new) + `app/notifications.tsx` route — standard list screen (`BackButton`, matches every other inner-page convention in this app), maps each `kind` to a plain-English line ("X commented on your post" etc.), tap marks that one read (optimistic, matches this app's existing best-effort-on-failure pattern for social actions), header "Mark all read" when `unreadCount > 0`.
+
+**Verified**: `tsc --noEmit` clean, `expo export --platform web` clean (`/notifications` present in the static route list, 28 routes total). Not verified in an actual running app/browser this pass — no device/simulator was driven interactively, so the visual result and tap behavior haven't been eyeballed, only that it compiles/exports and the API contract matches what was live-tested server-side in stage-36.
+
+**Next:** If comment/like badge updates need to be instantly live (not just on next screen-open), `internal/feed`'s comment/like handlers would need to push to the post author's personal `user:<id>` channel too, not just `feed:all` — not built this pass since it wasn't asked for.
+
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

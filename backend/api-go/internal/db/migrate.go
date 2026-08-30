@@ -106,6 +106,18 @@ func Migrate(ctx context.Context, db *bun.DB) error {
 			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 			expires_at TIMESTAMPTZ NOT NULL
 		)`,
+		`CREATE TABLE IF NOT EXISTS notifications (
+			id TEXT PRIMARY KEY,
+			user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			kind TEXT NOT NULL,
+			actor_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			actor_name TEXT NOT NULL,
+			post_id TEXT,
+			read_at TIMESTAMPTZ,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		)`,
+		`CREATE INDEX IF NOT EXISTS notifications_user_id_created_at_idx
+			ON notifications (user_id, created_at DESC)`,
 	}
 
 	for _, stmt := range statements {

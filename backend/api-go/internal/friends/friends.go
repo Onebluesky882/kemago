@@ -18,6 +18,7 @@ import (
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/notifications"
 )
 
 type Handlers struct {
@@ -116,6 +117,7 @@ func (h *Handlers) sendRequest(w http.ResponseWriter, r *http.Request) {
 			"type": "friend_accepted",
 			"by":   map[string]string{"userId": user.ID, "name": user.Name},
 		})
+		notifications.Push(ctx, h.DB, existing.RequesterID, "friend_accepted", user.ID, user.Name, nil)
 		writeJSON(w, http.StatusOK, map[string]string{"userId": body.UserID, "status": "accepted"})
 		return
 	case err != sql.ErrNoRows:
@@ -133,6 +135,7 @@ func (h *Handlers) sendRequest(w http.ResponseWriter, r *http.Request) {
 		"type": "friend_request",
 		"from": map[string]string{"userId": user.ID, "name": user.Name},
 	})
+	notifications.Push(ctx, h.DB, body.UserID, "friend_request", user.ID, user.Name, nil)
 	writeJSON(w, http.StatusCreated, map[string]string{"userId": body.UserID, "status": "pending"})
 }
 
@@ -161,6 +164,7 @@ func (h *Handlers) acceptRequest(w http.ResponseWriter, r *http.Request) {
 		"type": "friend_accepted",
 		"by":   map[string]string{"userId": user.ID, "name": user.Name},
 	})
+	notifications.Push(ctx, h.DB, requesterID, "friend_accepted", user.ID, user.Name, nil)
 	writeJSON(w, http.StatusOK, map[string]string{"userId": requesterID, "status": "accepted"})
 }
 

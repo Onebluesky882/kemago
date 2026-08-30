@@ -148,3 +148,21 @@ type Story struct {
 	CreatedAt time.Time `bun:"created_at,notnull,default:now()"`
 	ExpiresAt time.Time `bun:"expires_at,notnull"`
 }
+
+// Notification is a persisted record of something that happened to
+// UserID, so it survives even if they weren't connected to the websocket
+// hub when it happened. Kind is one of "friend_request", "friend_accepted",
+// "comment", "like" — see internal/notifications. PostID is set only for
+// "comment"/"like" (nil for friend events).
+type Notification struct {
+	bun.BaseModel `bun:"table:notifications"`
+
+	ID        string     `bun:"id,pk"`
+	UserID    string     `bun:"user_id,notnull"`
+	Kind      string     `bun:"kind,notnull"`
+	ActorID   string     `bun:"actor_id,notnull"`
+	ActorName string     `bun:"actor_name,notnull"`
+	PostID    *string    `bun:"post_id"`
+	ReadAt    *time.Time `bun:"read_at"`
+	CreatedAt time.Time  `bun:"created_at,notnull,default:now()"`
+}

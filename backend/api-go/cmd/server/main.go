@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/coder/websocket"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
@@ -15,6 +16,7 @@ import (
 	"github.com/onebluesky882/kemago/backend/api-go/internal/feed"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/friends"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/notifications"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/polls"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/storage"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/stories"
@@ -51,7 +53,28 @@ func main() {
 		log.Fatalf("migrate: %v", err)
 	}
 
-	h := hub.New()
+	// Optional — same spirit as R2/Stories below. Without REDIS_URL, rdb
+	// stays nil: hub.Broadcast falls back to local-only delivery,
+	// authcheck skips session caching, and ratelimit.Allow always allows.
+	// Nothing requires Redis to run; it only improves scale-out, avoids a
+	// Postgres round trip per request, and adds abuse limits when present.
+	var rdb *redis.Client
+	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
+		opt, err := redis.ParseURL(redisURL)
+		if err != nil {
+			log.Fatalf("invalid REDIS_URL: %v", err)
+		}
+		rdb = redis.NewClient(opt)
+		if err := rdb.Ping(context.Background()).Err(); err != nil {
+			log.Fatalf("redis ping: %v", err)
+		}
+		authcheck.SetCache(rdb)
+		log.Println("redis: connected — session cache, rate limiting, and hub pub/sub scale-out active")
+	} else {
+		log.Println("REDIS_URL not set — running without cache/rate-limit/pub-sub scale-out")
+	}
+
+	h := hub.New(rdb)
 
 	mux := http.NewServeMux()
 
@@ -60,11 +83,12 @@ func main() {
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	feed.Register(mux, database, h)
+	feed.Register(mux, database, h, rdb)
 	clubs.Register(mux, database)
 	polls.Register(mux, database, h)
 	blocks.Register(mux, database)
 	friends.Register(mux, database, h)
+	notifications.Register(mux, database)
 
 	// Optional — R2/Stories isn't required to run everything else. Skips
 	// registration entirely (POST/GET /api/stories* just 404) rather than

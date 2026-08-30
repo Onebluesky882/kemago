@@ -34,9 +34,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       WS_PORT: ${WS_PORT}
       DATABASE_URL: ${DATABASE_URL}
+      # Optional — see .env.example. Empty disables session caching, rate
+      # limiting, and cross-instance websocket pub/sub (falls back to
+      # local-only broadcast, fine for a single replica).
+      REDIS_URL: ${REDIS_URL:-}
       # Optional — see .env.example. Empty values are fine; api-go just
       # disables /api/stories* until these are filled in.
       R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}

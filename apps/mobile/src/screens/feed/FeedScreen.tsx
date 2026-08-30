@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, ScrollView, Text, View } from "react-native";
 import { CategoryChip } from "../../components/feed/CategoryChip";
+import { NotificationBell } from "../../components/ui/NotificationBell";
 import { ComposeBar } from "../../components/feed/ComposeBar";
 import { PostCard } from "../../components/feed/PostCard";
 import { RoomChip } from "../../components/feed/RoomChip";
@@ -157,8 +158,9 @@ export function FeedScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <View className="px-4 pt-3 pb-2 bg-surface border-b border-border">
+      <View className="flex-row items-center justify-between px-4 pt-3 pb-2 bg-surface border-b border-border">
         <Text className="text-xl font-bold text-text">Elm Street</Text>
+        <NotificationBell />
       </View>
 
       <StoriesBar
