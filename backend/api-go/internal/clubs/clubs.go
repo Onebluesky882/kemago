@@ -33,6 +33,7 @@ func Register(mux *http.ServeMux, database *bun.DB) {
 	mux.HandleFunc("POST /api/clubs/{id}/join", h.joinClub)
 	mux.HandleFunc("POST /api/clubs/{id}/leave", h.leaveClub)
 	mux.HandleFunc("PATCH /api/clubs/{id}/leader", h.changeLeader)
+	mux.HandleFunc("GET /api/clubs/{id}/members", h.listClubMembers)
 }
 
 func newID(prefix string) string {
@@ -320,4 +321,44 @@ func (h *Handlers) changeLeader(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"club": updated})
+}
+
+const clubMemberSelect = `
+	SELECT u.id AS id, u.name AS name, u.email_verified AS verified, m.joined_at AS joined_at
+	FROM club_members m
+	JOIN "user" u ON u.id = m.user_id
+	WHERE m.club_id = ?
+	ORDER BY m.joined_at ASC
+`
+
+type clubMemberRow struct {
+	ID       string    `bun:"id"`
+	Name     string    `bun:"name"`
+	Verified bool      `bun:"verified"`
+	JoinedAt time.Time `bun:"joined_at"`
+}
+
+type clubMemberOut struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Verified bool      `json:"verified"`
+	JoinedAt time.Time `json:"joinedAt"`
+}
+
+// listClubMembers exists mainly so a leader-handoff UI has a member list to
+// pick the new leader from — no auth required to view, same as listClubs.
+func (h *Handlers) listClubMembers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	clubID := r.PathValue("id")
+
+	var rows []clubMemberRow
+	if err := h.DB.NewRaw(clubMemberSelect, clubID).Scan(ctx, &rows); err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	out := make([]clubMemberOut, len(rows))
+	for i, row := range rows {
+		out[i] = clubMemberOut{ID: row.ID, Name: row.Name, Verified: row.Verified, JoinedAt: row.JoinedAt}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"members": out})
 }

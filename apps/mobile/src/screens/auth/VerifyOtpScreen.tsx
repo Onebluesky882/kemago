@@ -36,6 +36,7 @@ export function VerifyOtpScreen() {
       const { token, profile } = await verifyOtp(email, code.trim());
       signIn(token, email);
       setProfile({
+        id: profile.id,
         name: profile.name,
         profileComplete: profile.profileComplete,
         profilePublic: profile.profilePublic,

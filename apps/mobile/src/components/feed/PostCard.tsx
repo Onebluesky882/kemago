@@ -23,11 +23,8 @@ const categoryTone: Record<Post["category"], "brand" | "accent" | "neutral"> = {
 export function PostCard({ post }: { post: Post }) {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
-  // useAuthStore doesn't expose the signed-in user's real backend id yet
-  // (only email/token) — so there's no cheap way to hide Add friend/Block on
-  // your own posts here. Self-block/friend are already rejected server-side
-  // (422), so the worst case is a harmless inline error if someone taps
-  // their own.
+  const userId = useAuthStore((s) => s.userId);
+  const isOwnPost = userId != null && userId === post.authorId;
 
   const [composingPoll, setComposingPoll] = useState(false);
   // The realtime poll_added event (see lib/realtime.ts) flips post.hasPoll
@@ -77,10 +74,12 @@ export function PostCard({ post }: { post: Post }) {
             </Pressable>
           ) : null}
         </View>
-        <View className="flex-row items-center gap-3">
-          <AddFriendButton userId={post.authorId} userName={post.author} />
-          <BlockUserButton userId={post.authorId} userName={post.author} />
-        </View>
+        {isOwnPost ? null : (
+          <View className="flex-row items-center gap-3">
+            <AddFriendButton userId={post.authorId} userName={post.author} />
+            <BlockUserButton userId={post.authorId} userName={post.author} />
+          </View>
+        )}
       </View>
     </Card>
   );

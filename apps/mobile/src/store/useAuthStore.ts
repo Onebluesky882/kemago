@@ -26,7 +26,12 @@ type AuthState = {
   // server truth, not something to trust from a stale persisted value.
   profileComplete: boolean | null;
   profileName: string | null;
-  setProfile: (p: { name: string; profileComplete: boolean; profilePublic: boolean }) => void;
+  // The signed-in user's own backend id — null until the first setProfile
+  // call after sign-in. Added so "is this my own post/club/etc." checks
+  // (block/friend buttons, club leader handoff) can compare against it
+  // instead of having no cheap way to know — see PIPELINE.md stage-32.
+  userId: string | null;
+  setProfile: (p: { id: string; name: string; profileComplete: boolean; profilePublic: boolean }) => void;
 
   // Server-backed public/private profile toggle (see lib/api/authApi.ts'
   // updatePrivacy) — replaces the old client-only isPublic mock. Same
@@ -54,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
       email: null,
       isAuthenticated: false,
       signIn: (token, email) =>
-        set({ token, email, isAuthenticated: true, profileComplete: null, profilePublic: null }),
+        set({ token, email, isAuthenticated: true, profileComplete: null, profilePublic: null, userId: null }),
       signOut: () =>
         set({
           token: null,
@@ -63,12 +68,14 @@ export const useAuthStore = create<AuthState>()(
           profileComplete: null,
           profileName: null,
           profilePublic: null,
+          userId: null,
         }),
 
       profileComplete: null,
       profileName: null,
-      setProfile: ({ name, profileComplete, profilePublic }) =>
-        set({ profileName: name, profileComplete, profilePublic }),
+      userId: null,
+      setProfile: ({ id, name, profileComplete, profilePublic }) =>
+        set({ userId: id, profileName: name, profileComplete, profilePublic }),
 
       profilePublic: null,
       setProfilePublic: (profilePublic) => set({ profilePublic }),

@@ -81,3 +81,17 @@ export async function changeLeader(token: string, id: string, userId: string): P
   const body = (await res.json()) as { club: ApiClub };
   return body.club;
 }
+
+export type ClubMember = {
+  id: string;
+  name: string;
+  verified: boolean;
+  joinedAt: string;
+};
+
+export async function listClubMembers(id: string): Promise<ClubMember[]> {
+  const res = await fetch(`${API_BASE_URL}/api/clubs/${id}/members`);
+  if (!res.ok) await parseError(res);
+  const body = (await res.json()) as { members: ClubMember[] };
+  return body.members;
+}

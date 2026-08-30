@@ -16,6 +16,8 @@ Plus `GET /api/auth/get-session`, `POST /api/auth/update-user`, `POST /api/auth/
 
 The `user` object returned by every auth endpoint also carries `profileComplete: boolean` (stage-16) and `profilePublic: boolean` (stage-24, defaults `true`) — both plain columns on the `user` table, both written via `POST /api/auth/update-user` like any other Better Auth field.
 
+**stage-32 fix:** the `user` object's own `id` (always present — it's Better Auth's own primary key, not something added) was never captured by `apps/mobile`'s `Profile`/`BetterAuthUser` types, so the app had no cheap way to know "is this my own post/club/etc." anywhere — three separate features (Block, Add friend, Club leader handoff) had each individually worked around this. `Profile.id` and `useAuthStore.userId` now carry it through from every place a session is read.
+
 ### Errors
 - `401` invalid credentials
 - `422` USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL, validation errors (Better Auth's own error codes, not custom ones)
@@ -108,7 +110,7 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 
 ## Module: Club
 
-**Implemented** (stage-24) on `backend/api-go`. Anyone can create a club (becomes its leader + first member); anyone can join/leave; only the current leader can hand off leadership. No identity-verification gate on who can create one — that's a separate, unresolved product decision (see `coarea_product_rules` memory), deliberately out of scope here.
+**Implemented** (stage-24, leader-handoff UI + member listing added stage-32) on `backend/api-go`. Anyone can create a club (becomes its leader + first member); anyone can join/leave; only the current leader can hand off leadership. No identity-verification gate on who can create one — that's a separate, unresolved product decision (see `coarea_product_rules` memory), deliberately out of scope here.
 
 ### Input
 - `GET /api/clubs` — list all clubs; personalizes `joined` if a Bearer token is present, otherwise `false`
@@ -116,6 +118,7 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 - `POST /api/clubs/:id/join` (Bearer required) — idempotent
 - `POST /api/clubs/:id/leave` (Bearer required) — `422` if the caller is the current leader (no auto-reassignment)
 - `PATCH /api/clubs/:id/leader` (Bearer required) — `{ userId }` — `403` if the caller isn't the current leader, `422` if the target isn't already a member
+- `GET /api/clubs/:id/members` (stage-32) — no auth required; exists mainly so a leader-handoff UI has a member list to pick from — `{ members: [{ id, name, verified, joinedAt }] }`
 
 ### Output
 - `{ clubs: [{ id, name, description, category, leaderId, leaderName, memberCount, joined, createdAt }] }`

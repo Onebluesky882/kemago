@@ -40,6 +40,7 @@ Conductor Branch: main
 | stage-29-realtime-websocket | backend/api-go, apps/mobile | stage-28-feed-room-picker | COMPLETE |
 | stage-30-stories-upload | backend/api-go, apps/mobile | stage-29-realtime-websocket | COMPLETE (needs real R2 credentials from client to go fully live) |
 | stage-31-wire-polls-into-feed | backend/api-go, apps/mobile | stage-30-stories-upload | COMPLETE |
+| stage-32-club-leader-handoff-ui | backend/api-go, apps/mobile | stage-31-wire-polls-into-feed | COMPLETE |
 
 ---
 
@@ -776,6 +777,32 @@ Mobile: `PostCard` renders `PollCard` when `post.hasPoll` is true, and a "+ Add 
 
 **Verified live** against the real dev Postgres with a real account (not seeded): created a plain post (`hasPoll: false` confirmed), attached a poll via the same endpoint the "+ Add poll" UI calls, confirmed the `feed:all` websocket channel received `poll_added` with the right `postId` (scripted Node `WebSocket` client, same approach as stage-29), and confirmed `GET /api/posts` then showed `hasPoll: true` for that post. `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile. Test data cleaned up.
 **Next:** None from this stage. Club leader hand-off (flagged in stage-26) still has no UI trigger — the next candidate if continuing to work through open items.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-32-club-leader-handoff-ui
+
+**Domain:** backend/api-go, apps/mobile
+**Depends On:** stage-31-wire-polls-into-feed
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] A leader can actually hand off leadership from the app (API existed since stage-24, no UI trigger)
+- [x] A real fix for the recurring "can't tell if this is my own X" gap, not a fourth workaround
+
+**Done:** Continuing through the open-items list rather than a fresh client ask. Building the handoff UI needed a member list to pick a new leader from, which didn't exist (`internal/clubs` had no `GET /:id/members`, unlike `internal/feed`'s room-members endpoint) — added it, mirroring `feed.go`'s `listRoomMembers` exactly (no auth required to view).
+
+**The bigger fix:** actually building this UI required knowing "is the signed-in viewer the current leader," which surfaced the same gap Block (stage-24) and Add-friend (stage-26) had each separately shrugged off with a comment ("no cheap way to check, worst case is a harmless 422"). Traced it to the real root cause: Better Auth's `user.id` was never captured by `apps/mobile`'s `Profile`/`BetterAuthUser` types at all — not missing from the API, just never read on the client. Fixed once, properly: `Profile.id` (`authApi.ts`) → `useAuthStore.userId`, threaded through all three places a session gets read (`_layout.tsx`'s `AuthGate`, `VerifyOtpScreen`, `CompleteProfileScreen`). Went back and removed the two prior workarounds now that the real check is available — `PostCard` hides Add-friend/Block on the viewer's own posts instead of just accepting a self-action 422 as an acceptable outcome.
+
+Mobile: `ClubCard` gained an inline "Hand off leadership" toggle (visible only when `userId === club.leaderId`, same pattern as `PostCard`'s poll-composer toggle) that expands to a member list with "Make leader" per member, calling the existing `changeLeader`. `clubsApi.ts` gained `listClubMembers`.
+
+**Verified live** against the real dev Postgres with two real accounts (not seeded): confirmed `GET /api/auth/get-session` returns `id` (the field the whole fix depends on), created a club as A (leader), joined as B, listed members (both present), handed off leadership from A to B via the exact `PATCH` call the UI now makes, confirmed the returned club shows B as `leaderId`/`leaderName`. `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile. Test data cleaned up.
+**Next:** None from this stage. No more open items are currently flagged — future work is either client-directed or needs the R2 credentials noted in stage-30.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

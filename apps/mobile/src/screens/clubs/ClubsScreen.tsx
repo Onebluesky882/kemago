@@ -86,6 +86,10 @@ export function ClubsScreen() {
     [token, busyId],
   );
 
+  const handleLeaderChanged = useCallback((updated: ApiClub) => {
+    setClubs((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  }, []);
+
   const handleCreateClub = useCallback(async () => {
     const name = newClubName.trim();
     if (!token || !name || creating) return;
@@ -137,7 +141,12 @@ export function ClubsScreen() {
           ) : null
         }
         renderItem={({ item }) => (
-          <ClubCard club={item} onToggleMembership={handleToggleMembership} busy={busyId === item.id} />
+          <ClubCard
+            club={item}
+            onToggleMembership={handleToggleMembership}
+            onLeaderChanged={handleLeaderChanged}
+            busy={busyId === item.id}
+          />
         )}
         ListEmptyComponent={
           <EmptyState title="No clubs yet" body="Clubs you join in the neighborhood will show up here." />

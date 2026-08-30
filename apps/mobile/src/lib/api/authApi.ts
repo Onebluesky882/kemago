@@ -18,6 +18,7 @@ async function parseError(res: Response): Promise<never> {
 }
 
 export type Profile = {
+  id: string;
   email: string;
   name: string;
   profileComplete: boolean;
@@ -25,6 +26,7 @@ export type Profile = {
 };
 
 type BetterAuthUser = {
+  id: string;
   email: string;
   name: string;
   profileComplete: boolean;
@@ -33,6 +35,7 @@ type BetterAuthUser = {
 
 function toProfile(user: BetterAuthUser): Profile {
   return {
+    id: user.id,
     email: user.email,
     name: user.name,
     profileComplete: user.profileComplete,
