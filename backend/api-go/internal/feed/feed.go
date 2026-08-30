@@ -109,6 +109,7 @@ type postOut struct {
 	CreatedAt      time.Time `json:"createdAt"`
 	LikeCount      int       `json:"likeCount"`
 	ReplyCount     int       `json:"replyCount"`
+	HasPoll        bool      `json:"hasPoll"`
 }
 
 type commentOut struct {
@@ -124,11 +125,16 @@ type commentOut struct {
 // the embedded *sql.DB's QueryContext/QueryRowContext directly with a
 // literal "$1" sends the query via the simple protocol, where Postgres
 // rejects "$1" with "there is no parameter $1" (SQLSTATE 42P02).
+// hasPoll checks the polls table directly (a different package's domain,
+// but the same physical Postgres database and Go binary — see
+// DECISIONS.md) rather than importing internal/polls, which would create
+// an import cycle (polls already needs feed's postExists-style check).
 const postSelect = `
 	SELECT p.id AS id, p.room_id AS room_id, p.author_id AS author_id, u.name AS author, u.email_verified AS author_verified,
 		p.category AS category, p.body AS body, p.created_at AS created_at,
 		(SELECT count(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
-		(SELECT count(*) FROM comments c WHERE c.post_id = p.id) AS reply_count
+		(SELECT count(*) FROM comments c WHERE c.post_id = p.id) AS reply_count,
+		EXISTS(SELECT 1 FROM polls pl WHERE pl.post_id = p.id) AS has_poll
 	FROM posts p
 	JOIN "user" u ON u.id = p.author_id
 `
@@ -146,13 +152,14 @@ type postRow struct {
 	CreatedAt      time.Time `bun:"created_at"`
 	LikeCount      int       `bun:"like_count"`
 	ReplyCount     int       `bun:"reply_count"`
+	HasPoll        bool      `bun:"has_poll"`
 }
 
 func (row postRow) toOut() postOut {
 	return postOut{
 		ID: row.ID, RoomID: row.RoomID, AuthorID: row.AuthorID, Author: row.Author, AuthorVerified: row.AuthorVerified,
 		Category: row.Category, Body: row.Body, CreatedAt: row.CreatedAt,
-		LikeCount: row.LikeCount, ReplyCount: row.ReplyCount,
+		LikeCount: row.LikeCount, ReplyCount: row.ReplyCount, HasPoll: row.HasPoll,
 	}
 }
 

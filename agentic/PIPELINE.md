@@ -39,6 +39,7 @@ Conductor Branch: main
 | stage-28-feed-room-picker | apps/mobile | stage-27-rooms-ui | COMPLETE |
 | stage-29-realtime-websocket | backend/api-go, apps/mobile | stage-28-feed-room-picker | COMPLETE |
 | stage-30-stories-upload | backend/api-go, apps/mobile | stage-29-realtime-websocket | COMPLETE (needs real R2 credentials from client to go fully live) |
+| stage-31-wire-polls-into-feed | backend/api-go, apps/mobile | stage-30-stories-upload | COMPLETE |
 
 ---
 
@@ -751,6 +752,31 @@ Mobile: added `expo-image-picker` and `expo-video` (the current, non-deprecated 
 **Verified without real R2 credentials** (none exist yet — this is a genuine external dependency the client needs to set up, not something fabricatable): ran the Go service locally with dummy R2 env vars (`go run ./cmd/server` outside Docker, port 3099) and confirmed the full code path that doesn't require actually reaching R2's network — `POST /api/stories/upload-url` produces a syntactically-correct AWS SigV4-signed URL (dummy credentials still produce a well-formed signature; only actually PUTting to it would reveal invalid credentials), `POST /api/stories` correctly writes the row with `expiresAt` = `createdAt + 24h`, `GET /api/stories` reads it back with the right shape including a presigned GET fallback URL (no `R2_PUBLIC_URL` configured in the dummy test). Confirmed the real docker-compose container starts cleanly and every other endpoint keeps working with R2 env vars entirely absent (the actual current state — logs "R2_ACCOUNT_ID not set, /api/stories* disabled"). `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile (confirms `expo-video`/`expo-image-picker` bundle correctly on web too). Test data cleaned up.
 **Next:** Client needs to create an R2 bucket + API token in the Cloudflare dashboard and fill in `.env`'s five `R2_*` values before an actual file can be uploaded and viewed — nothing else is blocking. Once real credentials exist, do one real upload from the app and confirm the media actually displays. Follow-ups noted in CONTRACTS.md → Story: view tracking, expired-row/object cleanup, multi-story-per-author viewer.
 **Blockers:** Cloudflare R2 bucket/credentials don't exist yet — client-side setup, not something to build around.
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-31-wire-polls-into-feed
+
+**Domain:** backend/api-go, apps/mobile
+**Depends On:** stage-30-stories-upload
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] A post's Feed-list entry indicates whether it has a poll
+- [x] `PollCard`/`PollComposer` (built stage-24, never wired anywhere) are actually reachable in the app
+- [x] A newly-attached poll appears live for everyone looking at the Feed, matching stage-29's realtime pattern
+
+**Done:** Continuing from the open items flagged in stage-24/29's "Next" notes rather than a fresh client ask this round. `internal/feed`'s `postSelect`/`postOut` gained `hasPoll` (`EXISTS(SELECT 1 FROM polls WHERE polls.post_id = p.id)` — reads the `polls` table directly by raw SQL rather than importing `internal/polls`, avoiding an import cycle since `polls` already needs a feed-style post-existence check). `internal/polls` gained a `*hub.Hub` (same `Register(mux, db, hub)` pattern as `feed`/`friends`) and now broadcasts `{ type: "poll_added", postId }` on the shared `"feed:all"` channel after a successful `createPoll` — deliberately *not* broadcasting on `votePoll` (would need per-viewer `myVoteOptionId` handling to avoid leaking one voter's choice as if it were shared state, out of scope for this pass; `PollCard` already re-fetches its own vote counts on open, just not live-live while already open).
+
+Mobile: `PostCard` renders `PollCard` when `post.hasPoll` is true, and a "+ Add poll" toggle (opens `PollComposer` inline) when it's false and the viewer is signed in — matches the existing backend authorization exactly (any signed-in user, not just the post's author, since `createPoll` never checked ownership and this wasn't the moment to add that restriction unasked). A local `justCreatedPoll` flag shows the poll immediately after a successful create rather than waiting on the realtime round-trip back to the actor's own device. `PostDetailScreen` got the same `PollCard` rendering for consistency. `useFeedRealtime`'s event union gained `poll_added`, flipping `hasPoll` on the matching post in `FeedScreen`'s state.
+
+**Verified live** against the real dev Postgres with a real account (not seeded): created a plain post (`hasPoll: false` confirmed), attached a poll via the same endpoint the "+ Add poll" UI calls, confirmed the `feed:all` websocket channel received `poll_added` with the right `postId` (scripted Node `WebSocket` client, same approach as stage-29), and confirmed `GET /api/posts` then showed `hasPoll: true` for that post. `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile. Test data cleaned up.
+**Next:** None from this stage. Club leader hand-off (flagged in stage-26) still has no UI trigger — the next candidate if continuing to work through open items.
+**Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client
 **Gate-Out:** n/a

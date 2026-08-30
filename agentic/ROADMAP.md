@@ -96,6 +96,7 @@ Success Indicators:
 - Posting can now target a specific room, not just the default shared feed — a "Posting to" picker shows up once you've joined at least one room
 - New posts, comments, and likes now show up live for everyone looking at the Feed at the time — no need to refresh. Friend requests and accepts also show up live
 - Started building "Stories" — a photo/video post that disappears after 24 hours, like Instagram's. The upload and viewing screens are built, but this needs a Cloudflare storage account set up before real photos/videos can actually go through it — flagging this as something the client needs to set up (not a coding task)
+- Poll-style posts now show up right in the Feed — anyone can add a "vote on this" question to a post, and everyone sees it appear live
 
 ---
 
@@ -117,7 +118,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 | M-010 | Private/public profile | An account can be set to private so only friends can see it | DONE (toggle works and saves for real; "only friends can see" enforcement isn't built yet — anyone can currently still see a private profile, the setting isn't acted on outside the toggle itself) |
 | M-011 | Verified posting in local activity | Only people who have verified their identity can post about local activities | PLANNING (blocked — the verification method itself hasn't been chosen yet) |
 | M-012 | Clubs | People can create their own local club; join or leave; the leader can be handed off to someone else | DONE (leader hand-off has no button in the app yet, but works if triggered) |
-| M-013 | Poll-style posts | A post type where people vote on a list of choices | IN_PROGRESS (voting works; not yet visible in the main Feed — needs one more step to show up there) |
+| M-013 | Poll-style posts | A post type where people vote on a list of choices | DONE — any post can now have a poll added to it from the Feed, and votes update live |
 | M-014 | Content screening | Posts and comments are automatically checked for bad language before they go live | PLANNING |
 | M-015 | Block user | People can block someone they don't want to see or hear from | DONE |
 | M-016 | Community score | Each person has an overall reputation score based on their activity | PLANNING |

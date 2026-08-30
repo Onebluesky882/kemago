@@ -26,14 +26,20 @@ import (
 
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
 )
 
+// feedChannel matches internal/feed's — same shared "everyone looking at
+// the Feed" channel, since a poll is just an attachment on a Feed post.
+const feedChannel = "feed:all"
+
 type Handlers struct {
-	DB *bun.DB
+	DB  *bun.DB
+	Hub *hub.Hub
 }
 
-func Register(mux *http.ServeMux, database *bun.DB) {
-	h := &Handlers{DB: database}
+func Register(mux *http.ServeMux, database *bun.DB, wsHub *hub.Hub) {
+	h := &Handlers{DB: database, Hub: wsHub}
 	mux.HandleFunc("POST /api/posts/{id}/poll", h.createPoll)
 	mux.HandleFunc("GET /api/posts/{id}/poll", h.getPoll)
 	mux.HandleFunc("POST /api/posts/{id}/poll/vote", h.votePoll)
@@ -62,6 +68,17 @@ func writeError(w http.ResponseWriter, status int, message string) {
 func writeInternalError(w http.ResponseWriter, err error) {
 	log.Printf("internal error: %v", err)
 	writeError(w, http.StatusInternalServerError, "internal error")
+}
+
+// broadcast mirrors internal/feed's helper of the same name/shape — see
+// its comment for the reasoning (best-effort, never fails the request).
+func (h *Handlers) broadcast(ctx context.Context, event map[string]any) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("broadcast marshal: %v", err)
+		return
+	}
+	h.Hub.Broadcast(ctx, feedChannel, data)
 }
 
 func (h *Handlers) postExists(ctx context.Context, id string) (bool, error) {
@@ -192,6 +209,7 @@ func (h *Handlers) createPoll(w http.ResponseWriter, r *http.Request) {
 	for i, opt := range options {
 		out.Options[i] = pollOptionOut{ID: opt.ID, Label: opt.Label, VoteCount: 0}
 	}
+	h.broadcast(ctx, map[string]any{"type": "poll_added", "postId": postID})
 	writeJSON(w, http.StatusCreated, map[string]any{"poll": out})
 }
 

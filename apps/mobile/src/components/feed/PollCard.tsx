@@ -6,9 +6,8 @@ import { getPoll, votePoll, PollNotFoundError, type ApiPoll } from "../../lib/ap
 import { useAuthStore } from "../../store/useAuthStore";
 
 // Standalone poll display — fetches and manages its own poll/vote state via
-// postId, so it drops into PostCard (or wherever) as `<PollCard postId={id} />`
-// with no other wiring required. Not wired into PostCard/FeedScreen/
-// ComposeBar yet — that integration happens separately, see task notes.
+// postId. Wired into PostCard: renders when post.hasPoll is true (see
+// stage-31 in PIPELINE.md).
 type PollCardProps = {
   postId: string;
 };

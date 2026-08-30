@@ -3,10 +3,10 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import { colors } from "../../theme/colors";
 
 // Standalone poll-creation form: question + dynamic add/remove option
-// inputs + submit. Not wired into ComposeBar/FeedScreen yet — someone else
-// decides where it's surfaced (e.g. a "+ poll" toggle near ComposeBar), see
-// task notes. onSubmit receives the validated { question, options } and is
-// expected to call pollsApi.createPoll and handle its own success/error UI.
+// inputs + submit. Wired into PostCard behind a "+ Add poll" toggle (see
+// stage-31 in PIPELINE.md). onSubmit receives the validated
+// { question, options } and is expected to call pollsApi.createPoll and
+// handle its own success/error UI.
 const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 10;
 

@@ -34,6 +34,7 @@ function toLocalPost(apiPost: ApiPost): Post {
     postedAt: formatRelativeTime(apiPost.createdAt),
     likeCount: apiPost.likeCount,
     replyCount: apiPost.replyCount,
+    hasPoll: apiPost.hasPoll,
   };
 }
 
@@ -102,6 +103,10 @@ export function FeedScreen() {
         setPosts((prev) =>
           prev.map((p) => (p.id === event.postId ? { ...p, likeCount: event.likeCount } : p)),
         );
+        return;
+      }
+      if (event.type === "poll_added") {
+        setPosts((prev) => prev.map((p) => (p.id === event.postId ? { ...p, hasPoll: true } : p)));
       }
     }, []),
   );

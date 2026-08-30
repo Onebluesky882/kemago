@@ -11,6 +11,7 @@ export type Post = {
   postedAt: string;
   likeCount: number;
   replyCount: number;
+  hasPoll?: boolean;
 };
 
 export type LocalEvent = {

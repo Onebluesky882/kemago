@@ -32,6 +32,7 @@ export type ApiPost = {
   createdAt: string;
   likeCount: number;
   replyCount: number;
+  hasPoll: boolean;
 };
 
 export type ApiComment = {

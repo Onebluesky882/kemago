@@ -1,12 +1,17 @@
 import { useRouter } from "expo-router";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import { AddFriendButton } from "../ui/AddFriendButton";
 import { Avatar } from "../ui/Avatar";
 import { Badge } from "../ui/Badge";
 import { BlockUserButton } from "../ui/BlockUserButton";
 import { Card } from "../ui/Card";
 import { VerifiedBadge } from "../ui/VerifiedBadge";
+import { PollCard } from "./PollCard";
+import { PollComposer } from "./PollComposer";
+import { createPoll } from "../../lib/api/pollsApi";
 import type { Post } from "../../lib/mockData";
+import { useAuthStore } from "../../store/useAuthStore";
 
 const categoryTone: Record<Post["category"], "brand" | "accent" | "neutral"> = {
   General: "neutral",
@@ -17,10 +22,27 @@ const categoryTone: Record<Post["category"], "brand" | "accent" | "neutral"> = {
 
 export function PostCard({ post }: { post: Post }) {
   const router = useRouter();
+  const token = useAuthStore((s) => s.token);
   // useAuthStore doesn't expose the signed-in user's real backend id yet
-  // (only email/token) — so there's no cheap way to hide this on your own
-  // posts here. Self-blocking is already rejected server-side (422), so
-  // the worst case is a harmless inline error if someone taps their own.
+  // (only email/token) — so there's no cheap way to hide Add friend/Block on
+  // your own posts here. Self-block/friend are already rejected server-side
+  // (422), so the worst case is a harmless inline error if someone taps
+  // their own.
+
+  const [composingPoll, setComposingPoll] = useState(false);
+  // The realtime poll_added event (see lib/realtime.ts) flips post.hasPoll
+  // via FeedScreen's state for every connected client, including this
+  // device's own — but that's a network round-trip. This local flag shows
+  // the poll immediately after a successful create instead of waiting on it.
+  const [justCreatedPoll, setJustCreatedPoll] = useState(false);
+  const hasPoll = post.hasPoll || justCreatedPoll;
+
+  async function handleCreatePoll(input: { question: string; options: string[] }) {
+    if (!token) return;
+    await createPoll(token, post.id, input);
+    setJustCreatedPoll(true);
+    setComposingPoll(false);
+  }
 
   return (
     <Card className="mb-3" onPress={() => router.push(`/post/${post.id}`)}>
@@ -40,10 +62,20 @@ export function PostCard({ post }: { post: Post }) {
 
       <Text className="text-sm text-text leading-relaxed mb-3">{post.body}</Text>
 
+      {hasPoll ? <PollCard postId={post.id} /> : null}
+      {!hasPoll && composingPoll ? (
+        <PollComposer onSubmit={handleCreatePoll} onCancel={() => setComposingPoll(false)} />
+      ) : null}
+
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-4">
           <Text className="text-xs text-text-muted">{post.likeCount} likes</Text>
           <Text className="text-xs text-text-muted">{post.replyCount} replies</Text>
+          {!hasPoll && !composingPoll && token ? (
+            <Pressable onPress={() => setComposingPoll(true)} hitSlop={8}>
+              <Text className="text-xs font-semibold text-brand">+ Add poll</Text>
+            </Pressable>
+          ) : null}
         </View>
         <View className="flex-row items-center gap-3">
           <AddFriendButton userId={post.authorId} userName={post.author} />

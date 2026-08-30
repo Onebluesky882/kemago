@@ -62,7 +62,7 @@ func main() {
 
 	feed.Register(mux, database, h)
 	clubs.Register(mux, database)
-	polls.Register(mux, database)
+	polls.Register(mux, database, h)
 	blocks.Register(mux, database)
 	friends.Register(mux, database, h)
 

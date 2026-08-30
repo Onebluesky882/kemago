@@ -13,7 +13,8 @@ import { useAuthStore } from "../store/useAuthStore";
 export type FeedEvent =
   | { type: "post_created"; post: ApiPost }
   | { type: "comment_created"; postId: string; comment: ApiComment }
-  | { type: "like_changed"; postId: string; likeCount: number };
+  | { type: "like_changed"; postId: string; likeCount: number }
+  | { type: "poll_added"; postId: string };
 
 export type FriendEvent =
   | { type: "friend_request"; from: { userId: string; name: string } }

@@ -6,6 +6,7 @@ import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { VerifiedBadge } from "../../components/ui/VerifiedBadge";
 import { CommentComposer } from "../../components/feed/CommentComposer";
+import { PollCard } from "../../components/feed/PollCard";
 import { type ApiComment, type ApiPost, createComment, getPost, listComments } from "../../lib/api/postsApi";
 import { formatRelativeTime } from "../../lib/time";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -80,17 +81,20 @@ export function PostDetailScreen() {
           contentContainerClassName="px-4 pt-4 pb-8"
           renderItem={({ item }) => <CommentRow comment={item} />}
           ListHeaderComponent={
-            <Card className="mb-4">
-              <View className="flex-row items-center gap-1 mb-2">
-                <Text className="text-sm font-semibold text-text">{post.author}</Text>
-                {post.authorVerified ? <VerifiedBadge size={12} /> : null}
-                <Text className="text-xs text-text-muted ml-1">{formatRelativeTime(post.createdAt)}</Text>
-              </View>
-              <Text className="text-sm text-text leading-relaxed mb-3">{post.body}</Text>
-              <Text className="text-xs text-text-muted">
-                {post.likeCount} likes · {post.replyCount} replies
-              </Text>
-            </Card>
+            <View>
+              <Card className="mb-4">
+                <View className="flex-row items-center gap-1 mb-2">
+                  <Text className="text-sm font-semibold text-text">{post.author}</Text>
+                  {post.authorVerified ? <VerifiedBadge size={12} /> : null}
+                  <Text className="text-xs text-text-muted ml-1">{formatRelativeTime(post.createdAt)}</Text>
+                </View>
+                <Text className="text-sm text-text leading-relaxed mb-3">{post.body}</Text>
+                <Text className="text-xs text-text-muted">
+                  {post.likeCount} likes · {post.replyCount} replies
+                </Text>
+              </Card>
+              {post.hasPoll ? <PollCard postId={post.id} /> : null}
+            </View>
           }
           ListEmptyComponent={<EmptyState title="No replies yet" body="Be the first to reply." />}
           ListFooterComponent={token ? <CommentComposer onSubmit={handleComment} /> : null}

@@ -32,7 +32,7 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 - `POST /api/posts` (Bearer required) — `{ roomId?, category, body }`
 
 ### Output
-- `{ posts: [{ id, roomId, authorId, author, authorVerified, category, body, createdAt, likeCount, replyCount }] }`
+- `{ posts: [{ id, roomId, authorId, author, authorVerified, category, body, createdAt, likeCount, replyCount, hasPoll }] }`
 - `{ post: { ...same shape } }`
 
 ### Errors
@@ -146,7 +146,7 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 - `404` post not found, post has no poll, or option not found
 - `422` fewer than 2 options, or a post that already has a poll
 
-**Not yet integrated:** the mobile `PollCard`/`PollComposer` components are built and functional but not wired into `FeedScreen`/`PostCard` — a post's feed-list entry doesn't currently indicate whether it has a poll (would need a `hasPoll` flag added to Module: Feed's response), so there's no discovery path in the app yet beyond a screen that already knows the `postId`.
+**Integrated (stage-31):** `POST /api/posts/:id/poll` now also broadcasts `{ type: "poll_added", postId }` on Module: Feed's shared `"feed:all"` realtime channel (see Module: Realtime), and Module: Feed's `postOut` gained `hasPoll: boolean`. Mobile's `PostCard`/`PostDetailScreen` render `PollCard` when `hasPoll` is true, and show a "+ Add poll" toggle (opens `PollComposer`) when it's false and the viewer is signed in — any signed-in user can attach a poll to any post, not just their own, matching this module's existing authorization (no ownership check on `createPoll`).
 
 ⸻
 
@@ -242,6 +242,7 @@ On the shared `"feed:all"` channel (join via `?room=feed:all` — not per-room, 
 - `{ type: "post_created", post: {...same shape as Module: Feed's post} }`
 - `{ type: "comment_created", postId, comment: {...same shape as Module: Comment} }`
 - `{ type: "like_changed", postId, likeCount }`
+- `{ type: "poll_added", postId }` (stage-31 — sent by `internal/polls`, not `internal/feed`, but on the same shared channel)
 
 ### Errors
 - `401` invalid token (only on the `?token=` path)
