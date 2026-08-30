@@ -36,6 +36,7 @@ Conductor Branch: main
 | stage-25-friends-room-membership | backend/api-go, apps/mobile | stage-24-clubs-polls-blocks-privacy | COMPLETE |
 | stage-26-friends-ui | apps/mobile | stage-25-friends-room-membership | COMPLETE |
 | stage-27-rooms-ui | apps/mobile | stage-26-friends-ui | COMPLETE |
+| stage-28-feed-room-picker | apps/mobile | stage-27-rooms-ui | COMPLETE |
 
 ---
 
@@ -667,6 +668,29 @@ Friends: new `internal/friends` package. `friendships` is a directed request row
 
 **Verified:** `pnpm --filter @kemago/mobile type-check` and `npx expo export --platform web` both clean, `/rooms` and `/room/[id]/members` present in the export. Also live-tested directly against the real dev Postgres with one throwaway account: created a room via the exact `POST /api/rooms` call `roomsApi.ts` makes, confirmed the response shape (`id, name, memberCount, joined`) matches `ApiRoom` exactly, confirmed `GET /api/rooms` and `GET /api/rooms/:id/members` also match `roomsApi.ts`'s expected shapes byte-for-byte. Test account and room cleaned up afterward.
 **Next:** None — client said they'll test it themselves from here.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-28-feed-room-picker
+
+**Domain:** apps/mobile
+**Depends On:** stage-27-rooms-ui
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Posting from the actual Feed screen can target a specific room, not always the default "general"
+
+**Done:** Client asked to live-test add-friend/create-room-or-club/post-in-room; the post-in-room test passed against the raw API but surfaced a real gap — `FeedScreen.tsx` never passed `roomId` when creating a post, so every post made from the app landed in "general" regardless of what rooms existed. Fixed: `postsApi.ts`'s `createPost` now accepts an optional `roomId`; `FeedScreen` fetches the caller's rooms (`GET /api/rooms`) on mount and renders a "Posting to" chip row (new `RoomChip` component — same visual style as the existing `CategoryChip`, but generic since `CategoryChip` is typed to the fixed category list) above the compose bar, defaulting to "General" (`selectedRoomId: null`, which omits `roomId` entirely so the backend's existing lazy-create-on-first-use behavior for the default room is preserved rather than bypassed). The chip row only renders once someone has joined/created at least one room — nothing to pick from otherwise.
+
+Scoped narrowly to composing: the visible Feed list itself still shows every room's posts mixed together (no per-room feed view) — that's a separate, bigger product decision (a room switcher for the whole feed, not just where a new post goes) left alone since it wasn't what was asked.
+
+**Verified:** `tsc --noEmit` and `expo export --platform web` both clean. Live-tested the exact three calls the UI now makes, in order, against the real dev Postgres with a throwaway account: `POST /api/rooms` (create), `GET /api/rooms` with a Bearer token (what populates the chip row), `POST /api/posts` with that room's id (what tapping a chip then posting sends) — response shapes matched exactly, and the created post correctly stayed scoped to that room. Test data cleaned up afterward.
+**Next:** None requested. A whole-feed room switcher (viewing, not just posting) would be the natural follow-up if wanted.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

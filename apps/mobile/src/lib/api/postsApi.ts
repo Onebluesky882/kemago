@@ -56,7 +56,10 @@ export async function getPost(id: string): Promise<ApiPost> {
   return body.post;
 }
 
-export async function createPost(token: string, input: { category: Category; body: string }): Promise<ApiPost> {
+export async function createPost(
+  token: string,
+  input: { roomId?: string; category: Category; body: string },
+): Promise<ApiPost> {
   const res = await fetch(`${API_BASE_URL}/api/posts`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
