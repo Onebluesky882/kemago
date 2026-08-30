@@ -28,7 +28,10 @@ Conductor Branch: main
 | stage-17-mobile-ios-gitignore | apps/mobile | none | COMPLETE |
 | stage-18-rename-project-kemago | repo-wide | none | COMPLETE |
 | stage-19-roadmap-backlog-capture | agentic/ROADMAP.md | none | COMPLETE |
-| stage-20-post-comment-system | backend/better-auth, apps/mobile | stage-19-roadmap-backlog-capture | IN_PROGRESS |
+| stage-20-post-comment-system | backend/better-auth, apps/mobile | stage-19-roadmap-backlog-capture | SUPERSEDED by stage-22 |
+| stage-21-email-password-auth | backend/better-auth | stage-20-post-comment-system | COMPLETE |
+| stage-22-go-feed-domain | backend/ws-go, backend/better-auth, apps/mobile | stage-21-email-password-auth | COMPLETE |
+| stage-23-rename-ws-go-to-api-go | backend/api-go (formerly ws-go), apps/mobile | stage-22-go-feed-domain | COMPLETE |
 
 ---
 
@@ -460,7 +463,7 @@ GitHub side: `gh repo view` showed the repo had already been renamed to `kemago`
 
 **Domain:** backend/better-auth, apps/mobile
 **Depends On:** stage-19-roadmap-backlog-capture
-**Status:** `IN_PROGRESS`
+**Status:** `SUPERSEDED by stage-22` — client corrected this stage's placement (post/comment data on `backend/better-auth`, TypeScript) as soon as they saw it, per DECISIONS.md → "Backend Domain Ownership — TypeScript Is Auth-Only". Everything below happened and was verified working as described, but the `post`/`comment` Drizzle tables, `src/routes/posts.ts`, and the `server.ts` wiring described here were removed in stage-22 and rebuilt in Go on `backend/ws-go`. Left as-is (append-only) for the historical record; do not treat this stage's "Domain"/implementation as current.
 
 **Acceptance Criteria:**
 - [x] Real `POST`/`GET /api/posts` and `GET`/`POST /api/posts/:id/comments` on `backend/better-auth` (see CONTRACTS.md → Feed/Comment)
@@ -475,6 +478,85 @@ Mobile: added `lib/api/postsApi.ts`, wired `FeedScreen` to fetch/post through it
 
 **Verified:** `pnpm --filter @kemago/better-auth-service exec tsc --noEmit` and `pnpm --filter @kemago/mobile type-check` both clean. `npx expo export --platform web` succeeded with `/post/[id]` present in the route list. Pushed the new tables to the live dev Postgres (`drizzle-kit push`, additive only — no existing tables touched) and live-tested against it: unauthenticated `POST /api/posts` → 401, `GET` on a missing post id → 404, Better Auth's own `/api/auth/get-session` still passes through unaffected, `OPTIONS /api/posts` → 204. Seeded one real post+comment row directly via SQL (attributed to the developer's own already-verified account) and confirmed `GET /api/posts`, `GET /api/posts/:id`, and `GET /api/posts/:id/comments` all return the correct shape with the right `replyCount`, then deleted the test rows (comment cascade-deleted automatically). **Not yet live-tested:** the authenticated write path (`POST /api/posts` / `POST /api/posts/:id/comments` with a real Bearer token) — that needs a live OTP round-trip (a real email) which wasn't triggered this session; the code path reuses the identical `auth.api.getSession` call already proven working by the unauthenticated-401 test and by Better Auth's own passing endpoints, but treat it as logically-verified, not live-confirmed, until someone actually posts from the app.
 **Next:** Do one real signed-in post + reply from the mobile app (or a curl with a real token) to close the gap above. Then: likes (write path), pagination/cursor, and the neighborhood/location model that Feed's `area` field and `PostCard`'s neighborhood text are currently faking with a "Nearby" placeholder (see `FeedScreen.tsx` → `toLocalPost`).
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-21-email-password-auth
+
+**Domain:** backend/better-auth
+**Depends On:** stage-20-post-comment-system
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] `POST /api/auth/sign-up/email` and `POST /api/auth/sign-in/email` work, returning the same `{ token, user }` shape as the existing email-OTP sign-in
+- [x] Existing email-OTP sign-in unaffected
+
+**Done:** Enabled Better Auth's built-in `emailAndPassword` (core config, not a plugin) alongside the existing `emailOTP` plugin — both sign-in methods coexist on the same `user` row, Better Auth just adds a second `account` row (`provider_id: "credential"`) holding the password hash. Hit and fixed a real schema-drift bug along the way: sign-up threw `BetterAuthError: The field "issuer" does not exist in the "account" Drizzle schema` — this Better Auth version's core account-creation path (used by every provider, not just OAuth) now writes an `issuer` column that our hand-written Drizzle mirror (`src/db/schema.ts`) never had. Added a nullable `issuer` text column and pushed it live (`drizzle-kit push`, additive only).
+
+**Verified live:** full lifecycle against the real dev Postgres — sign-up (creates user + account), sign-in (issues a fresh token), `get-session` with that token, sign-out, then `get-session` again confirming the session is actually invalidated (returns `null`). Used a throwaway `agentic-test@example.com` account, deleted afterward. `tsc --noEmit` clean.
+**Next:** None from this stage specifically — see stage-22, which used this real password-issued token to close a different stage's open gap.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-22-go-feed-domain
+
+**Domain:** backend/ws-go, backend/better-auth, apps/mobile
+**Depends On:** stage-21-email-password-auth
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] `post`/`comment` tables and their REST API removed from `backend/better-auth` entirely — that service is auth-only now, per the new DECISIONS.md entry
+- [x] `rooms`, `posts`, `comments`, `likes` tables + REST API built in Go on `backend/ws-go`, properly relational (`posts.room_id → rooms`, `comments.post_id → posts`, `likes` a `(post_id, user_id)` composite-PK join table) — see CONTRACTS.md → Room/Feed/Comment/Like
+- [x] `backend/ws-go` reads (never writes) the auth-owned `"user"`/`session` tables to verify Bearer tokens and resolve author identity — same physical Postgres database, cross-service FK
+- [x] `apps/mobile` re-pointed at the new Go endpoints; `docker-compose.yml`'s `ws` service wired with `DATABASE_URL`
+
+**Done:** Client caught stage-20 putting domain data on the TypeScript auth service and corrected it immediately (see DECISIONS.md → "Backend Domain Ownership — TypeScript Is Auth-Only", and the superseded note on stage-20 above) — every domain except auth is Go from here on, and it lives in `backend/ws-go` rather than a new separate service (client's explicit call: "รวม go service ไว้ที่เดียวกัน ไม่แยก" — combine into one Go service, don't split, for simpler deploy). Reverted `backend/better-auth`'s `post`/`comment` schema, router, and `server.ts` wiring back out; dropped the two tables from Postgres.
+
+Built the feed domain in Go using [Bun](https://bun.uptrace.dev/) (the Go ORM, unrelated to the JS Bun runtime `backend/better-auth` uses) — the ORM this project's Tech Stack decision already named, even though the original `backend/api-go` never got far enough to actually use it before being replaced. New packages: `internal/db` (connection + bootstrap `CREATE TABLE IF NOT EXISTS` migrations + Bun models), `internal/authcheck` (reads `session`/`user` to verify a Bearer token — the Go-side equivalent of `auth.api.getSession`), `internal/feed` (the actual HTTP handlers, using Go 1.22+'s `http.ServeMux` method+`{wildcard}` routing instead of a router dependency). `main.go` now requires `DATABASE_URL`, runs migrations on boot, and wraps the mux in a small CORS middleware (wildcard origin — Bearer-only, no cookies, so no credential-leak surface, same reasoning as `better-auth`'s `disableCSRFCheck`).
+
+Hit and fixed a real driver-compatibility bug: `uptrace/bun/driver/pgdriver` doesn't bind parameters correctly when a raw SQL string with literal `$1` placeholders is run through the embedded `*sql.DB`'s own `QueryContext`/`QueryRowContext` — Postgres rejects it with `there is no parameter $1` (SQLSTATE 42P02, sent via the simple protocol instead of extended/bound). Fixed by routing every raw query through `db.NewRaw(query, args...).Scan(ctx, &dest)` (bun's own formatter, `?` placeholders) instead — the pattern `internal/authcheck` already used successfully. Also added `writeInternalError` (logs the real Go error server-side before responding with a generic message) after this bug cost real debugging time with nothing logged anywhere.
+
+A near-miss during this stage: renaming `docker-compose.yml`'s named Postgres volume from `coarea_postgres_data` to `kemago_postgres_data` (done back in stage-18's rename, but never actually applied until `docker compose up` ran again here) caused Compose to recreate the postgres container on a **new, empty volume** — orphaning the real dev data (the developer's real user/session rows) rather than migrating it. Caught immediately (`docker exec ... psql -c '\dt'` on the freshly "up"'d container showed zero tables), confirmed the old volume (`coarea_coarea_postgres_data`) still existed untouched with the real data, and reverted the volume name back before anything was written to the new one. No data was actually lost, but this is exactly the risk flagged and predicted in stage-18's own "Next" note — a live reminder that a compose volume rename is not a no-op on an environment with real data in it.
+
+Mobile: `lib/api/config.ts`'s `API_BASE_URL` (previously stale, defaulted to port 3000 for the long-deleted `backend/api-go`) now points at `backend/ws-go`'s actual port 3001; `lib/api/postsApi.ts` switched from `AUTH_BASE_URL` to `API_BASE_URL`. No payload changes needed — `roomId` is optional on `createPost` and the Go side defaults it to `"general"` server-side.
+
+**Verified live** (real dev Postgres + Docker): full read path (rooms/posts/single post/comments, 404s on missing posts, 401 on unauthenticated create, 204 on OPTIONS preflight) tested via curl after fixing the pgdriver bug. Then a **full real authenticated round-trip**: signed up a real email+password account via stage-21's new endpoint, used that real Bearer token to create a post, add a comment, like it, unlike it, and confirmed `likeCount`/`replyCount` updated correctly at each step (computed via `count(*)` joins, not stored counters) — the first time this project's Feed write path has been exercised with a real token rather than seeded SQL. Signed out and confirmed the session was actually invalidated. `go build`/`go vet`/`gofmt -l` clean on `backend/ws-go`; `tsc --noEmit` clean on `backend/better-auth` (post-revert) and `apps/mobile` (post-repoint). All test data (test user, room, post, comment, like) cleaned up afterward.
+**Next:** No pagination/cursor on `GET /api/posts` yet. `backend/ws-go`'s bootstrap migration (`CREATE TABLE IF NOT EXISTS`) is the same "not a real migration tool" gap already flagged back in stage-4/12 — still open. Mobile has no room-selection UI (everything posts to the auto-created "general" room) and no like-button UI yet (the endpoint exists, nothing calls it from a screen).
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-23-rename-ws-go-to-api-go
+
+**Domain:** backend/api-go (formerly ws-go), apps/mobile
+**Depends On:** stage-22-go-feed-domain
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] `backend/ws-go` renamed to `backend/api-go` — folder, Go module path, every internal import, `go.work`, `docker-compose.yml` build context, Dockerfile binary name, log lines, comments
+- [x] Everything that pointed at the old name (mobile's `API_BASE_URL` comment, `.env.example`, `.dockerignore`, `backend/TODO.md`) updated to match
+- [x] Builds and runs identically post-rename — this was a pure rename, no behavior change
+
+**Done:** Client asked for the "ws-go" name to go away now that the service does far more than websockets (rooms/posts/comments/likes REST API, per stage-22). Picked `api-go` — the name of the *original* Go backend deleted in stage-16, which fits again now that this folder is genuinely "the Go API for everything except auth." Not the same code as that original service (that one had its own OTP/JWT stack, Fiber v3, Redis — all gone); just the same name, reused because it's accurate again. `git mv backend/ws-go backend/api-go` (untracked new files from stage-22 — `internal/db`, `internal/authcheck`, `internal/feed` — moved along with it since it's a real filesystem move, not a git-tracked-only rename), then fixed the module path (`go.mod`) and every internal import (`main.go`, `feed.go`) via `sed`, `backend/go.work`'s `use` block, `docker-compose.yml`'s `build.context`, and the Dockerfile's binary name/CMD. Left the docker-compose *service key* (`ws:`), container name, and `WS_PORT` env var name alone — the client asked about the folder specifically, and renaming those too would ripple into `.env`/`.env.example`/README beyond what was asked.
+
+Also cleaned up stale cross-references while touching these files anyway: `.env.example` had `DATABASE_URL` grouped under a "`# backend/api-go`" comment that actually meant the *original*, deleted service, while the *really* Postgres-consuming one (formerly ws-go) was two lines below unlabeled — regrouped and annotated correctly. `backend/TODO.md`'s `## ws-go` section renamed and expanded with stage-22's feed-domain checklist items, with a note distinguishing the old and new `api-go` from each other. `DECISIONS.md`'s "Backend Domain Ownership" entry appended with a note (not rewritten — that entry is a historical decision record) pointing at this rename, and fixed two `stage-21` references in it that should have said `stage-22` (a numbering mistake from when that entry was first drafted, caught while re-reading it here). `CONTRACTS.md` (a living reference doc, not a stage-by-stage log) had its Feed/Comment/Room/Like module descriptions updated to say `backend/api-go` directly, since those describe current reality rather than history.
+
+**Verified:** `go build ./...`, `go vet ./...`, `gofmt -l .` all clean from the new `backend/api-go/` path. `docker compose up -d --build ws` rebuilt and started successfully from the new `./backend/api-go` context; `GET /health`, `GET /api/rooms`, `GET /api/posts` all responded correctly post-rename (byte-identical to pre-rename behavior, as expected for a pure rename). `pnpm --filter @kemago/mobile type-check` clean after the mobile comment updates.
+**Next:** None from this stage. The docker-compose service key (`ws`), container name (`coarea-ws-1`), and `WS_PORT` env var still say "ws" — revisit only if the client asks for that too.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

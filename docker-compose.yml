@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - kemago_postgres_data:/var/lib/postgresql/data
+      - coarea_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -29,12 +29,16 @@ services:
 
   ws:
     build:
-      context: ./backend/ws-go
+      context: ./backend/api-go
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
       WS_PORT: ${WS_PORT}
+      DATABASE_URL: ${DATABASE_URL}
     ports:
       - "${WS_PORT}:${WS_PORT}"
 
 volumes:
-  kemago_postgres_data:
+  coarea_postgres_data:

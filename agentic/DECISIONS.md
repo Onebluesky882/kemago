@@ -160,3 +160,24 @@ Kemago is a greenfield, mobile-first, local social app (feed, community, events/
 - First-Deploy Checklist in CLAUDE.md (wrangler.toml, D1 migrations, Cloudflare secrets) does not apply to this backend track — a self-host deploy checklist (Postgres migrations, Docker/OrbStack compose, env vars) needs to be written separately when backend work starts
 
 ⸻
+
+## Decision: Backend Domain Ownership — TypeScript Is Auth-Only
+
+**Date:** 2026-08-30
+**Status:** ACCEPTED
+
+**Context:**
+`backend/api-go` (the original Go backend from the Tech Stack decision above) was deleted in stage-16 in favor of `backend/better-auth` (Bun/TypeScript + Better Auth + Drizzle) for the auth/session/profile domain. Stage-20 then added `post`/`comment` tables and REST endpoints directly onto `backend/better-auth` as the path of least resistance, since it was the only live backend at the time. The client caught this drifting away from the original Go-backend decision and corrected it directly: **stage-20's data model is being moved out of TypeScript into Go** (see stage-22).
+
+**Decision:**
+- `backend/better-auth` (TypeScript/Drizzle/Postgres) is scoped to **authentication only** — user identity, sessions, credentials (OTP and email+password), and account-level fields (e.g. `profileComplete`). Nothing else.
+- **Every other domain's database tables and API live in Go** — rooms, posts, comments, likes, and any future domain (events, chat, clubs, jobs, etc.). This restores and generalizes the original Tech Stack decision's "Backend: Go" line, which stage-16's auth migration had implicitly narrowed without saying so.
+- Go services read the `user`/`session` tables that `backend/better-auth` owns (same physical Postgres database) to verify Bearer tokens and resolve author identity — read-only, no FK ownership, no writes from the Go side to those tables.
+- `backend/ws-go` is the Go service taking on this role going forward rather than resurrecting a separate `backend/api-go` — see stage-22 for why (it already exists, already owns the "room" concept as an in-memory hub, and the client didn't ask for a third backend service). **Update (stage-23):** the client then asked for the folder itself to be renamed away from "ws-go" once it stopped being just a websocket service — it's `backend/api-go` now (reviving the name this section explicitly said not to resurrect as a *separate* folder; renaming the existing one in place is a different thing). Every "`backend/ws-go`" reference below and in earlier stage entries predates that rename.
+
+**Consequences:**
+- Any future domain work (Event, Profile beyond auth, Chat, Jobs, Clubs, etc. from CONTRACTS.md/ROADMAP.md) is Go work, not TypeScript — do not add new tables/routes to `backend/better-auth` again.
+- `backend/ws-go` needs a real Postgres connection + migrations (it previously had none — websocket-hub state was in-memory only) and a Go ORM. Per this doc's Tech Stack decision, that's [Bun](https://bun.uptrace.dev/) (Go) — used in stage-22 for consistency with the original decision, even though the deleted `backend/api-go` never actually got that far before it was replaced.
+- Cross-service data integrity (e.g. a Go `posts.author_id` foreign key pointing at TypeScript-owned `"user"(id)`) is enforced at the Postgres level since both services share one physical database — not at the application level.
+
+⸻

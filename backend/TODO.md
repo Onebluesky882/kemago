@@ -1,6 +1,8 @@
 # backend — TODO
 
-Checklist for the Go backend (`api-go` + `ws-go`), grouped by area. Update the status when scope changes — don't leave it stale.
+Checklist for the Go backend, grouped by area. Update the status when scope changes — don't leave it stale.
+
+**Note (stage-22/23):** `backend/ws-go` was renamed to `backend/api-go` (reviving the name below, deleted since stage-16) once it grew beyond just websockets — it now owns every non-auth domain (rooms, posts, comments, likes, plus the original websocket hub), per DECISIONS.md → "Backend Domain Ownership — TypeScript Is Auth-Only". The "api-go — REMOVED" section right below describes the *original*, different `backend/api-go` (OTP/JWT REST API, Fiber v3) — unrelated code that no longer exists; kept for history only. See "## api-go (formerly ws-go)" further down for the current service.
 
 Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 
@@ -52,14 +54,18 @@ Architecture: `otp.Service` owns cross-cutting concerns (request cooldown, attem
 
 </details>
 
-## ws-go (separate WebSocket service)
+## api-go (formerly ws-go) — websocket hub + every non-auth domain
 - [x] Module scaffolded, builds clean
 - [x] Plain `net/http` + `github.com/coder/websocket` (NOT Fiber — `gofiber/contrib/websocket` only supports Fiber v2, and Fiber v3 core has no websocket middleware yet)
 - [x] `GET /health`
 - [x] `GET /ws?room=<id>` — in-memory single-instance room broadcast hub (`internal/hub`)
-- [ ] Auth — room currently comes from an unauthenticated query param; once Bearer auth exists (it does now, see `authtoken`), verify the token here too and derive room membership from the user's actual conversations
+- [ ] Auth — the websocket's `room` query param is still unauthenticated; Bearer auth now exists for the REST side (`internal/authcheck`, reads `backend/better-auth`'s `session` table) but `/ws` itself doesn't verify a token yet or derive room membership from real conversations
 - [ ] Multi-instance scaling — hub is in-process only; move broadcasts through Redis pub/sub before running more than one replica
 - [ ] Wire to `apps/mobile`'s Chat tab (stage-10-chat)
+- [x] Rooms/Posts/Comments/Likes REST API (stage-22, `internal/feed`) — real relational Postgres tables (Bun ORM), Bearer-authenticated writes via `internal/authcheck`. See CONTRACTS.md → Room/Feed/Comment/Like.
+- [ ] Bootstrap `CREATE TABLE IF NOT EXISTS` migration (`internal/db/migrate.go`) — same "not a real migration tool" gap as the original deleted `api-go`, never fixed, now inherited here too
+- [ ] Pagination/cursor on `GET /api/posts`
+- [ ] Mobile has no room-selection or like-button UI yet — the endpoints exist, nothing calls them from a screen besides create/list posts and comments
 
 ## Infra (`docker-compose.yml`, root `.env`)
 - [x] `docker-compose.yml` at repo root: postgres, redis, ws services (the `api` service was removed along with `backend/api-go` — see above), `.env` auto-loaded (Compose picks up a root `.env` automatically)

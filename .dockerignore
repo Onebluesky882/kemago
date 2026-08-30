@@ -5,7 +5,6 @@ node_modules
 **/.turbo
 apps
 backend/api-go
-backend/ws-go
 !backend/better-auth
 *.log
 .env

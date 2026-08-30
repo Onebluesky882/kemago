@@ -25,7 +25,7 @@ if (!resendApiKey) throw new Error("RESEND_API_KEY is required");
 if (!emailFrom) throw new Error("EMAIL_FROM is required");
 if (!betterAuthSecret) throw new Error("BETTER_AUTH_SECRET is required");
 
-export const db = createDb(databaseUrl);
+const db = createDb(databaseUrl);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -45,6 +45,17 @@ export const auth = betterAuth({
   // to protect here, so this is disabled rather than worked around.
   advanced: {
     disableCSRFCheck: true,
+  },
+
+  // Second sign-in method alongside emailOTP below — Better Auth's own
+  // core feature (not a plugin), stores the hash on the existing `account`
+  // row (providerId "credential", the `password` column already in
+  // src/db/schema.ts). Adds POST /api/auth/sign-up/email and
+  // POST /api/auth/sign-in/email; both return the same { token, user }
+  // shape emailOTP's sign-in already does, so the mobile client (or any
+  // caller) can treat them interchangeably.
+  emailAndPassword: {
+    enabled: true,
   },
 
   // Bearer-only per SECURITY_RULES.md — mobile can't rely on cookies

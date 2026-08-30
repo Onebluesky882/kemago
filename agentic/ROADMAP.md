@@ -89,6 +89,8 @@ Success Indicators:
 - Decided the mobile app comes first, with its own backend server that runs on your own computer for now (instead of paid cloud hosting) — keeps early costs low
 - The app's four main screens are built and working: Feed, Events, Chat, and Profile, with bottom-tab navigation between them. Right now they show sample neighborhood content (not real data yet) so the look and feel can be reviewed before the real server is connected
 - Posting and replying now talk to the real server: people can post to the Feed and reply to posts, and everyone signed in sees the same real posts and replies (not just sample content). Tapping a post opens it with its replies. If the connection is down, the app falls back to what's saved on the device so the Feed still shows something
+- People can now sign in with an email + password, in addition to the email code they already had — the account works the same either way
+- Liking a post now works on the server side (the app screen for it is still to come)
 
 ---
 
@@ -105,7 +107,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 | M-005 | Events working | People can find, create, and join local events | PLANNING |
 | M-006 | Profile working | People can view and edit their profile | PLANNING |
 | M-007 | Chat working | People can message each other | PLANNING |
-| M-008 | Comments and likes | People can comment on and like posts | IN_PROGRESS (comments done, likes not yet) |
+| M-008 | Comments and likes | People can comment on and like posts | IN_PROGRESS (comments and likes both work now — no like button on screen yet) |
 | M-009 | Running story with location tag | Post a short running story/reel tagged to a place, with a choice of who sees it: friends only, only you, or everyone | PLANNING |
 | M-010 | Private/public profile | An account can be set to private so only friends can see it | PLANNING |
 | M-011 | Verified posting in local activity | Only people who have verified their identity can post about local activities | PLANNING |

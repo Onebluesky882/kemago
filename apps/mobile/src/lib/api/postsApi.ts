@@ -1,9 +1,9 @@
-import { AUTH_BASE_URL } from "./config";
+import { API_BASE_URL } from "./config";
 import type { Category } from "../mockData";
 
-// Talks to backend/better-auth's /api/posts routes (see
-// backend/better-auth/src/routes/posts.ts) — that service is the only live
-// backend right now, so it hosts the feed alongside auth.
+// Talks to backend/api-go's /api/posts routes (see
+// backend/api-go/internal/feed/feed.go) — Go owns every domain except auth,
+// per DECISIONS.md → "Backend Domain Ownership — TypeScript Is Auth-Only".
 
 export class PostsApiError extends Error {
   constructor(message: string) {
@@ -42,21 +42,21 @@ export type ApiComment = {
 };
 
 export async function listPosts(): Promise<ApiPost[]> {
-  const res = await fetch(`${AUTH_BASE_URL}/api/posts`);
+  const res = await fetch(`${API_BASE_URL}/api/posts`);
   if (!res.ok) await parseError(res);
   const body = (await res.json()) as { posts: ApiPost[] };
   return body.posts;
 }
 
 export async function getPost(id: string): Promise<ApiPost> {
-  const res = await fetch(`${AUTH_BASE_URL}/api/posts/${id}`);
+  const res = await fetch(`${API_BASE_URL}/api/posts/${id}`);
   if (!res.ok) await parseError(res);
   const body = (await res.json()) as { post: ApiPost };
   return body.post;
 }
 
 export async function createPost(token: string, input: { category: Category; body: string }): Promise<ApiPost> {
-  const res = await fetch(`${AUTH_BASE_URL}/api/posts`, {
+  const res = await fetch(`${API_BASE_URL}/api/posts`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(input),
@@ -67,14 +67,14 @@ export async function createPost(token: string, input: { category: Category; bod
 }
 
 export async function listComments(postId: string): Promise<ApiComment[]> {
-  const res = await fetch(`${AUTH_BASE_URL}/api/posts/${postId}/comments`);
+  const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/comments`);
   if (!res.ok) await parseError(res);
   const body = (await res.json()) as { comments: ApiComment[] };
   return body.comments;
 }
 
 export async function createComment(token: string, postId: string, body: string): Promise<ApiComment> {
-  const res = await fetch(`${AUTH_BASE_URL}/api/posts/${postId}/comments`, {
+  const res = await fetch(`${API_BASE_URL}/api/posts/${postId}/comments`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ body }),

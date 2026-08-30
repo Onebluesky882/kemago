@@ -8,31 +8,29 @@ Define the public interfaces between modules. All contracts below are initial/dr
 
 ## Module: Auth
 
-### Input
-- `POST /v1/auth/register` — `{ email, password, name }`
-- `POST /v1/auth/login` — `{ email, password }`
+**Implemented** on `backend/better-auth` (Bun/TypeScript/Drizzle/Postgres) — the **only** domain this service owns, per DECISIONS.md → "Backend Domain Ownership — TypeScript Is Auth-Only". Two sign-in methods, both returning the same `{ token, user }` shape:
+- Email OTP (stage-14/15/16): `POST /api/auth/email-otp/send-verification-otp` → `POST /api/auth/sign-in/email-otp`
+- Email + password (stage-21): `POST /api/auth/sign-up/email`, `POST /api/auth/sign-in/email`
 
-### Output
-- `{ user: { id, email, name }, token: string }`
+Plus `GET /api/auth/get-session`, `POST /api/auth/update-user`, `POST /api/auth/sign-out` — all Better Auth's own built-ins, not custom code. Deviates from the draft below (`/v1/auth/register`+`/v1/auth/login`) since Better Auth owns the whole CRUD lifecycle itself; see stage-16/21 for why.
 
 ### Errors
 - `401` invalid credentials
-- `409` email already registered
-- `422` validation error (structured field errors)
+- `422` USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL, validation errors (Better Auth's own error codes, not custom ones)
 
 ⸻
 
 ## Module: Feed
 
-**Implemented** (stage-20-post-comment-system) on `backend/better-auth` — the only live backend, so it hosts this alongside auth rather than a separate Feed service. Deviates from the original draft below: no `area`/pagination yet (no location model exists — see `coarea_product_rules` memory), and the base path is `/api/posts` not `/v1/feed` (matching this service's existing `/api/*` convention, not the `/v1/*` one assumed when this contract was first drafted).
+**Implemented** (stage-20, moved to Go in stage-22) on `backend/api-go` — Go owns every domain except auth, per DECISIONS.md → "Backend Domain Ownership — TypeScript Is Auth-Only". Deviates from the original draft below: no `area`/pagination yet (no location model exists — see `coarea_product_rules` memory), and the base path is `/api/posts` not `/v1/feed` (matching this service's existing `/api/*` convention). Every post belongs to a room (see Module: Room) — defaults to the "general" room, auto-created on first use, if the caller doesn't specify one.
 
 ### Input
-- `GET /api/posts` — list all posts, newest first
+- `GET /api/posts?room_id=<optional>` — list posts, newest first
 - `GET /api/posts/:id` — a single post
-- `POST /api/posts` (Bearer required) — `{ category, body }`
+- `POST /api/posts` (Bearer required) — `{ roomId?, category, body }`
 
 ### Output
-- `{ posts: [{ id, author, authorVerified, category, body, createdAt, likeCount, replyCount }] }`
+- `{ posts: [{ id, roomId, author, authorVerified, category, body, createdAt, likeCount, replyCount }] }`
 - `{ post: { ...same shape } }`
 
 ### Errors
@@ -40,13 +38,13 @@ Define the public interfaces between modules. All contracts below are initial/dr
 - `404` post not found
 - `422` validation error (missing `category`/`body`)
 
-**Not yet implemented:** `area`/location filtering, pagination (`cursor`), likes (write path — `likeCount` is present in the response but always `0`), AI pre-publish moderation (blocked on the prohibited-content list, per memory).
+**Not yet implemented:** `area`/location filtering (Feed's `roomId` and Event/Profile-style location are different concerns — a room is a named space, not a geography), pagination (`cursor`), AI pre-publish moderation (blocked on the prohibited-content list, per memory).
 
 ⸻
 
 ## Module: Comment
 
-**Implemented** (stage-20-post-comment-system) on `backend/better-auth`, alongside Feed above.
+**Implemented** (stage-20, moved to Go in stage-22) on `backend/api-go`, alongside Feed above.
 
 ### Input
 - `GET /api/posts/:id/comments` — list a post's comments, oldest first
@@ -60,6 +58,41 @@ Define the public interfaces between modules. All contracts below are initial/dr
 - `401` missing/invalid token
 - `404` post not found
 - `422` validation error (missing/empty `body`)
+
+⸻
+
+## Module: Room
+
+**Implemented** (stage-22) on `backend/api-go`. Not in the original draft set — added directly by the client as a relation for Feed to belong to. A "general" room is auto-created (idempotent, `ON CONFLICT DO NOTHING`) the first time anyone posts without specifying a `roomId`.
+
+### Input
+- `GET /api/rooms` — list rooms
+- `POST /api/rooms` (Bearer required) — `{ name }`
+
+### Output
+- `{ rooms: [{ id, name }] }`
+- `{ room: { id, name } }`
+
+### Errors
+- `401` missing/invalid token
+- `422` validation error (missing `name`)
+
+⸻
+
+## Module: Like
+
+**Implemented** (stage-22) on `backend/api-go`. A join table between `posts` and the auth-owned `"user"` table (`PRIMARY KEY (post_id, user_id)`) — one like per person per post. `Post.likeCount` (Module: Feed) is a live `count(*)` over this table, not a stored counter.
+
+### Input
+- `POST /api/posts/:id/like` (Bearer required) — idempotent, no body
+- `DELETE /api/posts/:id/like` (Bearer required) — idempotent, no body
+
+### Output
+- `{ liked: true }` / `{ liked: false }`
+
+### Errors
+- `401` missing/invalid token
+- `404` post not found (like only; unlike doesn't check — deleting a non-existent like is a no-op)
 
 ⸻
 
