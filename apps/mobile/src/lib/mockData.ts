@@ -2,6 +2,7 @@ export type Category = "General" | "Recommendations" | "Lost & Found" | "Safety"
 
 export type Post = {
   id: string;
+  authorId: string;
   author: string;
   authorVerified: boolean;
   neighborhood: string;
@@ -75,6 +76,7 @@ export const currentUser = {
 export const posts: Post[] = [
   {
     id: "p_1",
+    authorId: "u_mock_1",
     author: "Sarah T.",
     authorVerified: true,
     neighborhood: "Elm Street",
@@ -86,6 +88,7 @@ export const posts: Post[] = [
   },
   {
     id: "p_2",
+    authorId: "u_mock_2",
     author: "Marcus O.",
     authorVerified: true,
     neighborhood: "Elm Street",
@@ -97,6 +100,7 @@ export const posts: Post[] = [
   },
   {
     id: "p_3",
+    authorId: "u_mock_3",
     author: "Priya K.",
     authorVerified: true,
     neighborhood: "Elm Street",
@@ -108,6 +112,7 @@ export const posts: Post[] = [
   },
   {
     id: "p_4",
+    authorId: "u_mock_4",
     author: "Dan W.",
     authorVerified: false,
     neighborhood: "Elm Street",

@@ -23,7 +23,11 @@ export function CompleteProfileScreen() {
     setError(null);
     try {
       const profile = await updateProfile(token, { name: name.trim() });
-      setProfile({ name: profile.name, profileComplete: profile.profileComplete });
+      setProfile({
+        name: profile.name,
+        profileComplete: profile.profileComplete,
+        profilePublic: profile.profilePublic,
+      });
       router.replace("/(tabs)");
     } catch (e) {
       setError(e instanceof AuthApiError ? e.message : "Something went wrong. Try again.");

@@ -21,16 +21,23 @@ export type Profile = {
   email: string;
   name: string;
   profileComplete: boolean;
+  profilePublic: boolean;
 };
 
 type BetterAuthUser = {
   email: string;
   name: string;
   profileComplete: boolean;
+  profilePublic: boolean;
 };
 
 function toProfile(user: BetterAuthUser): Profile {
-  return { email: user.email, name: user.name, profileComplete: user.profileComplete };
+  return {
+    email: user.email,
+    name: user.name,
+    profileComplete: user.profileComplete,
+    profilePublic: user.profilePublic,
+  };
 }
 
 // Talks directly to backend/better-auth's REST API (Better Auth's
@@ -85,6 +92,22 @@ export async function updateProfile(token: string, input: { name: string }): Pro
 
   const session = await getSession(token);
   if (!session) throw new AuthApiError("Session lost after updating profile");
+  return session;
+}
+
+// Same "write, then re-read" shape as updateProfile above — update-user
+// only responds {status: true}, so read the real persisted value back
+// rather than assuming the input was accepted as-is.
+export async function updatePrivacy(token: string, profilePublic: boolean): Promise<Profile> {
+  const res = await fetch(`${AUTH_BASE_URL}/api/auth/update-user`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ profilePublic }),
+  });
+  if (!res.ok) await parseError(res);
+
+  const session = await getSession(token);
+  if (!session) throw new AuthApiError("Session lost after updating privacy setting");
   return session;
 }
 

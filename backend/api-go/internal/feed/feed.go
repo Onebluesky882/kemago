@@ -17,6 +17,7 @@ import (
 	"github.com/uptrace/bun"
 
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
 )
 
@@ -75,6 +76,7 @@ type roomOut struct {
 type postOut struct {
 	ID             string    `json:"id"`
 	RoomID         string    `json:"roomId"`
+	AuthorID       string    `json:"authorId"`
 	Author         string    `json:"author"`
 	AuthorVerified bool      `json:"authorVerified"`
 	Category       string    `json:"category"`
@@ -98,7 +100,7 @@ type commentOut struct {
 // literal "$1" sends the query via the simple protocol, where Postgres
 // rejects "$1" with "there is no parameter $1" (SQLSTATE 42P02).
 const postSelect = `
-	SELECT p.id AS id, p.room_id AS room_id, u.name AS author, u.email_verified AS author_verified,
+	SELECT p.id AS id, p.room_id AS room_id, p.author_id AS author_id, u.name AS author, u.email_verified AS author_verified,
 		p.category AS category, p.body AS body, p.created_at AS created_at,
 		(SELECT count(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
 		(SELECT count(*) FROM comments c WHERE c.post_id = p.id) AS reply_count
@@ -111,6 +113,7 @@ const postSelect = `
 type postRow struct {
 	ID             string    `bun:"id"`
 	RoomID         string    `bun:"room_id"`
+	AuthorID       string    `bun:"author_id"`
 	Author         string    `bun:"author"`
 	AuthorVerified bool      `bun:"author_verified"`
 	Category       string    `bun:"category"`
@@ -122,7 +125,7 @@ type postRow struct {
 
 func (row postRow) toOut() postOut {
 	return postOut{
-		ID: row.ID, RoomID: row.RoomID, Author: row.Author, AuthorVerified: row.AuthorVerified,
+		ID: row.ID, RoomID: row.RoomID, AuthorID: row.AuthorID, Author: row.Author, AuthorVerified: row.AuthorVerified,
 		Category: row.Category, Body: row.Body, CreatedAt: row.CreatedAt,
 		LikeCount: row.LikeCount, ReplyCount: row.ReplyCount,
 	}
@@ -144,9 +147,27 @@ func (h *Handlers) listPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts := make([]postOut, len(rows))
-	for i, row := range rows {
-		posts[i] = row.toOut()
+	// Best-effort: an anonymous (no/invalid Bearer token) caller sees
+	// everything — blocking is a signed-in-user feature, not a login wall.
+	var blockedIDs map[string]bool
+	if user, ok := authcheck.RequireUser(ctx, h.DB, r); ok {
+		ids, err := blocks.BlockedIDs(ctx, h.DB, user.ID)
+		if err != nil {
+			writeInternalError(w, err)
+			return
+		}
+		blockedIDs = make(map[string]bool, len(ids))
+		for _, id := range ids {
+			blockedIDs[id] = true
+		}
+	}
+
+	posts := make([]postOut, 0, len(rows))
+	for _, row := range rows {
+		if blockedIDs[row.AuthorID] {
+			continue
+		}
+		posts = append(posts, row.toOut())
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"posts": posts})
 }

@@ -14,6 +14,8 @@ Define the public interfaces between modules. All contracts below are initial/dr
 
 Plus `GET /api/auth/get-session`, `POST /api/auth/update-user`, `POST /api/auth/sign-out` — all Better Auth's own built-ins, not custom code. Deviates from the draft below (`/v1/auth/register`+`/v1/auth/login`) since Better Auth owns the whole CRUD lifecycle itself; see stage-16/21 for why.
 
+The `user` object returned by every auth endpoint also carries `profileComplete: boolean` (stage-16) and `profilePublic: boolean` (stage-24, defaults `true`) — both plain columns on the `user` table, both written via `POST /api/auth/update-user` like any other Better Auth field.
+
 ### Errors
 - `401` invalid credentials
 - `422` USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL, validation errors (Better Auth's own error codes, not custom ones)
@@ -30,7 +32,7 @@ Plus `GET /api/auth/get-session`, `POST /api/auth/update-user`, `POST /api/auth/
 - `POST /api/posts` (Bearer required) — `{ roomId?, category, body }`
 
 ### Output
-- `{ posts: [{ id, roomId, author, authorVerified, category, body, createdAt, likeCount, replyCount }] }`
+- `{ posts: [{ id, roomId, authorId, author, authorVerified, category, body, createdAt, likeCount, replyCount }] }`
 - `{ post: { ...same shape } }`
 
 ### Errors
@@ -39,6 +41,8 @@ Plus `GET /api/auth/get-session`, `POST /api/auth/update-user`, `POST /api/auth/
 - `422` validation error (missing `category`/`body`)
 
 **Not yet implemented:** `area`/location filtering (Feed's `roomId` and Event/Profile-style location are different concerns — a room is a named space, not a geography), pagination (`cursor`), AI pre-publish moderation (blocked on the prohibited-content list, per memory).
+
+**Stage-24 addition:** `GET /api/posts` now silently drops posts authored by anyone the caller has blocked (Module: Block below) when a valid Bearer token is present — anonymous callers see everything. `authorId` was added to the response specifically so the mobile client can target a block action at a post's author.
 
 ⸻
 
@@ -93,6 +97,69 @@ Plus `GET /api/auth/get-session`, `POST /api/auth/update-user`, `POST /api/auth/
 ### Errors
 - `401` missing/invalid token
 - `404` post not found (like only; unlike doesn't check — deleting a non-existent like is a no-op)
+
+⸻
+
+## Module: Club
+
+**Implemented** (stage-24) on `backend/api-go`. Anyone can create a club (becomes its leader + first member); anyone can join/leave; only the current leader can hand off leadership. No identity-verification gate on who can create one — that's a separate, unresolved product decision (see `coarea_product_rules` memory), deliberately out of scope here.
+
+### Input
+- `GET /api/clubs` — list all clubs; personalizes `joined` if a Bearer token is present, otherwise `false`
+- `POST /api/clubs` (Bearer required) — `{ name, description?, category? }` — creates the club and auto-joins the creator as leader
+- `POST /api/clubs/:id/join` (Bearer required) — idempotent
+- `POST /api/clubs/:id/leave` (Bearer required) — `422` if the caller is the current leader (no auto-reassignment)
+- `PATCH /api/clubs/:id/leader` (Bearer required) — `{ userId }` — `403` if the caller isn't the current leader, `422` if the target isn't already a member
+
+### Output
+- `{ clubs: [{ id, name, description, category, leaderId, leaderName, memberCount, joined, createdAt }] }`
+- `{ club: { ...same shape } }`
+
+### Errors
+- `401` missing/invalid token
+- `403` not the current leader (leader-change only)
+- `404` club not found
+- `422` validation error / leader trying to leave / target not a member
+
+⸻
+
+## Module: Poll
+
+**Implemented** (stage-24) on `backend/api-go`, one poll per post (`polls.post_id` is `UNIQUE`).
+
+### Input
+- `POST /api/posts/:id/poll` (Bearer required) — `{ question, options: string[] }` (min 2 options)
+- `GET /api/posts/:id/poll` — the poll + live vote counts; `myVoteOptionId` populated only with a valid Bearer token
+- `POST /api/posts/:id/poll/vote` (Bearer required) — `{ optionId }` — upserts the caller's vote (voting again changes it, doesn't add a second vote)
+
+### Output
+- `{ poll: { id, postId, question, options: [{ id, label, voteCount }], totalVotes, myVoteOptionId } }`
+
+### Errors
+- `401` missing/invalid token
+- `404` post not found, post has no poll, or option not found
+- `422` fewer than 2 options, or a post that already has a poll
+
+**Not yet integrated:** the mobile `PollCard`/`PollComposer` components are built and functional but not wired into `FeedScreen`/`PostCard` — a post's feed-list entry doesn't currently indicate whether it has a poll (would need a `hasPoll` flag added to Module: Feed's response), so there's no discovery path in the app yet beyond a screen that already knows the `postId`.
+
+⸻
+
+## Module: Block
+
+**Implemented** (stage-24) on `backend/api-go`. Blocking is one-directional (only the blocker's own feed is filtered) and immediately affects `GET /api/posts` (see Module: Feed's stage-24 addition).
+
+### Input
+- `POST /api/blocks` (Bearer required) — `{ userId }` — idempotent; `422` on self-block
+- `DELETE /api/blocks/:userId` (Bearer required) — idempotent no-op if not blocked
+- `GET /api/blocks` (Bearer required) — everyone the caller has blocked
+
+### Output
+- `{ blocked: [{ id, name, blockedAt }] }`
+- `{ blocked: true }` / `{ blocked: false }` (block/unblock responses)
+
+### Errors
+- `401` missing/invalid token
+- `422` blocking yourself
 
 ⸻
 

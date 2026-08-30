@@ -32,6 +32,7 @@ Conductor Branch: main
 | stage-21-email-password-auth | backend/better-auth | stage-20-post-comment-system | COMPLETE |
 | stage-22-go-feed-domain | backend/ws-go, backend/better-auth, apps/mobile | stage-21-email-password-auth | COMPLETE |
 | stage-23-rename-ws-go-to-api-go | backend/api-go (formerly ws-go), apps/mobile | stage-22-go-feed-domain | COMPLETE |
+| stage-24-clubs-polls-blocks-privacy | backend/api-go, backend/better-auth, apps/mobile | stage-23-rename-ws-go-to-api-go | COMPLETE |
 
 ---
 
@@ -560,6 +561,40 @@ Also cleaned up stale cross-references while touching these files anyway: `.env.
 **Blockers:** none
 
 **Correction:** the commit that first landed this stage (and stage-21/22) missed staging `go.mod`/`go.sum`/`main.go`/`hub.go`/`Dockerfile`'s already-tested working-tree fixes — those five files went in with their *pre-rename* content (`go.mod` still said `backend/ws-go` while `internal/feed/feed.go` correctly imported `backend/api-go`), so that commit did not actually build. Caught immediately via `git stash` + `go build` against the committed tree (not the working tree, which was always correct) before doing anything else with it. Fixed in a follow-up commit — a lesson for next time: after a multi-file `git mv` + follow-up edits, verify the build against `git stash`'s committed state, not just the working tree, before trusting a commit.
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-24-clubs-polls-blocks-privacy
+
+**Domain:** backend/api-go, backend/better-auth, apps/mobile
+**Depends On:** stage-23-rename-ws-go-to-api-go
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Clubs: create/join/leave, leader hand-off, backed by real `clubs`/`club_members` tables (CONTRACTS.md → Club)
+- [x] Poll-style posts: question + options + one-vote-per-user (upsertable), backed by `polls`/`poll_options`/`poll_votes` (CONTRACTS.md → Poll)
+- [x] Block user: block/unblock/list, and blocked users' posts are actually filtered out of `GET /api/posts` (CONTRACTS.md → Block)
+- [x] Private/public profile toggle is real (server-persisted `user.profile_public`), replacing the old client-only mock state
+
+**Done:** Four goal.md items dispatched to four parallel subagents, each in its own isolated git worktree, to build independently since the client asked for "หลายๆ agent แบ่งงานกันทำ" (multiple agents dividing the work). Each agent was scoped to its own new files (own Go package, own mobile API client/screens) and explicitly told not to touch shared integration points (`main.go`, `feed.go`, `PostCard.tsx`, `FeedScreen.tsx`, `agentic/` docs) — those were reserved for a single integration pass afterward to avoid four agents editing the same files concurrently.
+
+**Two real coordination problems surfaced and were caught before they caused damage:**
+1. Three of the four worktrees correctly forked from the up-to-date local `main` (and two of those three noticed on their own that an even-earlier state would have been missing `backend/api-go` entirely, and safely fast-forward-merged before starting). The fourth (private/public profile) forked from `origin/main` — the last **pushed** commit, three commits behind local `main` — and never updated. Its diff would have silently reverted the Coarea→Kemago rename, the email+password auth work, and the Go feed-domain migration if merged as-is. Caught by comparing each worktree's `git log -1` before merging; the profile agent's actual code changes (small, clean, four files) were manually re-applied onto the current file versions instead of blind-copying its worktree files.
+2. Three agents independently reported `pnpm --filter @kemago/mobile type-check` failing repo-wide (~124 errors, every `className`-using file). Investigated instead of trusting it: `apps/mobile/src/uniwind-types.d.ts` is a real file that exists in the main checkout but is gitignored (auto-generated, never committed) — a fresh git worktree naturally lacks it, so every fresh worktree saw a false "pre-existing repo-wide failure" that doesn't exist in the actual repo. One agent (Block) had already "fixed" this by adding a new tracked `uniwind-env.d.ts` with a manual type reference — this was **not** merged, since it solves a worktree artifact, not a real problem, and `.gitignore` excluding the generated file was an earlier deliberate choice.
+
+**Merge process:** each agent left its work uncommitted in its worktree (not on a committed branch) — merged by copying each agent's new, self-contained files directly, and manually re-applying the shared `internal/db/models.go`/`internal/db/migrate.go` diffs one at a time (all three purely additive, no real conflicts, just sequential application). Integration work then done directly on `main` (not by any agent):
+- `main.go`: registered `clubs.Register`, `polls.Register`, `blocks.Register` alongside the existing `feed.Register`
+- `feed.go`: added `author_id`/`authorId` to the post query and response (didn't exist before — needed so the mobile client can target a block action, and so the block filter has something to filter on), and `listPosts` now calls `blocks.BlockedIDs` for the requesting user (if authenticated) and drops posts by anyone in that list
+- Mobile: added `BlockUserButton` to `PostCard.tsx` (bottom row, next to like/reply counts — couldn't hide it on the viewer's own posts since `useAuthStore` doesn't expose the signed-in user's real backend id anywhere yet, only email/token; self-block is already rejected server-side with a 422 so the cost of that gap is a harmless inline error). `Post`/`ApiPost` types and `postsRepo.native.ts`'s SQLite schema gained `authorId` to carry this through.
+- `PollCard`/`PollComposer` were **not** wired into `FeedScreen`/`PostCard` — doing that well needs a `hasPoll` flag added to Feed's list response first (a real, if small, API change), left as a follow-up rather than rushed.
+
+**Verified live** against the real dev Postgres: full authenticated round-trip through a real signed-up email+password account (not seeded SQL) — created a club (auto-leader, memberCount correct), confirmed leader can't leave without handing off (422), created a post, attached a poll, voted, confirmed vote counts and `myVoteOptionId`, blocked a second real user, confirmed their post disappeared from `GET /api/posts`, confirmed it's `GET /api/blocks`-listed, unblocked implicitly verified via cascade delete cleanup. `go build`/`go vet`/`gofmt -l` clean on `backend/api-go` with all three new packages; `tsc --noEmit` clean on `backend/better-auth` and `apps/mobile`; `expo export --platform web` succeeded with `/clubs`, `/blocked-users` routes present. All test data (club, posts, poll, block, throwaway account) cleaned up afterward — verified every affected table back to zero rows via cascade deletes.
+**Next:** Wire `PollCard`/`PollComposer` into the actual Feed (needs a `hasPoll` response field on Module: Feed). Club leader hand-off has no UI trigger yet. `M-011` (verified posting) is still blocked on an unrelated, unresolved product decision (identity verification method) — nothing in this stage touches it.
+**Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client
 **Gate-Out:** n/a

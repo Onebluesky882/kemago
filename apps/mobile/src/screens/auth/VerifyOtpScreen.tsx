@@ -35,7 +35,11 @@ export function VerifyOtpScreen() {
     try {
       const { token, profile } = await verifyOtp(email, code.trim());
       signIn(token, email);
-      setProfile({ name: profile.name, profileComplete: profile.profileComplete });
+      setProfile({
+        name: profile.name,
+        profileComplete: profile.profileComplete,
+        profilePublic: profile.profilePublic,
+      });
       router.replace(profile.profileComplete ? "/(tabs)" : "/(auth)/complete-profile");
     } catch (e) {
       setError(e instanceof AuthApiError ? e.message : "Verification failed. Try again.");

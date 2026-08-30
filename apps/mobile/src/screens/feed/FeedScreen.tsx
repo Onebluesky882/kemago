@@ -19,6 +19,7 @@ const filters: FeedFilter[] = ["All", "General", "Recommendations", "Lost & Foun
 function toLocalPost(apiPost: ApiPost): Post {
   return {
     id: apiPost.id,
+    authorId: apiPost.authorId,
     author: apiPost.author,
     authorVerified: apiPost.authorVerified,
     neighborhood: "Nearby",
@@ -77,6 +78,7 @@ export function FeedScreen() {
 
       const newPost: Post = {
         id: `p_${Date.now()}`,
+        authorId: currentUser.id,
         author: currentUser.name,
         authorVerified: currentUser.verified,
         neighborhood: currentUser.neighborhood,

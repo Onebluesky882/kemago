@@ -97,6 +97,7 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       profileComplete: { type: "boolean", required: false, defaultValue: false, input: true },
+      profilePublic: { type: "boolean", required: false, defaultValue: true, input: true },
     },
   },
 });

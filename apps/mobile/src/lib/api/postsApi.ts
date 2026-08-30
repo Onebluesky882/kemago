@@ -24,6 +24,7 @@ async function parseError(res: Response): Promise<never> {
 
 export type ApiPost = {
   id: string;
+  authorId: string;
   author: string;
   authorVerified: boolean;
   category: Category;

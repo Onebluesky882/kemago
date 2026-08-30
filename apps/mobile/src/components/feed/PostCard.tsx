@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
 import { Avatar } from "../ui/Avatar";
 import { Badge } from "../ui/Badge";
+import { BlockUserButton } from "../ui/BlockUserButton";
 import { Card } from "../ui/Card";
 import { VerifiedBadge } from "../ui/VerifiedBadge";
 import type { Post } from "../../lib/mockData";
@@ -15,6 +16,10 @@ const categoryTone: Record<Post["category"], "brand" | "accent" | "neutral"> = {
 
 export function PostCard({ post }: { post: Post }) {
   const router = useRouter();
+  // useAuthStore doesn't expose the signed-in user's real backend id yet
+  // (only email/token) — so there's no cheap way to hide this on your own
+  // posts here. Self-blocking is already rejected server-side (422), so
+  // the worst case is a harmless inline error if someone taps their own.
 
   return (
     <Card className="mb-3" onPress={() => router.push(`/post/${post.id}`)}>
@@ -34,9 +39,12 @@ export function PostCard({ post }: { post: Post }) {
 
       <Text className="text-sm text-text leading-relaxed mb-3">{post.body}</Text>
 
-      <View className="flex-row items-center gap-4">
-        <Text className="text-xs text-text-muted">{post.likeCount} likes</Text>
-        <Text className="text-xs text-text-muted">{post.replyCount} replies</Text>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-4">
+          <Text className="text-xs text-text-muted">{post.likeCount} likes</Text>
+          <Text className="text-xs text-text-muted">{post.replyCount} replies</Text>
+        </View>
+        <BlockUserButton userId={post.authorId} userName={post.author} />
       </View>
     </Card>
   );

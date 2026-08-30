@@ -19,6 +19,10 @@ export const user = pgTable("user", {
   // product rules (initials stand in for a photo). Set directly by the
   // mobile client via Better Auth's own update-user endpoint.
   profileComplete: boolean("profile_complete").notNull().default(false),
+
+  // Public/private profile visibility toggle. Set directly by the mobile
+  // client via Better Auth's own update-user endpoint.
+  profilePublic: boolean("profile_public").notNull().default(true),
 });
 
 export const session = pgTable("session", {

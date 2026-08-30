@@ -19,6 +19,7 @@ function migrate() {
   db.execute(`
     CREATE TABLE IF NOT EXISTS posts (
       id TEXT PRIMARY KEY,
+      author_id TEXT NOT NULL DEFAULT '',
       author TEXT NOT NULL,
       author_verified INTEGER NOT NULL DEFAULT 0,
       neighborhood TEXT NOT NULL,
@@ -45,6 +46,7 @@ function migrate() {
 
 type PostRow = {
   id: string;
+  author_id: string;
   author: string;
   author_verified: number;
   neighborhood: string;
@@ -58,6 +60,7 @@ type PostRow = {
 function fromRow(row: PostRow): Post {
   return {
     id: row.id,
+    authorId: row.author_id,
     author: row.author,
     authorVerified: row.author_verified === 1,
     neighborhood: row.neighborhood,
@@ -72,10 +75,11 @@ function fromRow(row: PostRow): Post {
 function insertRow(post: Post) {
   db.execute(
     `INSERT OR REPLACE INTO posts
-      (id, author, author_verified, neighborhood, category, body, posted_at, like_count, reply_count)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (id, author_id, author, author_verified, neighborhood, category, body, posted_at, like_count, reply_count)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       post.id,
+      post.authorId,
       post.author,
       post.authorVerified ? 1 : 0,
       post.neighborhood,

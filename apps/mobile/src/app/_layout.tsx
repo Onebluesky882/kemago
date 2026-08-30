@@ -33,7 +33,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     getSession(token)
       .then((profile) => {
         if (!profile) return signOut();
-        setProfile({ name: profile.name, profileComplete: profile.profileComplete });
+        setProfile({
+          name: profile.name,
+          profileComplete: profile.profileComplete,
+          profilePublic: profile.profilePublic,
+        });
       })
       .catch(() => signOut());
   }, [hydrated, isAuthenticated]);

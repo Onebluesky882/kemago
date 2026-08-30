@@ -91,6 +91,7 @@ Success Indicators:
 - Posting and replying now talk to the real server: people can post to the Feed and reply to posts, and everyone signed in sees the same real posts and replies (not just sample content). Tapping a post opens it with its replies. If the connection is down, the app falls back to what's saved on the device so the Feed still shows something
 - People can now sign in with an email + password, in addition to the email code they already had — the account works the same either way
 - Liking a post now works on the server side (the app screen for it is still to come)
+- Four more things landed in one push: people can create and join local clubs (with a hand-off-able leader), block someone they don't want to see, and the private/public profile toggle now actually saves to your account instead of just being a local switch. Poll-style posts (vote on a list of choices) work end to end but aren't visible in the main Feed screen yet — one more step needed there
 
 ---
 
@@ -109,12 +110,12 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 | M-007 | Chat working | People can message each other | PLANNING |
 | M-008 | Comments and likes | People can comment on and like posts | IN_PROGRESS (comments and likes both work now — no like button on screen yet) |
 | M-009 | Running story with location tag | Post a short running story/reel tagged to a place, with a choice of who sees it: friends only, only you, or everyone | PLANNING |
-| M-010 | Private/public profile | An account can be set to private so only friends can see it | PLANNING |
-| M-011 | Verified posting in local activity | Only people who have verified their identity can post about local activities | PLANNING |
-| M-012 | Clubs | People can create their own local club; only verified people can post in it; each club has a leader, and the leader can be handed off to someone else | PLANNING |
-| M-013 | Poll-style posts | A post type where people vote on a list of choices | PLANNING |
+| M-010 | Private/public profile | An account can be set to private so only friends can see it | DONE (toggle works and saves for real; "only friends can see" enforcement isn't built yet — anyone can currently still see a private profile, the setting isn't acted on outside the toggle itself) |
+| M-011 | Verified posting in local activity | Only people who have verified their identity can post about local activities | PLANNING (blocked — the verification method itself hasn't been chosen yet) |
+| M-012 | Clubs | People can create their own local club; join or leave; the leader can be handed off to someone else | DONE (leader hand-off has no button in the app yet, but works if triggered) |
+| M-013 | Poll-style posts | A post type where people vote on a list of choices | IN_PROGRESS (voting works; not yet visible in the main Feed — needs one more step to show up there) |
 | M-014 | Content screening | Posts and comments are automatically checked for bad language before they go live | PLANNING |
-| M-015 | Block user | People can block someone they don't want to see or hear from | PLANNING |
+| M-015 | Block user | People can block someone they don't want to see or hear from | DONE |
 | M-016 | Community score | Each person has an overall reputation score based on their activity | PLANNING |
 | M-017 | Shop (future) | Add a shop section to the app | PLANNING |
 | M-018 | Restaurant ranking (future) | Show which local restaurants people in the area eat at most | PLANNING |

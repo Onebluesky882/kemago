@@ -1,16 +1,40 @@
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { ProfileHeader } from "../../components/profile/ProfileHeader";
 import { StatItem } from "../../components/profile/StatItem";
-import { signOutRequest } from "../../lib/api/authApi";
+import { signOutRequest, updatePrivacy } from "../../lib/api/authApi";
 import { useAuthStore } from "../../store/useAuthStore";
 import { colors } from "../../theme/colors";
 
 export function ProfileScreen() {
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const isPublic = useAuthStore((state) => state.isPublic);
-  const setIsPublic = useAuthStore((state) => state.setIsPublic);
+  const profilePublic = useAuthStore((state) => state.profilePublic);
+  const setProfilePublic = useAuthStore((state) => state.setProfilePublic);
   const token = useAuthStore((state) => state.token);
   const signOut = useAuthStore((state) => state.signOut);
+
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const isPublic = profilePublic ?? true;
+
+  // Optimistic-ish: flips the switch immediately, then reconciles with the
+  // real persisted value once the server responds. Reverts on failure —
+  // no toast/spinner infrastructure exists near this toggle yet, so this
+  // keeps it simple for a first pass.
+  async function handleTogglePublic(next: boolean) {
+    if (!token || savingPrivacy) return;
+    setSavingPrivacy(true);
+    setProfilePublic(next);
+    try {
+      const profile = await updatePrivacy(token, next);
+      setProfilePublic(profile.profilePublic);
+    } catch {
+      setProfilePublic(!next);
+    } finally {
+      setSavingPrivacy(false);
+    }
+  }
 
   // Signs out on-device regardless of whether the server-side call
   // succeeds — a network failure shouldn't trap the user in a signed-in
@@ -53,11 +77,20 @@ export function ProfileScreen() {
         </View>
         <Switch
           value={isPublic}
-          onValueChange={setIsPublic}
+          onValueChange={handleTogglePublic}
+          disabled={savingPrivacy}
           trackColor={{ false: colors.border, true: colors.brand }}
           thumbColor="#ffffff"
         />
       </View>
+
+      <Pressable
+        onPress={() => router.push("/blocked-users")}
+        className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
+      >
+        <Text className="text-sm font-semibold text-text">Blocked users</Text>
+        <Text className="text-xs text-text-muted">View</Text>
+      </Pressable>
 
       <View className="px-4 py-4">
         <Pressable

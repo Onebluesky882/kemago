@@ -8,9 +8,12 @@ import (
 
 	"github.com/coder/websocket"
 
+	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/clubs"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/feed"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/polls"
 )
 
 // withCORS is Bearer-only, same reasoning as backend/better-auth's
@@ -54,6 +57,9 @@ func main() {
 	})
 
 	feed.Register(mux, database)
+	clubs.Register(mux, database)
+	polls.Register(mux, database)
+	blocks.Register(mux, database)
 
 	// TODO(stage-10-chat): room currently comes from an unauthenticated
 	// query param — once Bearer auth exists, verify the token and derive

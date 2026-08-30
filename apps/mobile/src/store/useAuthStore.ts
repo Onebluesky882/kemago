@@ -7,8 +7,6 @@ type AuthState = {
   // Mock display profile (name, initials, counts) — unrelated to the real
   // session below until stage-9-profile's GET /v1/users/me exists.
   user: typeof currentUser;
-  isPublic: boolean;
-  setIsPublic: (isPublic: boolean) => void;
 
   // Real session, from backend/better-auth's OTP sign-in (see lib/api/authApi.ts).
   // The token value itself never changes on renewal — Better Auth extends
@@ -28,7 +26,15 @@ type AuthState = {
   // server truth, not something to trust from a stale persisted value.
   profileComplete: boolean | null;
   profileName: string | null;
-  setProfile: (p: { name: string; profileComplete: boolean }) => void;
+  setProfile: (p: { name: string; profileComplete: boolean; profilePublic: boolean }) => void;
+
+  // Server-backed public/private profile toggle (see lib/api/authApi.ts'
+  // updatePrivacy) — replaces the old client-only isPublic mock. Same
+  // null-until-loaded convention as profileComplete above: reset to null
+  // on sign-out since it's server truth, not something to trust from a
+  // stale persisted value.
+  profilePublic: boolean | null;
+  setProfilePublic: (profilePublic: boolean) => void;
 };
 
 // Persisted on-device via MMKV (native) / localStorage (web) — see
@@ -43,13 +49,12 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: currentUser,
-      isPublic: true,
-      setIsPublic: (isPublic) => set({ isPublic }),
 
       token: null,
       email: null,
       isAuthenticated: false,
-      signIn: (token, email) => set({ token, email, isAuthenticated: true, profileComplete: null }),
+      signIn: (token, email) =>
+        set({ token, email, isAuthenticated: true, profileComplete: null, profilePublic: null }),
       signOut: () =>
         set({
           token: null,
@@ -57,11 +62,16 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           profileComplete: null,
           profileName: null,
+          profilePublic: null,
         }),
 
       profileComplete: null,
       profileName: null,
-      setProfile: ({ name, profileComplete }) => set({ profileName: name, profileComplete }),
+      setProfile: ({ name, profileComplete, profilePublic }) =>
+        set({ profileName: name, profileComplete, profilePublic }),
+
+      profilePublic: null,
+      setProfilePublic: (profilePublic) => set({ profilePublic }),
     }),
     {
       name: "kemago-auth",
