@@ -34,6 +34,7 @@ Conductor Branch: main
 | stage-23-rename-ws-go-to-api-go | backend/api-go (formerly ws-go), apps/mobile | stage-22-go-feed-domain | COMPLETE |
 | stage-24-clubs-polls-blocks-privacy | backend/api-go, backend/better-auth, apps/mobile | stage-23-rename-ws-go-to-api-go | COMPLETE |
 | stage-25-friends-room-membership | backend/api-go, apps/mobile | stage-24-clubs-polls-blocks-privacy | COMPLETE |
+| stage-26-friends-ui | apps/mobile | stage-25-friends-room-membership | COMPLETE |
 
 ---
 
@@ -621,6 +622,28 @@ Friends: new `internal/friends` package. `friendships` is a directed request row
 
 **Verified live** against the real dev Postgres, with two real signed-up email+password accounts (not seeded SQL): A sent a friend request to B, B saw it in incoming requests, a duplicate request from A correctly rejected (422), B accepted, both A's and B's friend lists correctly showed each other, A removed B, B's list went back to empty. Separately: created a room (auto-joined creator, `memberCount: 1`), had the second account join it, confirmed `memberCount: 2`/`joined: true` from the creator's perspective and both users listed in `/members`. `go build`/`go vet`/`gofmt -l` clean on `backend/api-go`; `tsc --noEmit` clean on `apps/mobile` after adding `friendsApi.ts`. All test data (two accounts, the room) cleaned up afterward.
 **Next:** No mobile UI for either — `friendsApi.ts` exists but nothing calls it from a screen yet (no "People"/friend-list screen exists in the app at all); room membership has no mobile API client or UI yet either, since it was requested as a backend primitive ahead of a specific screen needing it. The mutual-auto-accept behavior in `sendRequest` should be spot-checked against product expectations once there's a UI actually exercising it — it was a judgment call, not something the client specified.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-26-friends-ui
+
+**Domain:** apps/mobile
+**Depends On:** stage-25-friends-room-membership
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] A screen showing incoming friend requests (accept/decline) and current friends (remove)
+- [x] A way to send a request from somewhere already in the app, not just an API client nobody calls
+
+**Done:** Client asked to build the UI for stage-25's Friend API, which had no screen at all. Two touchpoints: `FriendsScreen` (`app/friends.tsx`, reachable via a new "Friends" row on `ProfileScreen` right above the existing "Blocked users" row, same pattern) shows incoming requests with accept/decline above a friends list with remove; and a new standalone `AddFriendButton` (mirrors `BlockUserButton`'s self-contained shape exactly) sits next to the block button on every `PostCard`, since that's the only place in the app a user currently sees another real person's identity to act on. Room/group membership (also from stage-25) intentionally got no UI this round — there's no "Rooms" screen anywhere in the app to hang it off, unlike Clubs which already has a tab; asked the client separately whether a dedicated Rooms screen is wanted before building one speculatively.
+
+**Verified:** `pnpm --filter @kemago/mobile type-check` and `npx expo export --platform web` both clean, `/friends` route present in the export. Not re-tested live against the API this round — the underlying `/api/friends/*` endpoints were already fully live-verified in stage-25 with two real accounts, and the mobile code's expected response shapes (`userId`/`name`/`verified`/`createdAt`, `{status: "pending"|"accepted"}`) were checked directly against that stage's actual curl output rather than re-run.
+**Next:** Rooms/Groups screen — pending client decision on whether it's wanted.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

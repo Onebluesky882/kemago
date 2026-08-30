@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
+import { AddFriendButton } from "../ui/AddFriendButton";
 import { Avatar } from "../ui/Avatar";
 import { Badge } from "../ui/Badge";
 import { BlockUserButton } from "../ui/BlockUserButton";
@@ -44,7 +45,10 @@ export function PostCard({ post }: { post: Post }) {
           <Text className="text-xs text-text-muted">{post.likeCount} likes</Text>
           <Text className="text-xs text-text-muted">{post.replyCount} replies</Text>
         </View>
-        <BlockUserButton userId={post.authorId} userName={post.author} />
+        <View className="flex-row items-center gap-3">
+          <AddFriendButton userId={post.authorId} userName={post.author} />
+          <BlockUserButton userId={post.authorId} userName={post.author} />
+        </View>
       </View>
     </Card>
   );

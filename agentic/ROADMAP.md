@@ -122,7 +122,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 | M-019 | Food delivery (future) | In-app food delivery service | PLANNING |
 | M-020 | Official shop payments (future) | Spend money directly through the app at official shops | PLANNING |
 | M-021 | Automatic spending tracker (future) | Automatically records what people spend through the app — no manual bookkeeping needed | PLANNING |
-| M-022 | Add friends | People can send, accept, and remove friend connections | DONE (works behind the scenes; no screen in the app shows it yet) |
+| M-022 | Add friends | People can send, accept, and remove friend connections | DONE — a Friends screen (accept/decline requests, remove friends) and an "Add friend" button on every post are both live in the app |
 | M-023 | Group membership | People can join and leave a group/room, and see who else is in it | DONE (works behind the scenes; no screen in the app shows it yet) |
 
 **Status values:** PLANNING · APPROVED · IN_PROGRESS · COMPLETE · CANCELLED
