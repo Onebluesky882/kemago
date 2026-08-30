@@ -98,6 +98,14 @@ func Migrate(ctx context.Context, db *bun.DB) error {
 			joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 			PRIMARY KEY (room_id, user_id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS stories (
+			id TEXT PRIMARY KEY,
+			author_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			media_key TEXT NOT NULL,
+			media_type TEXT NOT NULL,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			expires_at TIMESTAMPTZ NOT NULL
+		)`,
 	}
 
 	for _, stmt := range statements {

@@ -38,6 +38,7 @@ Conductor Branch: main
 | stage-27-rooms-ui | apps/mobile | stage-26-friends-ui | COMPLETE |
 | stage-28-feed-room-picker | apps/mobile | stage-27-rooms-ui | COMPLETE |
 | stage-29-realtime-websocket | backend/api-go, apps/mobile | stage-28-feed-room-picker | COMPLETE |
+| stage-30-stories-upload | backend/api-go, apps/mobile | stage-29-realtime-websocket | COMPLETE (needs real R2 credentials from client to go fully live) |
 
 ---
 
@@ -723,6 +724,33 @@ Scoped narrowly to composing: the visible Feed list itself still shows every roo
 **Verified live** end-to-end with real accounts against the real dev Postgres (not mocked) — three separate scripted websocket connections (Node's built-in `WebSocket`, since no ws test CLI was available in this environment): (1) connected to `feed:all`, created a post via a real account, received `post_created` with the exact `postOut` shape; liked it, received `like_changed` with the updated count. (2) A second account sent a friend request to the first; the first account's personal channel received `friend_request` with the sender's id/name. (3) The first account accepted; the second account's personal channel received `friend_accepted`. `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile. All test accounts/posts cleaned up afterward.
 **Next:** Extend the same pattern to clubs/polls/blocks if wanted. The existing chat `?room=` path still has stage-10-chat's original TODO (no auth, no real room-membership check) — untouched by this stage.
 **Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-30-stories-upload
+
+**Domain:** backend/api-go, apps/mobile
+**Depends On:** stage-29-realtime-websocket
+**Status:** `COMPLETE` (code + local verification; needs the client's real Cloudflare R2 credentials to be live-tested against real object storage)
+
+**Acceptance Criteria:**
+- [x] Photo/video "Story" (IG-style, 24h ephemeral) upload via presigned URL — client uploads directly to Cloudflare R2, never through this backend
+- [x] Story feed UI in the app (bar of author rings + a viewer)
+- [x] Service stays optional — the rest of the backend keeps working with zero R2 setup
+
+**Done:** Client asked specifically for "signurl aws3" — R2 is S3-compatible, so the AWS SDK for Go v2's S3 presign client works against it directly by pointing `BaseEndpoint` at R2's account-specific URL (`https://<account>.r2.cloudflarestorage.com`) instead of AWS's, with `Region: "auto"` (R2's documented value, since R2 has no AWS regions). New `internal/storage` package wraps this: `PresignUpload` (15 min PUT URL) and `PublicURL` (returns a stable URL if `R2_PUBLIC_URL`/a custom domain is configured, else falls back to a 1-hour presigned GET). New `internal/stories` package implements the three-endpoint flow (get an upload URL → client PUTs directly to R2 → register the story) against a new `stories` table (`expires_at` set to `created_at + 24h`, filtered at read time — no cleanup job for expired rows/objects yet).
+
+**R2 is optional, not required, at the infrastructure level** — `main.go` only calls `stories.Register` if `R2_ACCOUNT_ID` is set in the environment; otherwise it logs that fact and skips registration entirely (`/api/stories*` just 404s), rather than the whole service failing to start over one unfinished feature. `.env.example` and `docker-compose.yml`'s `ws` service both gained the five `R2_*` variables (all optional/empty-safe) with setup instructions (Cloudflare dashboard → R2 → create bucket → Manage API Tokens).
+
+Mobile: added `expo-image-picker` and `expo-video` (the current, non-deprecated video API — `useVideoPlayer`/`VideoView`, not `expo-av`). New `lib/api/storiesApi.ts` (`uploadStory` does the full 3-step flow client-side: get URL, `PUT` the raw file to R2, then register). New `StoriesBar` (one ring per author, most recent story only — no multi-story-per-author carousel yet) and `StoryViewer` (full-screen image/video overlay, tap background or the close icon to dismiss) wired into `FeedScreen` above the existing category-filter row, matching IG's layout convention.
+
+**Verified without real R2 credentials** (none exist yet — this is a genuine external dependency the client needs to set up, not something fabricatable): ran the Go service locally with dummy R2 env vars (`go run ./cmd/server` outside Docker, port 3099) and confirmed the full code path that doesn't require actually reaching R2's network — `POST /api/stories/upload-url` produces a syntactically-correct AWS SigV4-signed URL (dummy credentials still produce a well-formed signature; only actually PUTting to it would reveal invalid credentials), `POST /api/stories` correctly writes the row with `expiresAt` = `createdAt + 24h`, `GET /api/stories` reads it back with the right shape including a presigned GET fallback URL (no `R2_PUBLIC_URL` configured in the dummy test). Confirmed the real docker-compose container starts cleanly and every other endpoint keeps working with R2 env vars entirely absent (the actual current state — logs "R2_ACCOUNT_ID not set, /api/stories* disabled"). `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile (confirms `expo-video`/`expo-image-picker` bundle correctly on web too). Test data cleaned up.
+**Next:** Client needs to create an R2 bucket + API token in the Cloudflare dashboard and fill in `.env`'s five `R2_*` values before an actual file can be uploaded and viewed — nothing else is blocking. Once real credentials exist, do one real upload from the app and confirm the media actually displays. Follow-ups noted in CONTRACTS.md → Story: view tracking, expired-row/object cleanup, multi-story-per-author viewer.
+**Blockers:** Cloudflare R2 bucket/credentials don't exist yet — client-side setup, not something to build around.
 
 **Dispatch-In:** none — direct interactive session with the client
 **Gate-Out:** n/a

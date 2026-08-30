@@ -250,6 +250,28 @@ On the shared `"feed:all"` channel (join via `?room=feed:all` — not per-room, 
 
 ⸻
 
+## Module: Story
+
+**Implemented** (stage-30) on `backend/api-go` (`internal/stories`) — IG-style ephemeral (24h) photo/video posts. **Optional at runtime:** disabled entirely (`/api/stories*` 404s) unless `R2_ACCOUNT_ID` etc. are set — see `.env.example`. Uploads never pass through this backend: the client gets a presigned PUT URL, uploads straight to Cloudflare R2 (S3-compatible), then registers the story.
+
+### Input
+- `POST /api/stories/upload-url` (Bearer required) — `{ mediaType: "image"|"video", contentType }` → a presigned PUT URL (15 min) + the `objectKey` to use in the next call
+- `POST /api/stories` (Bearer required) — `{ objectKey, mediaType }` — called after the client's direct PUT to R2 succeeds; sets `expiresAt` to 24h from now
+- `GET /api/stories` — every non-expired story, no auth required (same no-login-wall read pattern as Feed)
+
+### Output
+- `{ uploadUrl, objectKey }`
+- `{ story: { id, authorId, author, authorVerified, mediaUrl, mediaType, createdAt, expiresAt } }`
+- `{ stories: [{ ...same shape }] }`
+
+### Errors
+- `401` missing/invalid token (write endpoints only)
+- `422` invalid/missing `mediaType`/`contentType`/`objectKey`
+
+**Not yet built:** view tracking (who saw a story), story deletion before natural expiry, and expired rows are filtered at read time (`WHERE expires_at > now()`) rather than actually deleted — no cleanup job exists yet, so expired rows and their R2 objects accumulate. Mobile has a single-story-per-author viewer only (`StoriesBar`/`StoryViewer`) — no multi-story-per-author carousel.
+
+⸻
+
 ## Module: Chat
 
 ### Input

@@ -133,3 +133,18 @@ type RoomMember struct {
 	UserID   string    `bun:"user_id,pk"`
 	JoinedAt time.Time `bun:"joined_at,notnull,default:now()"`
 }
+
+// Story is an ephemeral photo/video post (IG-style) — MediaKey is the R2
+// object key (see internal/storage), not a URL; ExpiresAt is set to
+// CreatedAt+24h at creation and enforced by a WHERE clause on read, not a
+// background job (no story-expiry cleanup exists yet — see internal/stories).
+type Story struct {
+	bun.BaseModel `bun:"table:stories"`
+
+	ID        string    `bun:"id,pk"`
+	AuthorID  string    `bun:"author_id,notnull"`
+	MediaKey  string    `bun:"media_key,notnull"`
+	MediaType string    `bun:"media_type,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull,default:now()"`
+	ExpiresAt time.Time `bun:"expires_at,notnull"`
+}

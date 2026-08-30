@@ -4,9 +4,12 @@ import { CategoryChip } from "../../components/feed/CategoryChip";
 import { ComposeBar } from "../../components/feed/ComposeBar";
 import { PostCard } from "../../components/feed/PostCard";
 import { RoomChip } from "../../components/feed/RoomChip";
+import { StoriesBar } from "../../components/feed/StoriesBar";
+import { StoryViewer } from "../../components/feed/StoryViewer";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { type ApiPost, createPost as apiCreatePost, listPosts as apiListPosts } from "../../lib/api/postsApi";
 import { type ApiRoom, listRooms as apiListRooms } from "../../lib/api/roomsApi";
+import { type ApiStory, listStories as apiListStories } from "../../lib/api/storiesApi";
 import { getAllPosts, initPostsStore, insertPost } from "../../lib/db/postsRepo";
 import { currentUser, posts as seedPosts, type Post } from "../../lib/mockData";
 import { useFeedRealtime } from "../../lib/realtime";
@@ -41,6 +44,8 @@ export function FeedScreen() {
   // first use) — not fetched as a real room until someone has posted once.
   const [rooms, setRooms] = useState<ApiRoom[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [stories, setStories] = useState<ApiStory[]>([]);
+  const [viewingStory, setViewingStory] = useState<ApiStory | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +67,14 @@ export function FeedScreen() {
       } catch {
         // Room picker just falls back to "General" only — not critical to
         // the feed itself, so no offline fallback needed here.
+      }
+      try {
+        const apiStories = await apiListStories();
+        if (!cancelled) setStories(apiStories);
+      } catch {
+        // Stories bar just doesn't render if this fails — see StoriesBar's
+        // own empty-state handling. Also silently empty if R2 isn't
+        // configured on the backend (GET /api/stories 404s in that case).
       }
     })();
     return () => {
@@ -143,6 +156,12 @@ export function FeedScreen() {
         <Text className="text-xl font-bold text-text">Elm Street</Text>
       </View>
 
+      <StoriesBar
+        stories={stories}
+        onOpenStory={setViewingStory}
+        onUploaded={(story) => setStories((prev) => [story, ...prev])}
+      />
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -183,6 +202,8 @@ export function FeedScreen() {
           <EmptyState title="No posts yet" body="Be the first to share something in this category." />
         }
       />
+
+      {viewingStory ? <StoryViewer story={viewingStory} onClose={() => setViewingStory(null)} /> : null}
     </View>
   );
 }

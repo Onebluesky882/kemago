@@ -16,6 +16,8 @@ import (
 	"github.com/onebluesky882/kemago/backend/api-go/internal/friends"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/polls"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/storage"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/stories"
 )
 
 // withCORS is Bearer-only, same reasoning as backend/better-auth's
@@ -63,6 +65,25 @@ func main() {
 	polls.Register(mux, database)
 	blocks.Register(mux, database)
 	friends.Register(mux, database, h)
+
+	// Optional — R2/Stories isn't required to run everything else. Skips
+	// registration entirely (POST/GET /api/stories* just 404) rather than
+	// log.Fatal, since a fresh environment without an R2 bucket set up yet
+	// shouldn't be unable to start the whole service over one unfinished
+	// feature.
+	if r2AccountID := os.Getenv("R2_ACCOUNT_ID"); r2AccountID != "" {
+		storageClient := storage.New(storage.Config{
+			AccountID:       r2AccountID,
+			AccessKeyID:     os.Getenv("R2_ACCESS_KEY_ID"),
+			SecretAccessKey: os.Getenv("R2_SECRET_ACCESS_KEY"),
+			Bucket:          os.Getenv("R2_BUCKET_NAME"),
+			PublicBaseURL:   os.Getenv("R2_PUBLIC_URL"),
+		})
+		stories.Register(mux, database, storageClient)
+		log.Println("stories: R2 configured, routes registered")
+	} else {
+		log.Println("stories: R2_ACCOUNT_ID not set, /api/stories* disabled")
+	}
 
 	// Two ways to connect:
 	//   /ws?token=<bearer>   — personal channel, server-derived as

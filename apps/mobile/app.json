@@ -8,7 +8,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-video"
     ],
     "name": "mobile",
     "slug": "mobile",
