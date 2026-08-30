@@ -94,6 +94,7 @@ Success Indicators:
 - Four more things landed in one push: people can create and join local clubs (with a hand-off-able leader), block someone they don't want to see, and the private/public profile toggle now actually saves to your account instead of just being a local switch. Poll-style posts (vote on a list of choices) work end to end but aren't visible in the main Feed screen yet — one more step needed there
 - Added friends (send/accept/remove) and rooms/groups (join/leave/see members), both with real screens in the app now
 - Posting can now target a specific room, not just the default shared feed — a "Posting to" picker shows up once you've joined at least one room
+- New posts, comments, and likes now show up live for everyone looking at the Feed at the time — no need to refresh. Friend requests and accepts also show up live
 
 ---
 

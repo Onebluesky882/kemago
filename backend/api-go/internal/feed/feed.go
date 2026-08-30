@@ -19,16 +19,24 @@ import (
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
 )
 
 const defaultRoomID = "general"
 
+// feedChannel is the single websocket channel every connected client
+// receives Feed real-time events on — the Feed UI shows every room's
+// posts mixed together (no per-room view yet), so events aren't scoped
+// per-room either. See internal/hub.
+const feedChannel = "feed:all"
+
 type Handlers struct {
-	DB *bun.DB
+	DB  *bun.DB
+	Hub *hub.Hub
 }
 
-func Register(mux *http.ServeMux, database *bun.DB) {
-	h := &Handlers{DB: database}
+func Register(mux *http.ServeMux, database *bun.DB, wsHub *hub.Hub) {
+	h := &Handlers{DB: database, Hub: wsHub}
 	mux.HandleFunc("GET /api/rooms", h.listRooms)
 	mux.HandleFunc("POST /api/rooms", h.createRoom)
 	mux.HandleFunc("POST /api/rooms/{id}/join", h.joinRoom)
@@ -66,6 +74,18 @@ func writeError(w http.ResponseWriter, status int, message string) {
 func writeInternalError(w http.ResponseWriter, err error) {
 	log.Printf("internal error: %v", err)
 	writeError(w, http.StatusInternalServerError, "internal error")
+}
+
+// broadcast pushes a real-time event to every client connected to the
+// shared feed channel — best-effort: a marshal failure just logs, it
+// never fails the HTTP request that triggered it.
+func (h *Handlers) broadcast(ctx context.Context, event map[string]any) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("broadcast marshal: %v", err)
+		return
+	}
+	h.Hub.Broadcast(ctx, feedChannel, data)
 }
 
 type roomOut struct {
@@ -239,6 +259,7 @@ func (h *Handlers) createPost(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
+	h.broadcast(ctx, map[string]any{"type": "post_created", "post": created})
 	writeJSON(w, http.StatusCreated, map[string]any{"post": created})
 }
 
@@ -471,9 +492,9 @@ func (h *Handlers) createComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"comment": commentOut{ID: comment.ID, Author: user.Name, AuthorVerified: user.Verified, Body: comment.Body, CreatedAt: time.Now()},
-	})
+	created := commentOut{ID: comment.ID, Author: user.Name, AuthorVerified: user.Verified, Body: comment.Body, CreatedAt: time.Now()}
+	h.broadcast(ctx, map[string]any{"type": "comment_created", "postId": postID, "comment": created})
+	writeJSON(w, http.StatusCreated, map[string]any{"comment": created})
 }
 
 func (h *Handlers) likePost(w http.ResponseWriter, r *http.Request) {
@@ -502,7 +523,20 @@ func (h *Handlers) likePost(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
+	h.broadcastLikeChanged(ctx, postID)
 	writeJSON(w, http.StatusOK, map[string]bool{"liked": true})
+}
+
+// broadcastLikeChanged re-reads the post's current like count and pushes
+// it — best-effort, same reasoning as broadcast above (a lookup failure
+// here shouldn't fail the like/unlike request that triggered it).
+func (h *Handlers) broadcastLikeChanged(ctx context.Context, postID string) {
+	post, err := h.getPostByID(ctx, postID)
+	if err != nil {
+		log.Printf("broadcastLikeChanged: %v", err)
+		return
+	}
+	h.broadcast(ctx, map[string]any{"type": "like_changed", "postId": postID, "likeCount": post.LikeCount})
 }
 
 func (h *Handlers) unlikePost(w http.ResponseWriter, r *http.Request) {
@@ -521,5 +555,6 @@ func (h *Handlers) unlikePost(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
+	h.broadcastLikeChanged(ctx, postID)
 	writeJSON(w, http.StatusOK, map[string]bool{"liked": false})
 }

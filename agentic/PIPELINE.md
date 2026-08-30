@@ -37,6 +37,7 @@ Conductor Branch: main
 | stage-26-friends-ui | apps/mobile | stage-25-friends-room-membership | COMPLETE |
 | stage-27-rooms-ui | apps/mobile | stage-26-friends-ui | COMPLETE |
 | stage-28-feed-room-picker | apps/mobile | stage-27-rooms-ui | COMPLETE |
+| stage-29-realtime-websocket | backend/api-go, apps/mobile | stage-28-feed-room-picker | COMPLETE |
 
 ---
 
@@ -691,6 +692,36 @@ Scoped narrowly to composing: the visible Feed list itself still shows every roo
 
 **Verified:** `tsc --noEmit` and `expo export --platform web` both clean. Live-tested the exact three calls the UI now makes, in order, against the real dev Postgres with a throwaway account: `POST /api/rooms` (create), `GET /api/rooms` with a Bearer token (what populates the chip row), `POST /api/posts` with that room's id (what tapping a chip then posting sends) — response shapes matched exactly, and the created post correctly stayed scoped to that room. Test data cleaned up afterward.
 **Next:** None requested. A whole-feed room switcher (viewing, not just posting) would be the natural follow-up if wanted.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-29-realtime-websocket
+
+**Domain:** backend/api-go, apps/mobile
+**Depends On:** stage-28-feed-room-picker
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Real-time push for new posts, comments, and like-count changes
+- [x] Real-time push for friend requests and accepts
+- [x] Mobile listens for both and updates the UI without a manual refresh
+
+**Done:** Client asked for a websocket service covering posts and friend requests "and other related things." `internal/hub`'s existing single-room-per-connection websocket already existed (built in stage-12 for future chat, previously just a raw client-to-client relay with no server-initiated push). Extended it rather than building a second realtime system:
+- `hub.Hub` gained an exported `Broadcast(ctx, room, data)` — pushes a server-originated message to every client in a room, with no originating client to exclude (the existing private `broadcast` only supports relaying a message *from* one connected client to its room-mates).
+- `authcheck` gained `UserForToken` (extracted from `RequireUser`'s body) — verifies a raw token string directly, since a websocket upgrade request has no normal `Authorization` header to read one from (browsers/RN's `WebSocket` client can't set custom headers).
+- `/ws` now accepts two connection styles: `?token=<bearer>` derives room `"user:<id>"` **server-side** from a verified token (never trusts a client-supplied id) for personal notifications; `?room=<id>` is the original unauthenticated raw relay, unchanged, still flagged TODO from stage-10-chat for real chat-room auth.
+- `internal/feed` and `internal/friends` both now take a `*hub.Hub` in `Register(mux, db, hub)` (main.go wires the same instance into all three) and push events after a successful write: `feed` broadcasts `post_created`/`comment_created`/`like_changed` to a single shared `"feed:all"` channel (not per-room — the Feed screen already shows every room mixed together, so events aren't scoped tighter than the UI that consumes them); `friends` notifies `"user:<id>"` with `friend_request` (on send) and `friend_accepted` (on accept, and on the mutual-auto-accept path in `sendRequest` too — notifying whichever side didn't just get the synchronous HTTP response).
+- Mobile: new `lib/realtime.ts` — a small reconnecting websocket hook (`useChannel`, 3s backoff on drop) with two purpose-built wrappers, `useFeedRealtime` (shared channel, no auth) and `useFriendRealtime` (personal channel, no-ops while signed out). Wired into `FeedScreen` (merges `post_created`/`comment_created`/`like_changed` into local state, de-duping the actor's own just-created post by id) and `FriendsScreen` (any event just triggers a refetch — simpler and just as correct as hand-merging for a screen with two interrelated lists).
+
+**Not covered this round** (scoping call, not an oversight): clubs, polls, rooms, and blocks have no real-time push — "post" and "add friend" were the two things actually asked for; the rest of the domain would be the same pattern (`Handlers.Hub` + a `broadcast`/`notify` call after a write) if wanted later.
+
+**Verified live** end-to-end with real accounts against the real dev Postgres (not mocked) — three separate scripted websocket connections (Node's built-in `WebSocket`, since no ws test CLI was available in this environment): (1) connected to `feed:all`, created a post via a real account, received `post_created` with the exact `postOut` shape; liked it, received `like_changed` with the updated count. (2) A second account sent a friend request to the first; the first account's personal channel received `friend_request` with the sender's id/name. (3) The first account accepted; the second account's personal channel received `friend_accepted`. `go build`/`go vet`/`gofmt -l` clean; `tsc --noEmit` and `expo export --platform web` both clean on mobile. All test accounts/posts cleaned up afterward.
+**Next:** Extend the same pattern to clubs/polls/blocks if wanted. The existing chat `?room=` path still has stage-10-chat's original TODO (no auth, no real room-membership check) — untouched by this stage.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

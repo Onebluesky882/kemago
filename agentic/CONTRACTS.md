@@ -225,6 +225,31 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 
 ⸻
 
+## Module: Realtime
+
+**Implemented** (stage-29) on `backend/api-go`'s existing websocket hub (`internal/hub`, built in stage-12 for chat). Every connection joins exactly one channel:
+
+### Input
+- `GET /ws?token=<bearer>` (upgrades to websocket) — personal channel, server-derives room `"user:<id>"` from the verified token (never trusts a client-supplied id)
+- `GET /ws?room=<id>` (upgrades to websocket) — the original unauthenticated raw chat relay from stage-12, unrelated to the events below (see Module: Chat's own TODO)
+
+### Output (JSON text frames pushed by the server, not requested by the client)
+On the personal channel:
+- `{ type: "friend_request", from: { userId, name } }`
+- `{ type: "friend_accepted", by: { userId, name } }`
+
+On the shared `"feed:all"` channel (join via `?room=feed:all` — not per-room, since Feed's own list mixes every room together):
+- `{ type: "post_created", post: {...same shape as Module: Feed's post} }`
+- `{ type: "comment_created", postId, comment: {...same shape as Module: Comment} }`
+- `{ type: "like_changed", postId, likeCount }`
+
+### Errors
+- `401` invalid token (only on the `?token=` path)
+
+**Not yet covered:** clubs, polls, rooms, blocks have no real-time events.
+
+⸻
+
 ## Module: Chat
 
 ### Input

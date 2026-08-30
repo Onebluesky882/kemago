@@ -9,6 +9,7 @@ import { type ApiPost, createPost as apiCreatePost, listPosts as apiListPosts } 
 import { type ApiRoom, listRooms as apiListRooms } from "../../lib/api/roomsApi";
 import { getAllPosts, initPostsStore, insertPost } from "../../lib/db/postsRepo";
 import { currentUser, posts as seedPosts, type Post } from "../../lib/mockData";
+import { useFeedRealtime } from "../../lib/realtime";
 import { formatRelativeTime } from "../../lib/time";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useFeedFilterStore, type FeedFilter } from "../../store/useFeedFilterStore";
@@ -67,6 +68,30 @@ export function FeedScreen() {
       cancelled = true;
     };
   }, []);
+
+  // Live updates from other people's activity — this device's own writes
+  // already update `posts` directly (see handlePost/PostCard's like
+  // button), so post_created de-dupes by id and the count events just
+  // overwrite whatever's there, which is a no-op for the actor's own device.
+  useFeedRealtime(
+    useCallback((event) => {
+      if (event.type === "post_created") {
+        setPosts((prev) => (prev.some((p) => p.id === event.post.id) ? prev : [toLocalPost(event.post), ...prev]));
+        return;
+      }
+      if (event.type === "comment_created") {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === event.postId ? { ...p, replyCount: p.replyCount + 1 } : p)),
+        );
+        return;
+      }
+      if (event.type === "like_changed") {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === event.postId ? { ...p, likeCount: event.likeCount } : p)),
+        );
+      }
+    }, []),
+  );
 
   const visiblePosts = useMemo(
     () => (filter === "All" ? posts : posts.filter((p) => p.category === filter)),

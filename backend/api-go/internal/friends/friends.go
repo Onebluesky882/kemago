@@ -6,6 +6,7 @@
 package friends
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -16,14 +17,16 @@ import (
 
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
 )
 
 type Handlers struct {
-	DB *bun.DB
+	DB  *bun.DB
+	Hub *hub.Hub
 }
 
-func Register(mux *http.ServeMux, database *bun.DB) {
-	h := &Handlers{DB: database}
+func Register(mux *http.ServeMux, database *bun.DB, wsHub *hub.Hub) {
+	h := &Handlers{DB: database, Hub: wsHub}
 	mux.HandleFunc("POST /api/friends/requests", h.sendRequest)
 	mux.HandleFunc("POST /api/friends/requests/{userId}/accept", h.acceptRequest)
 	mux.HandleFunc("POST /api/friends/requests/{userId}/decline", h.declineRequest)
@@ -47,6 +50,18 @@ func writeError(w http.ResponseWriter, status int, message string) {
 func writeInternalError(w http.ResponseWriter, err error) {
 	log.Printf("internal error: %v", err)
 	writeError(w, http.StatusInternalServerError, "internal error")
+}
+
+// notify pushes a real-time event to userID's personal channel (see
+// internal/hub and main.go's /ws?token= handling) — best-effort, same
+// reasoning as internal/feed's broadcast helper.
+func (h *Handlers) notify(ctx context.Context, userID string, event map[string]any) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("notify marshal: %v", err)
+		return
+	}
+	h.Hub.Broadcast(ctx, "user:"+userID, data)
 }
 
 func (h *Handlers) sendRequest(w http.ResponseWriter, r *http.Request) {
@@ -95,6 +110,12 @@ func (h *Handlers) sendRequest(w http.ResponseWriter, r *http.Request) {
 			writeInternalError(w, err)
 			return
 		}
+		// existing.RequesterID is the other user — they requested us first,
+		// so this "add friend" call is really us accepting theirs.
+		h.notify(ctx, existing.RequesterID, map[string]any{
+			"type": "friend_accepted",
+			"by":   map[string]string{"userId": user.ID, "name": user.Name},
+		})
 		writeJSON(w, http.StatusOK, map[string]string{"userId": body.UserID, "status": "accepted"})
 		return
 	case err != sql.ErrNoRows:
@@ -108,6 +129,10 @@ func (h *Handlers) sendRequest(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
+	h.notify(ctx, body.UserID, map[string]any{
+		"type": "friend_request",
+		"from": map[string]string{"userId": user.ID, "name": user.Name},
+	})
 	writeJSON(w, http.StatusCreated, map[string]string{"userId": body.UserID, "status": "pending"})
 }
 
@@ -132,6 +157,10 @@ func (h *Handlers) acceptRequest(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "No pending request from this user")
 		return
 	}
+	h.notify(ctx, requesterID, map[string]any{
+		"type": "friend_accepted",
+		"by":   map[string]string{"userId": user.ID, "name": user.Name},
+	})
 	writeJSON(w, http.StatusOK, map[string]string{"userId": requesterID, "status": "accepted"})
 }
 

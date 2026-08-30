@@ -27,6 +27,17 @@ func RequireUser(ctx context.Context, db *bun.DB, r *http.Request) (User, bool) 
 	if !hasBearer || token == "" {
 		return User{}, false
 	}
+	return UserForToken(ctx, db, token)
+}
+
+// UserForToken verifies a raw session token directly, for callers that
+// don't have a normal Authorization header to read one from — the
+// websocket upgrade request (internal/hub, via ?token=) is the only one
+// today, since browsers/RN's WebSocket client can't set custom headers.
+func UserForToken(ctx context.Context, db *bun.DB, token string) (User, bool) {
+	if token == "" {
+		return User{}, false
+	}
 
 	var u User
 	err := db.NewRaw(`

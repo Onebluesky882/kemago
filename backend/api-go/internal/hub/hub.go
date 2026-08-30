@@ -64,3 +64,22 @@ func (h *Hub) broadcast(ctx context.Context, from *client, msgType websocket.Mes
 		}
 	}
 }
+
+// Broadcast pushes a server-originated text message (JSON, by convention —
+// see internal/feed and internal/friends) to every client currently in
+// room. Unlike broadcast above, this has no originating client to exclude —
+// it's how other packages push real-time events (a new post, a friend
+// request) rather than relaying a message a client sent.
+func (h *Hub) Broadcast(ctx context.Context, room string, data []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+
+	for c := range h.clients {
+		if c.room != room {
+			continue
+		}
+		if err := c.conn.Write(ctx, websocket.MessageText, data); err != nil {
+			log.Printf("hub: broadcast write failed: %v", err)
+		}
+	}
+}

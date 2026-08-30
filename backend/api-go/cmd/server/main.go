@@ -8,6 +8,7 @@ import (
 
 	"github.com/coder/websocket"
 
+	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/clubs"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
@@ -57,21 +58,39 @@ func main() {
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	feed.Register(mux, database)
+	feed.Register(mux, database, h)
 	clubs.Register(mux, database)
 	polls.Register(mux, database)
 	blocks.Register(mux, database)
-	friends.Register(mux, database)
+	friends.Register(mux, database, h)
 
-	// TODO(stage-10-chat): room currently comes from an unauthenticated
-	// query param — once Bearer auth exists, verify the token and derive
-	// room membership from the user's actual conversations instead of
-	// trusting whatever ?room= the client sends.
+	// Two ways to connect:
+	//   /ws?token=<bearer>   — personal channel, server-derived as
+	//                          "user:<id>" from the verified token (never
+	//                          trusts a client-supplied user id). Receives
+	//                          real-time events pushed by other packages
+	//                          via hub.Broadcast (new posts/comments/likes
+	//                          on "feed:all", friend requests/accepts on
+	//                          "user:<id>").
+	//   /ws?room=<room>      — TODO(stage-10-chat): unauthenticated raw
+	//                          relay for open group chat rooms, unchanged
+	//                          from before. Verify the token here too once
+	//                          real chat-room membership exists.
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		room := r.URL.Query().Get("room")
-		if room == "" {
-			http.Error(w, "missing ?room=", http.StatusBadRequest)
-			return
+		var room string
+		if token := r.URL.Query().Get("token"); token != "" {
+			user, ok := authcheck.UserForToken(r.Context(), database, token)
+			if !ok {
+				http.Error(w, "invalid token", http.StatusUnauthorized)
+				return
+			}
+			room = "user:" + user.ID
+		} else {
+			room = r.URL.Query().Get("room")
+			if room == "" {
+				http.Error(w, "missing ?token= or ?room=", http.StatusBadRequest)
+				return
+			}
 		}
 
 		conn, err := websocket.Accept(w, r, nil)

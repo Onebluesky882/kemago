@@ -11,6 +11,7 @@ import {
   listIncomingRequests,
   removeFriend,
 } from "../../lib/api/friendsApi";
+import { useFriendRealtime } from "../../lib/realtime";
 import { formatRelativeTime } from "../../lib/time";
 import { useAuthStore } from "../../store/useAuthStore";
 
@@ -79,6 +80,11 @@ export function FriendsScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // A new request coming in, or someone accepting one this device sent,
+  // both change what both lists should show — simplest correct response
+  // is just refetching rather than hand-merging the event into state.
+  useFriendRealtime(useCallback(() => load(), [load]));
 
   const handleAccept = useCallback(
     async (userId: string) => {
