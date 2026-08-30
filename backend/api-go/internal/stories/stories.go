@@ -81,7 +81,7 @@ func (h *Handlers) getUploadURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ext := extForContentType(body.ContentType)
-	objectKey := "stories/" + user.ID + "/" + newID("story") + ext
+	objectKey := user.ID + "/" + newID("story") + ext
 
 	uploadURL, err := h.Storage.PresignUpload(ctx, objectKey, body.ContentType)
 	if err != nil {

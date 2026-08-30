@@ -811,6 +811,36 @@ Mobile: `ClubCard` gained an inline "Hand off leadership" toggle (visible only w
 
 ---
 
+### stage-33-r2-stories-upload-verified
+
+**Domain:** backend/api-go
+
+**Depends On:** stage-30-stories-upload
+
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Real Cloudflare R2 credentials configured and actually used (stage-30 was only ever tested with dummy credentials)
+- [x] A real file PUT through a presigned URL, a story registered against it, and its `mediaUrl` fetched back — not just a mocked response
+
+**Done:** The client set up a real R2 bucket and pasted credentials into `.env` across several attempts; two separate misconfigurations blocked the real test and were fixed:
+1. `.env` had the variable named `R2_ACCESS_KEY` — `cmd/server/main.go` reads `R2_ACCESS_KEY_ID`. Right value, wrong key name, so `internal/storage`'s S3 client silently got empty static credentials (surfaced as `get credentials: static credentials are empty` only once an actual presign was attempted).
+2. The configured bucket name (`kemago`) didn't exist in the account (confirmed via `aws s3api head-bucket` — 404). R2/S3 bucket names also can't contain underscores, ruling out the client's first proposed name (`kemago_files`, 400 Bad Request). Client created `kemago-files` instead.
+
+Also changed the story object-key convention per client direction: `internal/stories/stories.go`'s `getUploadURL` now keys objects as `{user_id}/{name}` (was `stories/{user_id}/{name}`) — a `{room_id}/{name}` convention was requested alongside it but has no consumer yet (no room-scoped upload endpoint exists), so only the user-scoped half was wired in.
+
+**Verified live** end-to-end against the real R2 bucket (`kemago-files`) with a real better-auth account (not seeded): `POST /api/stories/upload-url` → real `PUT` of a real JPEG to the returned presigned URL (`200`) → `POST /api/stories` registered it → `GET /api/stories` listed it → `GET` on the returned `mediaUrl` came back `200` with bytes byte-identical to the uploaded file. `go build` clean against the committed tree. Test story row, test user, and the R2 object were all deleted afterward — bucket is empty again.
+
+**Next:** A `{room_id}/{name}` object-key convention was requested but nothing uploads to a room yet — build the actual room-scoped upload endpoint if/when a feature needs it (e.g. room cover photo), rather than now with no caller.
+
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

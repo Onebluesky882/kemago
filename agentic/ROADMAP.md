@@ -98,6 +98,7 @@ Success Indicators:
 - Started building "Stories" — a photo/video post that disappears after 24 hours, like Instagram's. The upload and viewing screens are built, but this needs a Cloudflare storage account set up before real photos/videos can actually go through it — flagging this as something the client needs to set up (not a coding task)
 - Poll-style posts now show up right in the Feed — anyone can add a "vote on this" question to a post, and everyone sees it appear live
 - A club's leader can now hand off leadership to another member right from the app (the ability existed before, just had no button)
+- Photo/video Stories are now fully working with real cloud storage — tested end to end with an actual file upload, save, and playback, not just a trial run
 
 ---
 
