@@ -1,19 +1,47 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/coder/websocket"
 
-	"github.com/onebluesky882/kemago/backend/ws-go/internal/hub"
+	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/feed"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
 )
+
+// withCORS is Bearer-only, same reasoning as backend/better-auth's
+// disableCSRFCheck — no cookies anywhere, so a wildcard origin has no
+// credential-leak surface.
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
 func main() {
 	port := os.Getenv("WS_PORT")
 	if port == "" {
 		port = "3001"
+	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is required")
+	}
+	database := dbpkg.Open(databaseURL)
+	if err := dbpkg.Migrate(context.Background(), database); err != nil {
+		log.Fatalf("migrate: %v", err)
 	}
 
 	h := hub.New()
@@ -24,6 +52,8 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	feed.Register(mux, database)
 
 	// TODO(stage-10-chat): room currently comes from an unauthenticated
 	// query param — once Bearer auth exists, verify the token and derive
@@ -46,8 +76,8 @@ func main() {
 		h.Join(r.Context(), conn, room)
 	})
 
-	log.Printf("ws-go listening on :%s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+	log.Printf("api-go listening on :%s", port)
+	if err := http.ListenAndServe(":"+port, withCORS(mux)); err != nil {
 		log.Fatalf("listen: %v", err)
 	}
 }

@@ -1,6 +1,6 @@
 // Package hub is a minimal in-memory, single-instance room broadcaster for
 // chat (see apps/mobile's Chat tab / stage-10-chat). One instance only —
-// if ws-go is ever scaled beyond one replica, broadcasts need to move
+// if api-go is ever scaled beyond one replica, broadcasts need to move
 // through Redis pub/sub instead of the in-process map below.
 package hub
 

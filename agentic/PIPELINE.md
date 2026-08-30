@@ -559,6 +559,8 @@ Also cleaned up stale cross-references while touching these files anyway: `.env.
 **Next:** None from this stage. The docker-compose service key (`ws`), container name (`coarea-ws-1`), and `WS_PORT` env var still say "ws" — revisit only if the client asks for that too.
 **Blockers:** none
 
+**Correction:** the commit that first landed this stage (and stage-21/22) missed staging `go.mod`/`go.sum`/`main.go`/`hub.go`/`Dockerfile`'s already-tested working-tree fixes — those five files went in with their *pre-rename* content (`go.mod` still said `backend/ws-go` while `internal/feed/feed.go` correctly imported `backend/api-go`), so that commit did not actually build. Caught immediately via `git stash` + `go build` against the committed tree (not the working tree, which was always correct) before doing anything else with it. Fixed in a follow-up commit — a lesson for next time: after a multi-file `git mv` + follow-up edits, verify the build against `git stash`'s committed state, not just the working tree, before trusting a commit.
+
 **Dispatch-In:** none — direct interactive session with the client
 **Gate-Out:** n/a
 **Merge-Approval:** n/a
