@@ -107,3 +107,29 @@ type Block struct {
 	BlockedID string    `bun:"blocked_id,pk"`
 	CreatedAt time.Time `bun:"created_at,notnull,default:now()"`
 }
+
+// Friendship is a directed request row: RequesterID sent it, AddresseeID
+// receives it. Status starts "pending"; becomes "accepted" once the
+// addressee accepts (declines just delete the row — no history kept).
+// Mutual requests (both sides request each other before either accepts)
+// auto-resolve to "accepted" — see internal/friends.
+type Friendship struct {
+	bun.BaseModel `bun:"table:friendships"`
+
+	RequesterID string    `bun:"requester_id,pk"`
+	AddresseeID string    `bun:"addressee_id,pk"`
+	Status      string    `bun:"status,notnull,default:'pending'"`
+	CreatedAt   time.Time `bun:"created_at,notnull,default:now()"`
+	UpdatedAt   time.Time `bun:"updated_at,notnull,default:now()"`
+}
+
+// RoomMember tracks who belongs to a room — rooms previously had no
+// membership concept at all (only CreatedBy), same gap Club/ClubMember
+// filled for clubs.
+type RoomMember struct {
+	bun.BaseModel `bun:"table:room_members"`
+
+	RoomID   string    `bun:"room_id,pk"`
+	UserID   string    `bun:"user_id,pk"`
+	JoinedAt time.Time `bun:"joined_at,notnull,default:now()"`
+}

@@ -83,6 +83,21 @@ func Migrate(ctx context.Context, db *bun.DB) error {
 			PRIMARY KEY (blocker_id, blocked_id),
 			CHECK (blocker_id != blocked_id)
 		)`,
+		`CREATE TABLE IF NOT EXISTS friendships (
+			requester_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			addressee_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			status TEXT NOT NULL DEFAULT 'pending',
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			PRIMARY KEY (requester_id, addressee_id),
+			CHECK (requester_id != addressee_id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS room_members (
+			room_id TEXT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+			user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			PRIMARY KEY (room_id, user_id)
+		)`,
 	}
 
 	for _, stmt := range statements {

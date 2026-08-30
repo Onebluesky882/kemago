@@ -67,19 +67,25 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 
 ## Module: Room
 
-**Implemented** (stage-22) on `backend/api-go`. Not in the original draft set — added directly by the client as a relation for Feed to belong to. A "general" room is auto-created (idempotent, `ON CONFLICT DO NOTHING`) the first time anyone posts without specifying a `roomId`.
+**Implemented** (stage-22, membership added in stage-25) on `backend/api-go`. Not in the original draft set — added directly by the client as a relation for Feed to belong to. A "general" room is auto-created (idempotent, `ON CONFLICT DO NOTHING`) the first time anyone posts without specifying a `roomId`. Creating a room auto-joins the creator, mirroring Club's pattern.
 
 ### Input
-- `GET /api/rooms` — list rooms
-- `POST /api/rooms` (Bearer required) — `{ name }`
+- `GET /api/rooms` — list rooms; personalizes `joined` if a Bearer token is present, otherwise `false`
+- `POST /api/rooms` (Bearer required) — `{ name }` — auto-joins the creator
+- `POST /api/rooms/:id/join` (Bearer required) — idempotent
+- `POST /api/rooms/:id/leave` (Bearer required) — idempotent
+- `GET /api/rooms/:id/members` — list members, no auth required
 
 ### Output
-- `{ rooms: [{ id, name }] }`
-- `{ room: { id, name } }`
+- `{ rooms: [{ id, name, memberCount, joined }] }`
+- `{ room: { ...same shape } }`
+- `{ members: [{ id, name, verified, joinedAt }] }`
 
 ### Errors
 - `401` missing/invalid token
 - `422` validation error (missing `name`)
+
+**Not yet built:** no mobile screen/API client for room membership yet (Feed's "general" room posting doesn't need it) — this exists as a backend primitive the client asked for directly ("group member table relation กับ user"), ahead of any specific screen needing it.
 
 ⸻
 
@@ -160,6 +166,30 @@ The `user` object returned by every auth endpoint also carries `profileComplete:
 ### Errors
 - `401` missing/invalid token
 - `422` blocking yourself
+
+⸻
+
+## Module: Friend
+
+**Implemented** (stage-25) on `backend/api-go`. A mutual request flow, not a one-directional "follow" — sending a request to someone who already requested you resolves to an immediate "accepted" rather than creating a redundant second row.
+
+### Input
+- `POST /api/friends/requests` (Bearer required) — `{ userId }` — sends a request, or auto-accepts if `userId` already requested the caller
+- `POST /api/friends/requests/:userId/accept` (Bearer required) — accepts a pending request from `:userId`
+- `POST /api/friends/requests/:userId/decline` (Bearer required) — deletes a pending request from `:userId` (no history kept)
+- `GET /api/friends/requests` (Bearer required) — incoming pending requests
+- `DELETE /api/friends/:userId` (Bearer required) — removes an accepted friendship, or cancels a pending request the caller sent
+- `GET /api/friends` (Bearer required) — accepted friends
+
+### Output
+- `{ userId, status }` (status: `"pending"` / `"accepted"` / `"declined"` / `"removed"`)
+- `{ requests: [{ userId, name, verified, createdAt }] }`
+- `{ friends: [{ userId, name, verified, createdAt }] }` (`createdAt` here is when the friendship was accepted, not when first requested)
+
+### Errors
+- `401` missing/invalid token
+- `404` no pending request found to accept
+- `422` friending yourself, already friends, or a request already sent
 
 ⸻
 

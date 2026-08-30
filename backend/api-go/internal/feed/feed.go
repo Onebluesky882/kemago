@@ -31,6 +31,9 @@ func Register(mux *http.ServeMux, database *bun.DB) {
 	h := &Handlers{DB: database}
 	mux.HandleFunc("GET /api/rooms", h.listRooms)
 	mux.HandleFunc("POST /api/rooms", h.createRoom)
+	mux.HandleFunc("POST /api/rooms/{id}/join", h.joinRoom)
+	mux.HandleFunc("POST /api/rooms/{id}/leave", h.leaveRoom)
+	mux.HandleFunc("GET /api/rooms/{id}/members", h.listRoomMembers)
 	mux.HandleFunc("GET /api/posts", h.listPosts)
 	mux.HandleFunc("POST /api/posts", h.createPost)
 	mux.HandleFunc("GET /api/posts/{id}", h.getPost)
@@ -66,8 +69,10 @@ func writeInternalError(w http.ResponseWriter, err error) {
 }
 
 type roomOut struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	MemberCount int    `json:"memberCount"`
+	Joined      bool   `json:"joined"`
 }
 
 // authorVerified is read live from the shared user.email_verified column —
@@ -237,17 +242,112 @@ func (h *Handlers) createPost(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, map[string]any{"post": created})
 }
 
+const roomSelect = `
+	SELECT r.id AS id, r.name AS name,
+		(SELECT count(*) FROM room_members m WHERE m.room_id = r.id) AS member_count,
+		EXISTS(SELECT 1 FROM room_members m WHERE m.room_id = r.id AND m.user_id = ?) AS joined
+	FROM rooms r
+	ORDER BY r.created_at ASC
+`
+
+type roomRow struct {
+	ID          string `bun:"id"`
+	Name        string `bun:"name"`
+	MemberCount int    `bun:"member_count"`
+	Joined      bool   `bun:"joined"`
+}
+
 func (h *Handlers) listRooms(w http.ResponseWriter, r *http.Request) {
-	var rooms []dbpkg.Room
-	if err := h.DB.NewSelect().Model(&rooms).Order("created_at ASC").Scan(r.Context()); err != nil {
+	ctx := r.Context()
+	// Best-effort: an anonymous caller just always sees joined=false.
+	user, _ := authcheck.RequireUser(ctx, h.DB, r)
+
+	var rows []roomRow
+	if err := h.DB.NewRaw(roomSelect, user.ID).Scan(ctx, &rows); err != nil {
 		writeInternalError(w, err)
 		return
 	}
-	out := make([]roomOut, len(rooms))
-	for i, room := range rooms {
-		out[i] = roomOut{ID: room.ID, Name: room.Name}
+	out := make([]roomOut, len(rows))
+	for i, row := range rows {
+		out[i] = roomOut{ID: row.ID, Name: row.Name, MemberCount: row.MemberCount, Joined: row.Joined}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"rooms": out})
+}
+
+func (h *Handlers) joinRoom(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	user, ok := authcheck.RequireUser(ctx, h.DB, r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	roomID := r.PathValue("id")
+	if _, err := h.DB.NewInsert().
+		Model(&dbpkg.RoomMember{RoomID: roomID, UserID: user.ID}).
+		On("CONFLICT (room_id, user_id) DO NOTHING").
+		Exec(ctx); err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"joined": true})
+}
+
+func (h *Handlers) leaveRoom(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	user, ok := authcheck.RequireUser(ctx, h.DB, r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	roomID := r.PathValue("id")
+	if _, err := h.DB.NewDelete().
+		Model((*dbpkg.RoomMember)(nil)).
+		Where("room_id = ? AND user_id = ?", roomID, user.ID).
+		Exec(ctx); err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]bool{"joined": false})
+}
+
+const roomMemberSelect = `
+	SELECT u.id AS id, u.name AS name, u.email_verified AS verified, m.joined_at AS joined_at
+	FROM room_members m
+	JOIN "user" u ON u.id = m.user_id
+	WHERE m.room_id = ?
+	ORDER BY m.joined_at ASC
+`
+
+type roomMemberRow struct {
+	ID       string    `bun:"id"`
+	Name     string    `bun:"name"`
+	Verified bool      `bun:"verified"`
+	JoinedAt time.Time `bun:"joined_at"`
+}
+
+type roomMemberOut struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Verified bool      `json:"verified"`
+	JoinedAt time.Time `json:"joinedAt"`
+}
+
+func (h *Handlers) listRoomMembers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	roomID := r.PathValue("id")
+
+	var rows []roomMemberRow
+	if err := h.DB.NewRaw(roomMemberSelect, roomID).Scan(ctx, &rows); err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	out := make([]roomMemberOut, len(rows))
+	for i, row := range rows {
+		out[i] = roomMemberOut{ID: row.ID, Name: row.Name, Verified: row.Verified, JoinedAt: row.JoinedAt}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"members": out})
 }
 
 func (h *Handlers) createRoom(w http.ResponseWriter, r *http.Request) {
@@ -271,7 +371,13 @@ func (h *Handlers) createRoom(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"room": roomOut{ID: room.ID, Name: room.Name}})
+	if _, err := h.DB.NewInsert().
+		Model(&dbpkg.RoomMember{RoomID: room.ID, UserID: user.ID}).
+		Exec(ctx); err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, map[string]any{"room": roomOut{ID: room.ID, Name: room.Name, MemberCount: 1, Joined: true}})
 }
 
 const commentSelect = `

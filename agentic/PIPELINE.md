@@ -33,6 +33,7 @@ Conductor Branch: main
 | stage-22-go-feed-domain | backend/ws-go, backend/better-auth, apps/mobile | stage-21-email-password-auth | COMPLETE |
 | stage-23-rename-ws-go-to-api-go | backend/api-go (formerly ws-go), apps/mobile | stage-22-go-feed-domain | COMPLETE |
 | stage-24-clubs-polls-blocks-privacy | backend/api-go, backend/better-auth, apps/mobile | stage-23-rename-ws-go-to-api-go | COMPLETE |
+| stage-25-friends-room-membership | backend/api-go, apps/mobile | stage-24-clubs-polls-blocks-privacy | COMPLETE |
 
 ---
 
@@ -594,6 +595,32 @@ Also cleaned up stale cross-references while touching these files anyway: `.env.
 
 **Verified live** against the real dev Postgres: full authenticated round-trip through a real signed-up email+password account (not seeded SQL) — created a club (auto-leader, memberCount correct), confirmed leader can't leave without handing off (422), created a post, attached a poll, voted, confirmed vote counts and `myVoteOptionId`, blocked a second real user, confirmed their post disappeared from `GET /api/posts`, confirmed it's `GET /api/blocks`-listed, unblocked implicitly verified via cascade delete cleanup. `go build`/`go vet`/`gofmt -l` clean on `backend/api-go` with all three new packages; `tsc --noEmit` clean on `backend/better-auth` and `apps/mobile`; `expo export --platform web` succeeded with `/clubs`, `/blocked-users` routes present. All test data (club, posts, poll, block, throwaway account) cleaned up afterward — verified every affected table back to zero rows via cascade deletes.
 **Next:** Wire `PollCard`/`PollComposer` into the actual Feed (needs a `hasPoll` response field on Module: Feed). Club leader hand-off has no UI trigger yet. `M-011` (verified posting) is still blocked on an unrelated, unresolved product decision (identity verification method) — nothing in this stage touches it.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-25-friends-room-membership
+
+**Domain:** backend/api-go, apps/mobile
+**Depends On:** stage-24-clubs-polls-blocks-privacy
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Mutual friend-request flow: send/accept/decline/remove/list, backed by a real `friendships` table (CONTRACTS.md → Friend)
+- [x] Room membership: join/leave/list-members, backed by a real `room_members` table (CONTRACTS.md → Room)
+
+**Done:** Client asked for two more tables in quick succession ("add friend table relation กับ user", then "group member table relation กับ user"). Built directly on `main` rather than spawning parallel agents this time — both fit comfortably as sequential edits against the exact same patterns stage-24 just established (Bun models in `internal/db/models.go`, bootstrap SQL in `migrate.go`, a per-domain package with its own JSON helpers, `authcheck.RequireUser` for Bearer auth, `db.NewRaw(...).Scan(...)` with `?` placeholders for raw SQL).
+
+Friends: new `internal/friends` package. `friendships` is a directed request row (`requester_id`, `addressee_id`, `status`) rather than a plain undirected "friends" table, since "add friend" implies request/accept semantics, not an admin-inserted static relation. The one non-obvious piece: sending a request to someone who already requested you resolves to an immediate accept (checks both directions of the composite PK before deciding whether to insert a new pending row or update an existing one) — the alternative (silently rejecting or creating a duplicate reversed row) would be worse UX for a case that's completely normal (two people both hit "add friend" around the same time).
+
+"Group member" was interpreted as **room** membership — `rooms` already existed (Feed's posts belong to one) but had no membership concept at all, only `created_by`. Rather than invent a new, unrelated "Group" entity with no home anywhere else in the schema/CONTRACTS.md, added `room_members` (mirroring `club_members` exactly) directly in `internal/feed/feed.go`, since Room's handlers already live there. `roomOut` gained `memberCount`/`joined` (same shape Club already has); `createRoom` now auto-joins the creator, matching Club's auto-leader-join pattern.
+
+**Verified live** against the real dev Postgres, with two real signed-up email+password accounts (not seeded SQL): A sent a friend request to B, B saw it in incoming requests, a duplicate request from A correctly rejected (422), B accepted, both A's and B's friend lists correctly showed each other, A removed B, B's list went back to empty. Separately: created a room (auto-joined creator, `memberCount: 1`), had the second account join it, confirmed `memberCount: 2`/`joined: true` from the creator's perspective and both users listed in `/members`. `go build`/`go vet`/`gofmt -l` clean on `backend/api-go`; `tsc --noEmit` clean on `apps/mobile` after adding `friendsApi.ts`. All test data (two accounts, the room) cleaned up afterward.
+**Next:** No mobile UI for either — `friendsApi.ts` exists but nothing calls it from a screen yet (no "People"/friend-list screen exists in the app at all); room membership has no mobile API client or UI yet either, since it was requested as a backend primitive ahead of a specific screen needing it. The mutual-auto-accept behavior in `sendRequest` should be spot-checked against product expectations once there's a UI actually exercising it — it was a judgment call, not something the client specified.
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

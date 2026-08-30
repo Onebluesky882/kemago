@@ -12,6 +12,7 @@ import (
 	"github.com/onebluesky882/kemago/backend/api-go/internal/clubs"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/feed"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/friends"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/hub"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/polls"
 )
@@ -60,6 +61,7 @@ func main() {
 	clubs.Register(mux, database)
 	polls.Register(mux, database)
 	blocks.Register(mux, database)
+	friends.Register(mux, database)
 
 	// TODO(stage-10-chat): room currently comes from an unauthenticated
 	// query param — once Bearer auth exists, verify the token and derive
