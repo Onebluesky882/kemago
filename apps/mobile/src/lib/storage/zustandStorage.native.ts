@@ -5,7 +5,7 @@ import type { StateStorage } from "zustand/middleware";
 // (native-only, no web build) — see zustandStorage.web.ts for the browser
 // equivalent with the same StateStorage shape.
 
-const mmkv = createMMKV({ id: "coarea-app-storage" });
+const mmkv = createMMKV({ id: "kemago-app-storage" });
 
 export const zustandStorage: StateStorage = {
   getItem: (name) => mmkv.getString(name) ?? null,

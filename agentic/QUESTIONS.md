@@ -277,7 +277,7 @@ Status
 
 - [x] Project Identity (Q0–Q4): answered
 - [x] Tech Stack (Q5–Q7): answered
-- [x] Cloudflare account: N/A — client deviated from Cloudflare stack (Go backend, self-hosted via OrbStack, PostgreSQL); see DECISIONS.md → Coarea Tech Stack
+- [x] Cloudflare account: N/A — client deviated from Cloudflare stack (Go backend, self-hosted via OrbStack, PostgreSQL); see DECISIONS.md → Kemago Tech Stack
 - [x] Conductor updated all governance files: done
 - [ ] Setup Test PASSED: 7/8 — T8 partial, see below (not a setup defect — first stage just hasn't been dispatched yet)
 

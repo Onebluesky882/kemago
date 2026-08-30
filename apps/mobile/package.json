@@ -1,5 +1,5 @@
 {
-  "name": "@gover-agent/mobile",
+  "name": "@kemago/mobile",
   "version": "0.0.1",
   "main": "expo-router/entry",
   "private": true,

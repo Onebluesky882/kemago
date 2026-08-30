@@ -10,7 +10,7 @@ import type { Post } from "../mockData";
 // exported function shapes. Metro resolves whichever one matches the
 // platform being bundled.
 
-const db = open({ name: "coarea.db" });
+const db = open({ name: "kemago.db" });
 
 let migrated = false;
 

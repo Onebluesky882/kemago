@@ -1,13 +1,13 @@
 # PROJECT.md
 
 ## Project Name
-Coarea
+Kemago
 
 ## Goal
-Coarea is a local-first social app that brings neighborhood news, community, and events into one place, helping people nearby meet, share stories, and take part in local activities together.
+Kemago is a local-first social app that brings neighborhood news, community, and events into one place, helping people nearby meet, share stories, and take part in local activities together.
 
 ## Tech Stack
-Mobile app: React Native / Expo + TypeScript (`apps/mobile`). Backend: Go, self-hosted via OrbStack. Database: PostgreSQL. Auth: Bearer token (JWT), Go-native. Package manager: pnpm. See DECISIONS.md → Coarea Tech Stack for full detail.
+Mobile app: React Native / Expo + TypeScript (`apps/mobile`). Backend: Go, self-hosted via OrbStack. Database: PostgreSQL. Auth: Bearer token (JWT), Go-native. Package manager: pnpm. See DECISIONS.md → Kemago Tech Stack for full detail.
 
 ## Team / Agents
 <!-- List assigned agents and their domains -->

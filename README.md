@@ -1,6 +1,6 @@
-# Coarea
+# Kemago
 
-Coarea is a local-first social app that brings neighborhood news, community, and events into one place — helping people nearby meet, share stories, and take part in local activities together.
+Kemago is a local-first social app that brings neighborhood news, community, and events into one place — helping people nearby meet, share stories, and take part in local activities together.
 
 Built with a fullstack monorepo template that includes a built-in AI governance system (Conductor + Worker workflow).
 
@@ -16,7 +16,7 @@ General public in a given local area/neighborhood. The goal is broad, high-volum
 
 ## Tech Stack
 
-Coarea deliberately deviates from this template's default Cloudflare/Hono stack — see `agentic/DECISIONS.md` → *Coarea Tech Stack* for full rationale.
+Kemago deliberately deviates from this template's default Cloudflare/Hono stack — see `agentic/DECISIONS.md` → *Kemago Tech Stack* for full rationale.
 
 | Layer | Technology |
 |-------|-----------|
@@ -40,7 +40,7 @@ apps/
   mobile/       React Native / Expo — Feed, Events, Profile, Chat (priority)
   web/          Next.js — public site (deprioritized, out of scope for now)
   admin/        Next.js — admin dashboard (deprioritized, out of scope for now)
-  api/          Hono — Cloudflare Worker template default (not used by Coarea's backend track)
+  api/          Hono — Cloudflare Worker template default (not used by Kemago's backend track)
 
 packages/
   auth/           Better Auth config + client (Hono-based — does not apply to the Go backend)
@@ -53,7 +53,7 @@ packages/
 
 agentic/        AI governance system (Conductor + Worker workflow)
   PROJECT.md          Project identity, goal, tech stack, status
-  DECISIONS.md        Architecture decisions (incl. Coarea Tech Stack deviation)
+  DECISIONS.md        Architecture decisions (incl. Kemago Tech Stack deviation)
   ARCHITECTURE.md     System architecture and modules
   CONTRACTS.md        API contracts (Auth, Feed, Event, Profile, Chat)
   PIPELINE.md         Stage definitions and status
@@ -91,8 +91,8 @@ See `agentic/PIPELINE.md` for stage-by-stage status and `agentic/ROADMAP.md` for
 ### 1. Clone and install
 
 ```bash
-git clone git@github.com:Onebluesky882/coarea.git
-cd coarea
+git clone git@github.com:Onebluesky882/kemago.git
+cd kemago
 pnpm install
 ```
 
@@ -134,12 +134,12 @@ linking, command routing, and Groq-based text parsing. Import it into a new
 domain's route rather than writing webhook verification from scratch:
 
 ```ts
-import { verifyLineWebhookSignature, extractLineMessages } from '@gover-agent/chat-ops-core'
+import { verifyLineWebhookSignature, extractLineMessages } from '@kemago/chat-ops-core'
 ```
 
 See `packages/chat-ops-core/README.md` for full wiring examples per platform.
 
-The `apps/api` (Hono/Cloudflare Workers), `apps/web`, and `apps/admin` template scaffolding is not part of Coarea's active backend track (see `agentic/DECISIONS.md` → *Coarea Tech Stack*) — extend the Go backend once `stage-4-backend-scaffold` lands instead.
+The `apps/api` (Hono/Cloudflare Workers), `apps/web`, and `apps/admin` template scaffolding is not part of Kemago's active backend track (see `agentic/DECISIONS.md` → *Kemago Tech Stack*) — extend the Go backend once `stage-4-backend-scaffold` lands instead.
 
 ---
 

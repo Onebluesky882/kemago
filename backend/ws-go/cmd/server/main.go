@@ -7,7 +7,7 @@ import (
 
 	"github.com/coder/websocket"
 
-	"github.com/onebluesky882/coarea/backend/ws-go/internal/hub"
+	"github.com/onebluesky882/kemago/backend/ws-go/internal/hub"
 )
 
 func main() {

@@ -24,16 +24,42 @@ Define the public interfaces between modules. All contracts below are initial/dr
 
 ## Module: Feed
 
+**Implemented** (stage-20-post-comment-system) on `backend/better-auth` — the only live backend, so it hosts this alongside auth rather than a separate Feed service. Deviates from the original draft below: no `area`/pagination yet (no location model exists — see `coarea_product_rules` memory), and the base path is `/api/posts` not `/v1/feed` (matching this service's existing `/api/*` convention, not the `/v1/*` one assumed when this contract was first drafted).
+
 ### Input
-- `GET /v1/feed?area=<id>&cursor=<cursor>` — list local posts
-- `POST /v1/feed` (Bearer required) — `{ content, mediaUrls?, area }`
+- `GET /api/posts` — list all posts, newest first
+- `GET /api/posts/:id` — a single post
+- `POST /api/posts` (Bearer required) — `{ category, body }`
 
 ### Output
-- `{ posts: [{ id, author, content, mediaUrls, area, createdAt }], nextCursor }`
+- `{ posts: [{ id, author, authorVerified, category, body, createdAt, likeCount, replyCount }] }`
+- `{ post: { ...same shape } }`
 
 ### Errors
 - `401` missing/invalid token
-- `422` validation error
+- `404` post not found
+- `422` validation error (missing `category`/`body`)
+
+**Not yet implemented:** `area`/location filtering, pagination (`cursor`), likes (write path — `likeCount` is present in the response but always `0`), AI pre-publish moderation (blocked on the prohibited-content list, per memory).
+
+⸻
+
+## Module: Comment
+
+**Implemented** (stage-20-post-comment-system) on `backend/better-auth`, alongside Feed above.
+
+### Input
+- `GET /api/posts/:id/comments` — list a post's comments, oldest first
+- `POST /api/posts/:id/comments` (Bearer required) — `{ body }`
+
+### Output
+- `{ comments: [{ id, author, authorVerified, body, createdAt }] }`
+- `{ comment: { ...same shape } }`
+
+### Errors
+- `401` missing/invalid token
+- `404` post not found
+- `422` validation error (missing/empty `body`)
 
 ⸻
 

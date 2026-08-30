@@ -1,7 +1,7 @@
 ---
 status: DRAFT
 owner: CONDUCTOR
-last_updated: 2026-07-18
+last_updated: 2026-08-30
 ---
 
 # ROADMAP.md
@@ -21,7 +21,7 @@ Intended for: Product Owners, Project Managers, Architects, Developers, Future C
 
 ## Project Vision
 
-Coarea is a local-first social app: a single place for people to see what's happening nearby — local news, community activity, and events — and to easily join in. First version ships as a mobile app.
+Kemago is a local-first social app: a single place for people to see what's happening nearby — local news, community activity, and events — and to easily join in. First version ships as a mobile app.
 
 ---
 
@@ -83,11 +83,12 @@ Success Indicators:
 
 <!-- Conductor updates this section to summarize, in plain language, what has been delivered so far. -->
 
-- Project setup is complete: what Coarea is, who it's for, and how it will be built has been agreed and written down
+- Project setup is complete: what Kemago is, who it's for, and how it will be built has been agreed and written down
 - The bank-slip verification helper (checks payment QR codes) has been rewritten in the same programming language as the rest of the app, so it's easier to maintain going forward. No change to how it behaves.
 - The project's build tools and the styling library used on the website, admin panel, and mobile app were all updated to their newest versions.
 - Decided the mobile app comes first, with its own backend server that runs on your own computer for now (instead of paid cloud hosting) — keeps early costs low
 - The app's four main screens are built and working: Feed, Events, Chat, and Profile, with bottom-tab navigation between them. Right now they show sample neighborhood content (not real data yet) so the look and feel can be reviewed before the real server is connected
+- Posting and replying now talk to the real server: people can post to the Feed and reply to posts, and everyone signed in sees the same real posts and replies (not just sample content). Tapping a post opens it with its replies. If the connection is down, the app falls back to what's saved on the device so the Feed still shows something
 
 ---
 
@@ -100,10 +101,24 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 | M-001 | Backend foundation | Get the server and database running | PLANNING |
 | M-002 | Login and accounts | People can create an account and log in | PLANNING |
 | M-003 | App screens ready | Feed, Events, Profile, and Chat screens are built | COMPLETE |
-| M-004 | Feed working | People can post and browse local updates | PLANNING |
+| M-004 | Feed working | People can post and browse local updates | IN_PROGRESS |
 | M-005 | Events working | People can find, create, and join local events | PLANNING |
 | M-006 | Profile working | People can view and edit their profile | PLANNING |
 | M-007 | Chat working | People can message each other | PLANNING |
+| M-008 | Comments and likes | People can comment on and like posts | IN_PROGRESS (comments done, likes not yet) |
+| M-009 | Running story with location tag | Post a short running story/reel tagged to a place, with a choice of who sees it: friends only, only you, or everyone | PLANNING |
+| M-010 | Private/public profile | An account can be set to private so only friends can see it | PLANNING |
+| M-011 | Verified posting in local activity | Only people who have verified their identity can post about local activities | PLANNING |
+| M-012 | Clubs | People can create their own local club; only verified people can post in it; each club has a leader, and the leader can be handed off to someone else | PLANNING |
+| M-013 | Poll-style posts | A post type where people vote on a list of choices | PLANNING |
+| M-014 | Content screening | Posts and comments are automatically checked for bad language before they go live | PLANNING |
+| M-015 | Block user | People can block someone they don't want to see or hear from | PLANNING |
+| M-016 | Community score | Each person has an overall reputation score based on their activity | PLANNING |
+| M-017 | Shop (future) | Add a shop section to the app | PLANNING |
+| M-018 | Restaurant ranking (future) | Show which local restaurants people in the area eat at most | PLANNING |
+| M-019 | Food delivery (future) | In-app food delivery service | PLANNING |
+| M-020 | Official shop payments (future) | Spend money directly through the app at official shops | PLANNING |
+| M-021 | Automatic spending tracker (future) | Automatically records what people spend through the app — no manual bookkeeping needed | PLANNING |
 
 **Status values:** PLANNING · APPROVED · IN_PROGRESS · COMPLETE · CANCELLED
 
@@ -116,6 +131,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 - Build the server that will power the app (backend foundation)
 - Build the basic app screens: Feed, Events, Profile, Chat
 - Add login and account creation
+- New feature ideas captured this round (M-008 through M-021 above) are queued behind the current work — they'll move to PLANNING → IN_PROGRESS once the core app (Feed/Events/Profile/Chat + login) is working end to end
 
 ---
 
@@ -158,6 +174,7 @@ Mitigation: Fine for early testing/development; move to a proper server or cloud
 **Out of Scope (for now):**
 - Website and admin panel (`apps/web`, `apps/admin`) — revisit once the mobile app is live
 - Cloud hosting for the backend — using your own computer for now
+- Shop, restaurant ranking, food delivery, official in-app payments, and automatic spending tracking (M-017–M-021) — a later phase, after the core app is live
 
 ---
 

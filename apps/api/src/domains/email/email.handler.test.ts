@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { sendWelcomeEmail, sendNotificationEmail } from './email.handler'
 
-vi.mock('@gover-agent/email', () => ({
+vi.mock('@kemago/email', () => ({
   createResend: vi.fn(() => ({})),
   sendEmail: vi.fn().mockResolvedValue({ id: 'mock-id' }),
 }))
 
-import { sendEmail } from '@gover-agent/email'
+import { sendEmail } from '@kemago/email'
 
 beforeEach(() => vi.clearAllMocks())
 

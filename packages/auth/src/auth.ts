@@ -1,9 +1,9 @@
 import { betterAuth } from 'better-auth'
 import { bearer } from 'better-auth/plugins'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import type { Db } from '@gover-agent/db'
-import { eq } from '@gover-agent/db'
-import * as schema from '@gover-agent/db/schema'
+import type { Db } from '@kemago/db'
+import { eq } from '@kemago/db'
+import * as schema from '@kemago/db/schema'
 
 export function createAuth(db: Db, trustedOrigins?: string[], ownerEmail?: string) {
   return betterAuth({

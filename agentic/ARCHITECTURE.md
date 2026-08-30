@@ -2,7 +2,7 @@
 
 ## Overview
 
-Coarea is a local-first social app. The first release is a mobile app (`apps/mobile`, React Native / Expo + TypeScript) talking to a self-hosted Go backend over a Bearer-token-authenticated REST API. `apps/web` and `apps/admin` exist in the monorepo template but are out of scope until the mobile app ships.
+Kemago is a local-first social app. The first release is a mobile app (`apps/mobile`, React Native / Expo + TypeScript) talking to a self-hosted Go backend over a Bearer-token-authenticated REST API. `apps/web` and `apps/admin` exist in the monorepo template but are out of scope until the mobile app ships.
 
 ## Modules / Components
 
@@ -20,7 +20,7 @@ Coarea is a local-first social app. The first release is a mobile app (`apps/mob
 
 Mobile app → HTTPS REST calls (`Authorization: Bearer <token>`) → Go backend API → PostgreSQL.
 
-No Cloudflare Workers, D1, or `packages/auth` are in this data path (see DECISIONS.md → Coarea Tech Stack).
+No Cloudflare Workers, D1, or `packages/auth` are in this data path (see DECISIONS.md → Kemago Tech Stack).
 
 ## External Dependencies
 

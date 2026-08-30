@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { bearer, emailOTP } from "better-auth/plugins";
-import { createResend, sendEmail } from "@gover-agent/email";
+import { createResend, sendEmail } from "@kemago/email";
 import { createDb, schema } from "./db/client";
 
 // This service replaces backend/api-go's custom OTP+JWT stack for the
@@ -25,7 +25,7 @@ if (!resendApiKey) throw new Error("RESEND_API_KEY is required");
 if (!emailFrom) throw new Error("EMAIL_FROM is required");
 if (!betterAuthSecret) throw new Error("BETTER_AUTH_SECRET is required");
 
-const db = createDb(databaseUrl);
+export const db = createDb(databaseUrl);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -63,8 +63,8 @@ export const auth = betterAuth({
         await sendEmail(resend, {
           to: email,
           from: emailFrom,
-          subject: "Your Coarea verification code",
-          html: `<p>Your Coarea verification code is <strong>${otp}</strong>.</p><p>It's valid for 5 minutes. If you didn't request this, you can ignore this email.</p>`,
+          subject: "Your Kemago verification code",
+          html: `<p>Your Kemago verification code is <strong>${otp}</strong>.</p><p>It's valid for 5 minutes. If you didn't request this, you can ignore this email.</p>`,
         });
       },
     }),

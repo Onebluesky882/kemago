@@ -1,4 +1,4 @@
-# @gover-agent/chat-ops-core
+# @kemago/chat-ops-core
 
 Reusable building blocks for chat-driven bots (Telegram, LINE, and Facebook
 Messenger/Instagram today), extracted from `apps/api`'s Telegram bot
@@ -113,8 +113,8 @@ shapes for the functions above — see the source file for each (all under
 ## Development
 
 ```bash
-pnpm --filter @gover-agent/chat-ops-core test         # vitest
-pnpm --filter @gover-agent/chat-ops-core run type-check
+pnpm --filter @kemago/chat-ops-core test         # vitest
+pnpm --filter @kemago/chat-ops-core run type-check
 ```
 
 Every exported function has a colocated `*.test.ts`. When adding a new
@@ -136,8 +136,8 @@ without copy-pasting or depending on `apps/api`.
 
 ## Using it in another program
 
-Inside this monorepo: add `"@gover-agent/chat-ops-core": "workspace:*"` to
-that app's `package.json` and import from `@gover-agent/chat-ops-core`.
+Inside this monorepo: add `"@kemago/chat-ops-core": "workspace:*"` to
+that app's `package.json` and import from `@kemago/chat-ops-core`.
 
 In a completely separate project: copy the `packages/chat-ops-core` folder.
 It has no dependency on anything else in this monorepo (only `typescript`,
@@ -158,7 +158,7 @@ import {
   sendTelegramMessage,
   parseTextToJSON,
   type ChatLinkStore,
-} from '@gover-agent/chat-ops-core'
+} from '@kemago/chat-ops-core'
 
 const app = new Hono<{ Bindings: { BOT_TOKEN: string; TELEGRAM_SECRET_TOKEN: string } }>()
 
@@ -222,7 +222,7 @@ import {
   getLineProfile,
   parseTextToJSON,
   type ChatLinkStore,
-} from '@gover-agent/chat-ops-core'
+} from '@kemago/chat-ops-core'
 
 const app = new Hono<{ Bindings: { LINE_CHANNEL_ACCESS_TOKEN: string; LINE_CHANNEL_SECRET: string } }>()
 
@@ -290,7 +290,7 @@ import {
   sendMetaMessage,
   parseTextToJSON,
   type ChatLinkStore,
-} from '@gover-agent/chat-ops-core'
+} from '@kemago/chat-ops-core'
 
 const app = new Hono<{
   Bindings: { PAGE_ACCESS_TOKEN: string; META_APP_SECRET: string; META_VERIFY_TOKEN: string }

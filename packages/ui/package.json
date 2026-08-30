@@ -1,12 +1,12 @@
 {
-  "name": "@gover-agent/ui",
+  "name": "@kemago/ui",
   "version": "0.0.1",
   "private": true,
   "exports": {
     ".": "./src/index.ts"
   },
   "devDependencies": {
-    "@gover-agent/config": "workspace:*",
+    "@kemago/config": "workspace:*",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "typescript": "latest"

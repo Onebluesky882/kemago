@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - coarea_postgres_data:/var/lib/postgresql/data
+      - kemago_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -37,4 +37,4 @@ services:
       - "${WS_PORT}:${WS_PORT}"
 
 volumes:
-  coarea_postgres_data:
+  kemago_postgres_data:

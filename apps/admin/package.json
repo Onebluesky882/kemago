@@ -1,5 +1,5 @@
 {
-  "name": "@gover-agent/admin",
+  "name": "@kemago/admin",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@gover-agent/ui": "workspace:*",
+    "@kemago/ui": "workspace:*",
     "@tanstack/react-query": "latest",
     "autoprefixer": "^10.5.0",
     "next": "16.2.12",
@@ -24,7 +24,7 @@
     "zustand": "latest"
   },
   "devDependencies": {
-    "@gover-agent/config": "workspace:*",
+    "@kemago/config": "workspace:*",
     "@opennextjs/cloudflare": "^1.19.11",
     "@types/node": "latest",
     "@types/react": "latest",

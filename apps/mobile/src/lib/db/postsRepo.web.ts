@@ -6,8 +6,8 @@ import type { Post } from "../mockData";
 // extensionless "./postsRepo" and Metro resolves whichever file matches
 // the platform being bundled.
 
-const POSTS_KEY = "coarea:posts";
-const OUTBOX_KEY = "coarea:sync_outbox";
+const POSTS_KEY = "kemago:posts";
+const OUTBOX_KEY = "kemago:sync_outbox";
 
 type OutboxEntry = {
   id: string;

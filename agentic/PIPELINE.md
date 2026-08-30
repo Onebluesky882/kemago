@@ -26,6 +26,9 @@ Conductor Branch: main
 | stage-14-mobile-auth-flow | apps/mobile, backend/api-go | stage-11-mobile-jobs-sport-clubs, stage-13-backend-jwt-issuance | COMPLETE |
 | stage-15-otp-provider-abstraction | backend/api-go | stage-14-mobile-auth-flow | COMPLETE (apps/mobile now out of sync — see detail) |
 | stage-17-mobile-ios-gitignore | apps/mobile | none | COMPLETE |
+| stage-18-rename-project-kemago | repo-wide | none | COMPLETE |
+| stage-19-roadmap-backlog-capture | agentic/ROADMAP.md | none | COMPLETE |
+| stage-20-post-comment-system | backend/better-auth, apps/mobile | stage-19-roadmap-backlog-capture | IN_PROGRESS |
 
 ---
 
@@ -42,7 +45,7 @@ Conductor Branch: main
 - [x] PROJECT.md, DECISIONS.md, ARCHITECTURE.md, CONTRACTS.md, PIPELINE.md, ROADMAP.md updated
 - [x] conductor-branch placeholder replaced with `main` everywhere
 
-**Done:** Walked the client through QUESTIONS.md (Thai language session). Project: Coarea, a local-first social app (feed/community/events). Client is a developer, mobile-first (Expo/React Native + TypeScript), backend in Go self-hosted via OrbStack, PostgreSQL database — a deliberate deviation from the template's default Hono-on-Cloudflare-Workers/D1 stack (recorded in DECISIONS.md → Coarea Tech Stack). `apps/web`/`apps/admin` deprioritized until client asks. Governance files updated accordingly.
+**Done:** Walked the client through QUESTIONS.md (Thai language session). Project: Kemago, a local-first social app (feed/community/events). Client is a developer, mobile-first (Expo/React Native + TypeScript), backend in Go self-hosted via OrbStack, PostgreSQL database — a deliberate deviation from the template's default Hono-on-Cloudflare-Workers/D1 stack (recorded in DECISIONS.md → Kemago Tech Stack). `apps/web`/`apps/admin` deprioritized until client asks. Governance files updated accordingly.
 **Next:** Dispatch stage-4-backend-scaffold and stage-6-mobile-shell (independent, can run in parallel — no shared files).
 **Blockers:** none
 
@@ -62,7 +65,7 @@ Conductor Branch: main
 - `src/config.ts` (was `config/config.go`) — env loading with fallbacks
 - `src/slip2go/client.ts` (was `slip2go/client.go`) — Slip2Go API client, `matchesWallet`, `last4Digits`
 - `src/main.ts` (was `main.go`) — `node:http` server, same routes (`GET /healthz`, `POST /v1/verify-slip`), constant-time internal-secret check via `node:crypto.timingSafeEqual`, graceful shutdown on SIGINT/SIGTERM
-- `package.json` / `tsconfig.json` — standalone (not extending `@gover-agent/config`, kept self-contained so the Dockerfile build context doesn't need the rest of the monorepo), scripts: `dev` (tsx watch), `build` (tsc → `dist/`), `start`
+- `package.json` / `tsconfig.json` — standalone (not extending `@kemago/config`, kept self-contained so the Dockerfile build context doesn't need the rest of the monorepo), scripts: `dev` (tsx watch), `build` (tsc → `dist/`), `start`
 - `Dockerfile` rewritten for Node 22 alpine multi-stage build
 - `README.md` run instructions updated to `pnpm install && pnpm dev`
 - Removed: `main.go`, `go.mod`, `go.sum`, `config/config.go`, `slip2go/client.go`
@@ -316,7 +319,7 @@ Fixed a routing bug caught during live testing: `api.Get("/me", handlers.Me, han
 - [x] Root `_layout.tsx` `AuthGate` redirects signed-out users to `(auth)/signin` and signed-in users away from it; `app/index.tsx` added as the explicit entry for `/` (previously ambiguous once a second route group existed)
 - [x] `backend/api-go/internal/otp/otp.go` now logs the real ThaiBulkSMS error on send failure (it silently swallowed it before — the client-facing error was always the generic "failed to send verification code")
 
-**Done:** Built the mobile side of stage-13's OTP+JWT backend. Also used this stage to find and fix the actual real-world blockers for SMS delivery: the client's `SMS_SENDER` env value (`Coarea`) was never an approved sender name, which only surfaced once the missing error-logging (above) was added — the real ThaiBulkSMS response was `ERROR_SENDER (code 110)`. Client found the approved sender name ("Demo") in their dashboard; updating `SMS_SENDER` and retrying immediately produced a *different*, expected error: `ERROR_INSUFFICIENT_CREDIT (code 116)` — confirming the sender fix worked and the only remaining blocker to a real SMS being delivered is the account's SMS credit balance (0 at the time of this stage).
+**Done:** Built the mobile side of stage-13's OTP+JWT backend. Also used this stage to find and fix the actual real-world blockers for SMS delivery: the client's `SMS_SENDER` env value (`Kemago`) was never an approved sender name, which only surfaced once the missing error-logging (above) was added — the real ThaiBulkSMS response was `ERROR_SENDER (code 110)`. Client found the approved sender name ("Demo") in their dashboard; updating `SMS_SENDER` and retrying immediately produced a *different*, expected error: `ERROR_INSUFFICIENT_CREDIT (code 116)` — confirming the sender fix worked and the only remaining blocker to a real SMS being delivered is the account's SMS credit balance (0 at the time of this stage).
 
 **Verified:** `pnpm type-check` clean. `npx expo export --platform web` succeeded — all 20 routes bundled with no runtime import errors, including the new `/`, `/signin`, `/verify` routes (this is stronger than type-check alone: it catches bundler/runtime issues tsc can't see). **Not yet verified:** never run in an actual Expo dev session / simulator — only the static export was checked. A live OTP request against the client's real phone number correctly reached ThaiBulkSMS twice (proving the sender-name fix), but no SMS has actually been delivered yet — blocked on account credit, not on this stage's code.
 **Next:** Top up ThaiBulkSMS credit, then do one real end-to-end sign-in (real SMS received → code entered → signed in) on an actual device/simulator, not just the web export. No sign-out UI exists yet. See `apps/mobile/TODO.md` → Auth section for the rest.
@@ -383,14 +386,14 @@ Two real bugs found and fixed post-migration:
 1. Postgres volume still had the pre-stage-15 `phone` column — `db.Migrate`'s `CREATE TABLE IF NOT EXISTS` never touches existing tables. Fixed with a one-time conditional `ALTER TABLE ... RENAME COLUMN` (this was on `backend/api-go`, now moot since that service is gone, but the same class of bug is worth watching for in `backend/better-auth`'s Drizzle migrations too).
 2. React Native's `fetch` sends a literal `Origin: null` header, which Better Auth's origin-check middleware treats as `MISSING_OR_NULL_ORIGIN` and rejects with 403 on endpoints it force-validates (e.g. `update-user`). Fixed via `advanced.disableCSRFCheck: true` — this service is Bearer-only with no cookies anywhere, so there's no real CSRF surface to protect.
 
-Also fixed the Resend sandbox restriction blocking real email delivery (`EMAIL_FROM` was still `onboarding@resend.dev`, which only delivers to the account owner's own address) by switching to `dikapay.app`, a domain already verified on the same Resend account, as a demo stand-in until Coarea has its own verified domain.
+Also fixed the Resend sandbox restriction blocking real email delivery (`EMAIL_FROM` was still `onboarding@resend.dev`, which only delivers to the account owner's own address) by switching to `dikapay.app`, a domain already verified on the same Resend account, as a demo stand-in until Kemago has its own verified domain.
 
 **Verified live** (OrbStack running, real Postgres/Redis, real Resend sends): full OTP request→verify→session→update-profile→sign-out loop tested via curl matching the mobile client's exact request shapes, at each stage of the pivot (raw `pg`, then again after converting to Drizzle). A real email was confirmed received by the client on `wansing05@gmail.com`. `tsc --noEmit` clean on `apps/mobile` and `backend/better-auth`. `docker compose config` validates with `backend/api-go`'s `api` service removed.
 
 **Next:**
 - `backend/better-auth` still needs its actual Railway deployment (service is Railway-ready — reads `PORT`/`DATABASE_URL` from env, has a Dockerfile with repo-root build context — but was only run locally via `bun src/server.ts` in this session)
 - No password/session revocation UI beyond the one Log out button; no "log out of all devices"
-- `EMAIL_FROM` is still the demo `dikapay.app` domain — swap for Coarea's own verified domain before real users see it
+- `EMAIL_FROM` is still the demo `dikapay.app` domain — swap for Kemago's own verified domain before real users see it
 - The stray `backend/api-go/internal/authtoken` reasoning ("no refresh tokens/rotation, revisit Authula if that becomes a real requirement") is now moot — `backend/better-auth`'s session plugin (`updateAge`) covers the same rolling-session need natively
 
 **Blockers:** none
@@ -409,6 +412,69 @@ Also fixed the Resend sandbox restriction blocking real email delivery (`EMAIL_F
 
 **Done:** `apps/mobile/ios/` (the `expo prebuild`-generated Xcode project, including a 1.2GB `Pods/` directory) was showing as 19 untracked files in `git status` despite never having been intentionally tracked (see stage-11's Blockers note — it was already meant to be untracked, just not codified). Added `ios/` to `apps/mobile/.gitignore` so it stops showing up as pending changes; confirmed no custom native code exists in it (`AppDelegate.swift`/`Podfile` are stock boilerplate) before ignoring the whole directory rather than cherry-picking `Pods/`/`build/`/`xcuserdata/`.
 **Next:** none — regenerate via `expo prebuild --platform ios` whenever the native project is needed locally.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-18-rename-project-kemago
+
+**Domain:** repo-wide
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Client asked to rename the project from Coarea to Kemago, confirmed full scope (brand/UI text, `agentic/` historical docs, `@gover-agent/*` package namespace, GitHub repo). Replaced `Coarea`→`Kemago` and `coarea`→`kemago` across every tracked file that mentioned it (README, all of `agentic/`, mobile UI strings, storage/DB key prefixes, OTP email copy, `docker-compose.yml`, `.env.example` files, `backend/ws-go`'s Go module path + its one internal import). Renamed the pnpm workspace scope `@gover-agent/*` → `@kemago/*` across every `package.json` (root `name` field included) and every cross-package import (including the mechanical import-path update inside the two protected files, `forum.route.ts`/`roadmap.route.ts` — string-only, no logic touched). Left template-only "GoverAgent"/"gover-agent" branding alone where it's demo copy in the inactive `apps/web`/`apps/api` track (marketing labels, a placeholder email domain, an Anthropic sandbox-env display name) — not part of the package namespace, out of scope for this rename.
+
+GitHub side: `gh repo view` showed the repo had already been renamed to `kemago` on GitHub's side (redirect from the old `coarea` slug); updated the local `origin` remote URL to match and confirmed `git fetch` works.
+
+**Verified:** `go build ./...` clean on `backend/ws-go` after the module-path rename; `pnpm install` (re-links workspace symlinks under the new scope) then `pnpm --filter @kemago/mobile type-check` and `pnpm --filter @kemago/better-auth-service type-check` both clean.
+**Next:** Actual local `.env`/`backend/better-auth/.env` files (gitignored, untouched by this rename) still hold the old `coarea` Postgres user/db name — renaming those means recreating the Postgres container/volume (`docker-compose.yml`'s volume is now named `kemago_postgres_data`, so the next `docker compose up` creates a fresh empty volume rather than reusing the old `coarea_postgres_data` one with existing data). Client should confirm before that happens. `apps/mobile/app.json` (`name`/`slug: "mobile"`, `scheme: "acme"`, bundle id `com.wansing05.mobile`) was never actually named "coarea" and was left untouched — flag if the client wants it renamed to Kemago too.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-19-roadmap-backlog-capture
+
+**Domain:** agentic/ROADMAP.md
+**Depends On:** none
+**Status:** `COMPLETE`
+
+**Done:** Client dropped a feature wishlist into a root-level `goal.md` (untracked scratch file, not part of this commit) and asked for each section to be captured into the roadmap. Added M-008 through M-021 to ROADMAP.md's Milestone Backlog, translated into plain-language, non-technical descriptions per CLAUDE.md's roadmap language rules: comments/likes, a running-story/reel feature with per-post visibility (friends/only-me/public), private/public profile toggle, verified-identity gating on local-activity posts, clubs (verified creator, a leader role that can be reassigned), poll-style posts, automated bad-language screening on posts/comments, block user, an overall community reputation score, and five explicitly-future items (shop, restaurant ranking, food delivery, official in-app shop payments, automatic spending tracking). Everything is `PLANNING` status, appended after the existing M-001–M-007 milestones — nothing reordered or marked done. Updated "Next Steps" to note this backlog is queued behind current work, and "Project Scope" → Out of Scope to list the five future-phase items explicitly.
+**Next:** None of these are scoped/dispatched as implementation stages yet — each needs its own CONTRACTS.md entry and stage dispatch (with client sign-off on acceptance criteria) before a Worker starts building it. Event (goal.md item 3.3) already exists as M-005 — not duplicated.
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-20-post-comment-system
+
+**Domain:** backend/better-auth, apps/mobile
+**Depends On:** stage-19-roadmap-backlog-capture
+**Status:** `IN_PROGRESS`
+
+**Acceptance Criteria:**
+- [x] Real `POST`/`GET /api/posts` and `GET`/`POST /api/posts/:id/comments` on `backend/better-auth` (see CONTRACTS.md → Feed/Comment)
+- [x] Mobile Feed screen reads real posts from the API (falls back to the local-first cache if the API is unreachable) and posts through the real API when signed in
+- [x] Tapping a post opens a new detail screen (`/post/[id]`) showing the post and its replies, with a reply composer
+- [ ] Likes — not built this round, `likeCount` exists in the schema/response but nothing writes to it yet
+- [ ] AI pre-publish moderation — intentionally not built; blocked on the prohibited-content list per `coarea_product_rules` memory
+
+**Done:** `backend/better-auth` was the only live backend (auth-only until now); extended it rather than standing up a separate service, per the established "keep backend in one place" pattern. Added `post`/`comment` Drizzle tables (`src/db/schema.ts`), a hand-rolled router (`src/routes/posts.ts`) that `server.ts` checks before falling through to Better Auth's own handler, and Bearer auth on writes via `auth.api.getSession(...)` (same mechanism Better Auth's own endpoints already use). `authorVerified` in every response is read live from `user.emailVerified` — there's no real identity-verification system yet (open TODO in memory), so this is an honest interim proxy using a field that already exists, not a stand-in for the eventual KYC feature. `replyCount` is computed via a `GROUP BY` count join rather than a stored counter, so it can't drift from the actual comment rows.
+
+Mobile: added `lib/api/postsApi.ts`, wired `FeedScreen` to fetch/post through it (offline fallback preserved via the existing `postsRepo.*`/local cache), and built the first inner-page screen in the app (`screens/post/PostDetailScreen.tsx` + `app/post/[id].tsx`), which also required adding the project's first `BackButton` component (`components/ui/BackButton.tsx`) per CLAUDE.md's Navigation Rules — no earlier screen needed one since everything before this was a root tab. `PostCard` is now pressable (`Card`'s existing `onPress` prop) and navigates there.
+
+**Verified:** `pnpm --filter @kemago/better-auth-service exec tsc --noEmit` and `pnpm --filter @kemago/mobile type-check` both clean. `npx expo export --platform web` succeeded with `/post/[id]` present in the route list. Pushed the new tables to the live dev Postgres (`drizzle-kit push`, additive only — no existing tables touched) and live-tested against it: unauthenticated `POST /api/posts` → 401, `GET` on a missing post id → 404, Better Auth's own `/api/auth/get-session` still passes through unaffected, `OPTIONS /api/posts` → 204. Seeded one real post+comment row directly via SQL (attributed to the developer's own already-verified account) and confirmed `GET /api/posts`, `GET /api/posts/:id`, and `GET /api/posts/:id/comments` all return the correct shape with the right `replyCount`, then deleted the test rows (comment cascade-deleted automatically). **Not yet live-tested:** the authenticated write path (`POST /api/posts` / `POST /api/posts/:id/comments` with a real Bearer token) — that needs a live OTP round-trip (a real email) which wasn't triggered this session; the code path reuses the identical `auth.api.getSession` call already proven working by the unauthenticated-401 test and by Better Auth's own passing endpoints, but treat it as logically-verified, not live-confirmed, until someone actually posts from the app.
+**Next:** Do one real signed-in post + reply from the mobile app (or a curl with a real token) to close the gap above. Then: likes (write path), pagination/cursor, and the neighborhood/location model that Feed's `area` field and `PostCard`'s neighborhood text are currently faking with a "Nearby" placeholder (see `FeedScreen.tsx` → `toLocalPost`).
 **Blockers:** none
 
 **Dispatch-In:** none — direct interactive session with the client

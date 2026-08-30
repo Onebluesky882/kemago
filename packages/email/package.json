@@ -1,5 +1,5 @@
 {
-  "name": "@gover-agent/email",
+  "name": "@kemago/email",
   "version": "0.0.1",
   "private": true,
   "exports": {
@@ -9,7 +9,7 @@
     "resend": "latest"
   },
   "devDependencies": {
-    "@gover-agent/config": "workspace:*",
+    "@kemago/config": "workspace:*",
     "@types/react": "latest",
     "typescript": "latest"
   },

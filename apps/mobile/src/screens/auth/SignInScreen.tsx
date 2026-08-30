@@ -31,7 +31,7 @@ export function SignInScreen() {
 
   return (
     <View className="flex-1 bg-bg justify-center px-6">
-      <Text className="text-2xl font-bold text-text mb-1.5">Welcome to Coarea</Text>
+      <Text className="text-2xl font-bold text-text mb-1.5">Welcome to Kemago</Text>
       <Text className="text-sm text-text-muted mb-8">
         Enter your email — we'll send you a code to sign in.
       </Text>

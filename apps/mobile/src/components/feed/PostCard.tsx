@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
 import { Avatar } from "../ui/Avatar";
 import { Badge } from "../ui/Badge";
@@ -13,8 +14,10 @@ const categoryTone: Record<Post["category"], "brand" | "accent" | "neutral"> = {
 };
 
 export function PostCard({ post }: { post: Post }) {
+  const router = useRouter();
+
   return (
-    <Card className="mb-3">
+    <Card className="mb-3" onPress={() => router.push(`/post/${post.id}`)}>
       <View className="flex-row items-center mb-3">
         <Avatar initials={initialsOf(post.author)} />
         <View className="ml-3 flex-1">

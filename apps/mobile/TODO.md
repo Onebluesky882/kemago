@@ -75,7 +75,7 @@ Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 - [ ] Real sync: drain outbox against a live API once one exists
 - [ ] Conflict resolution strategy (not designed yet — fine while there's no server writer)
 
-## Global product rules (see also memory: coarea-product-rules)
+## Global product rules (see also memory: kemago-product-rules)
 - [x] No avatar upload anywhere — initials-only `Avatar` component
 - [x] Verified badge surfaced wherever a user/poster/host is shown
 - [x] Private/public profile toggle exists (Profile screen)
@@ -85,7 +85,7 @@ Legend: `[x]` done · `[~]` partial / mocked · `[ ]` not started
 ## Platform-specific files
 - [x] `lib/db/postsRepo.*` and `lib/storage/zustandStorage.*` are the only splits so far (genuine native-vs-web divergence — nitro-sqlite and MMKV are native-only NitroModules)
 - [x] Each has a bare fallback (`postsRepo.ts`, `zustandStorage.ts`) that just re-exports `.native` — lets `tsc` resolve the extensionless import without a `moduleSuffixes` tsconfig change (that approach was tried and reverted: it broke NativeWind's `className` prop typing project-wide)
-- [ ] Do not split any other component/module unless it hits the same kind of real platform divergence (see memory: coarea-mobile-platform-files)
+- [ ] Do not split any other component/module unless it hits the same kind of real platform divergence (see memory: kemago-mobile-platform-files)
 
 ## Known bugs fixed this pass
 - [x] `FeedScreen.handlePost` no longer hardcodes category "General" — uses the active filter

@@ -44,11 +44,11 @@ Architecture: `otp.Service` owns cross-cutting concerns (request cooldown, attem
 - [x] `POST /api/otp/request`, `POST /api/otp/verify` (body field renamed `phone` → `identifier`, now provider-agnostic) — verified end-to-end multiple times across provider swaps (correct code → token issued + `/api/me` accepts it; wrong code → 401; reused code → 404 single-use; rollback on send failure confirmed with real ThaiBulkSMS *and* SMSMKT rejections)
 - [x] `GET/POST /api/otp` — ThaiBulkSMS delivery-report webhook receiver (matches the URL already registered in their dashboard); currently just 200s, doesn't persist delivery status. Harmless no-op while email is active.
 - [x] `db.User.Identifier` (renamed from `Phone`) — same column now holds an email or a phone number depending on the active provider; not split into separate columns until both need to coexist on one account
-- [x] **Real email delivery confirmed.** First attempt against `wansing05@gmail.com` failed with Resend's sandbox restriction ("You can only send testing emails to your own email address") because `EMAIL_FROM` was still the shared `onboarding@resend.dev` test sender. Switched `EMAIL_FROM` to `Coarea <noreply@dikapay.app>` (an already-verified domain on this Resend account, used for demo purposes pending Coarea's own domain) — `POST /api/otp/request` against `wansing05@gmail.com` then returned `200 {"sent":true}` and the email was confirmed received.
+- [x] **Real email delivery confirmed.** First attempt against `wansing05@gmail.com` failed with Resend's sandbox restriction ("You can only send testing emails to your own email address") because `EMAIL_FROM` was still the shared `onboarding@resend.dev` test sender. Switched `EMAIL_FROM` to `Kemago <noreply@dikapay.app>` (an already-verified domain on this Resend account, used for demo purposes pending Kemago's own domain) — `POST /api/otp/request` against `wansing05@gmail.com` then returned `200 {"sent":true}` and the email was confirmed received.
 - [ ] Daily per-identifier request cap (currently only a 60s cooldown — no cap on total requests/day, the real cost/abuse guard)
-- [ ] SMSMKT sender name for the plain send-message path: no approved name exists on this account. Rules confirmed (4-10 chars, English letters+numbers only, no spaces, NBTC-regulated approval process) — "Coarea" fits and could be submitted, but this is a business process with a client, not something to code around.
+- [ ] SMSMKT sender name for the plain send-message path: no approved name exists on this account. Rules confirmed (4-10 chars, English letters+numbers only, no spaces, NBTC-regulated approval process) — "Kemago" fits and could be submitted, but this is a business process with a client, not something to code around.
 - [ ] ThaiBulkSMS: sender name confirmed valid, but account credit is 0 — top up to actually test SMS delivery on that path
-- [ ] `EMAIL_FROM` is currently `dikapay.app` (a demo-only stand-in domain) — swap for Coarea's own verified domain before shipping to real users
+- [ ] `EMAIL_FROM` is currently `dikapay.app` (a demo-only stand-in domain) — swap for Kemago's own verified domain before shipping to real users
 
 </details>
 
@@ -65,5 +65,5 @@ Architecture: `otp.Service` owns cross-cutting concerns (request cooldown, attem
 - [x] `docker-compose.yml` at repo root: postgres, redis, ws services (the `api` service was removed along with `backend/api-go` — see above), `.env` auto-loaded (Compose picks up a root `.env` automatically)
 - [x] `.env.example` committed as the template; real `.env` is gitignored
 - [x] `docker compose config` validates
-- [ ] Self-host deploy checklist (per DECISIONS.md → Coarea Tech Stack consequences) — not written yet
+- [ ] Self-host deploy checklist (per DECISIONS.md → Kemago Tech Stack consequences) — not written yet
 - [ ] `backend/better-auth` deploys separately to Railway (Bun runtime, own `.env`) — not part of this docker-compose file

@@ -1,4 +1,4 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 // Postgres mirror of packages/db/src/schema/auth.ts (same field names/shape,
 // per the client's request to keep the Drizzle pattern already established
@@ -59,4 +59,33 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at"),
   updatedAt: timestamp("updated_at"),
+});
+
+// Feed: local posts + comments. authorVerified isn't stored here — it's
+// read live from user.emailVerified at query time (see routes/posts.ts),
+// since real identity verification (face-scan KYC) hasn't been built yet.
+// likeCount has no write path yet (no like endpoint this round); it's a
+// plain counter column so the API response shape already matches what the
+// mobile Post type expects.
+export const post = pgTable("post", {
+  id: text("id").primaryKey(),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  category: text("category").notNull(),
+  body: text("body").notNull(),
+  likeCount: integer("like_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const comment = pgTable("comment", {
+  id: text("id").primaryKey(),
+  postId: text("post_id")
+    .notNull()
+    .references(() => post.id, { onDelete: "cascade" }),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });

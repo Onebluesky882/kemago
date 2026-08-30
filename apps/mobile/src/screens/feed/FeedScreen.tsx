@@ -4,11 +4,31 @@ import { CategoryChip } from "../../components/feed/CategoryChip";
 import { ComposeBar } from "../../components/feed/ComposeBar";
 import { PostCard } from "../../components/feed/PostCard";
 import { EmptyState } from "../../components/ui/EmptyState";
+import { type ApiPost, createPost as apiCreatePost, listPosts as apiListPosts } from "../../lib/api/postsApi";
 import { getAllPosts, initPostsStore, insertPost } from "../../lib/db/postsRepo";
 import { currentUser, posts as seedPosts, type Post } from "../../lib/mockData";
+import { formatRelativeTime } from "../../lib/time";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useFeedFilterStore, type FeedFilter } from "../../store/useFeedFilterStore";
 
 const filters: FeedFilter[] = ["All", "General", "Recommendations", "Lost & Found", "Safety"];
+
+// No neighborhood/location model exists on the backend yet (see
+// coarea_product_rules memory) — real posts don't carry one, so this is a
+// placeholder until that feature exists.
+function toLocalPost(apiPost: ApiPost): Post {
+  return {
+    id: apiPost.id,
+    author: apiPost.author,
+    authorVerified: apiPost.authorVerified,
+    neighborhood: "Nearby",
+    category: apiPost.category,
+    body: apiPost.body,
+    postedAt: formatRelativeTime(apiPost.createdAt),
+    likeCount: apiPost.likeCount,
+    replyCount: apiPost.replyCount,
+  };
+}
 
 export function FeedScreen() {
   const { filter, setFilter } = useFeedFilterStore();
@@ -18,8 +38,15 @@ export function FeedScreen() {
     let cancelled = false;
     (async () => {
       await initPostsStore(seedPosts);
-      const stored = await getAllPosts();
-      if (!cancelled) setPosts(stored);
+      try {
+        const apiPosts = await apiListPosts();
+        if (!cancelled) setPosts(apiPosts.map(toLocalPost));
+      } catch {
+        // Backend unreachable (offline, or not running) — fall back to the
+        // local-first cache so the feed still shows something.
+        const stored = await getAllPosts();
+        if (!cancelled) setPosts(stored);
+      }
     })();
     return () => {
       cancelled = true;
@@ -33,12 +60,27 @@ export function FeedScreen() {
 
   const handlePost = useCallback(
     async (body: string) => {
+      const category = filter === "All" ? "General" : filter;
+      const token = useAuthStore.getState().token;
+
+      if (token) {
+        try {
+          const created = await apiCreatePost(token, { category, body });
+          const localPost = toLocalPost(created);
+          await insertPost(localPost);
+          setPosts((prev) => [localPost, ...prev]);
+          return;
+        } catch {
+          // Fall through to the offline-only path below.
+        }
+      }
+
       const newPost: Post = {
         id: `p_${Date.now()}`,
         author: currentUser.name,
         authorVerified: currentUser.verified,
         neighborhood: currentUser.neighborhood,
-        category: filter === "All" ? "General" : filter,
+        category,
         body,
         postedAt: "Just now",
         likeCount: 0,

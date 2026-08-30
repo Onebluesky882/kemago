@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthState>()(
       setProfile: ({ name, profileComplete }) => set({ profileName: name, profileComplete }),
     }),
     {
-      name: "coarea-auth",
+      name: "kemago-auth",
       storage: createJSONStorage(() => zustandStorage),
     },
   ),

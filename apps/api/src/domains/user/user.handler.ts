@@ -1,6 +1,6 @@
-import { createDb, eq, user as userTable } from '@gover-agent/db'
+import { createDb, eq, user as userTable } from '@kemago/db'
 import type { Context } from 'hono'
-import type { Auth } from '@gover-agent/auth'
+import type { Auth } from '@kemago/auth'
 
 export async function getMe(c: Context, auth: Auth) {
   const session = await auth.api.getSession({ headers: c.req.raw.headers })

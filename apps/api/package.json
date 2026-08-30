@@ -1,5 +1,5 @@
 {
-  "name": "@gover-agent/api",
+  "name": "@kemago/api",
   "version": "0.0.1",
   "private": true,
   "main": "src/index.ts",
@@ -15,9 +15,9 @@
     "@anthropic-ai/sdk": "0.105.0",
     "@aws-sdk/client-s3": "^3.1071.0",
     "@aws-sdk/s3-request-presigner": "^3.1071.0",
-    "@gover-agent/auth": "workspace:*",
-    "@gover-agent/db": "workspace:*",
-    "@gover-agent/email": "workspace:*",
+    "@kemago/auth": "workspace:*",
+    "@kemago/db": "workspace:*",
+    "@kemago/email": "workspace:*",
     "@hono/zod-openapi": "^1.5.1",
     "@scalar/hono-api-reference": "^0.11.11",
     "better-auth": "^1.6.19",
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
-    "@gover-agent/config": "workspace:*",
+    "@kemago/config": "workspace:*",
     "typescript": "latest",
     "vitest": "latest",
     "wrangler": "latest"

@@ -1,4 +1,4 @@
-import { createResend, sendEmail } from '@gover-agent/email'
+import { createResend, sendEmail } from '@kemago/email'
 
 type SendWelcomeParams = { to: string; name: string; resendApiKey: string }
 type SendNotificationParams = { to: string; name: string; subject: string; message: string; resendApiKey: string }

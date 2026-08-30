@@ -6,7 +6,7 @@ import { AuthApiError, updateProfile } from "../../lib/api/authApi";
 import { useAuthStore } from "../../store/useAuthStore";
 import { colors } from "../../theme/colors";
 
-// No avatar/photo field here — Coarea product rule is initials only, no
+// No avatar/photo field here — Kemago product rule is initials only, no
 // custom profile photos, for anti-impersonation reasons.
 export function CompleteProfileScreen() {
   const [name, setName] = useState("");

@@ -1,5 +1,5 @@
 {
-  "name": "@gover-agent/auth",
+  "name": "@kemago/auth",
   "version": "0.0.1",
   "private": true,
   "exports": {
@@ -9,8 +9,8 @@
     "better-auth": "latest"
   },
   "devDependencies": {
-    "@gover-agent/config": "workspace:*",
-    "@gover-agent/db": "workspace:*",
+    "@kemago/config": "workspace:*",
+    "@kemago/db": "workspace:*",
     "typescript": "latest"
   }
 }

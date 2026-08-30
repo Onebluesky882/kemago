@@ -4,7 +4,7 @@
 #
 # On Railway: set the service's root directory to the repo root and the
 # Dockerfile path to backend/better-auth/Dockerfile.
-#   docker build -f backend/better-auth/Dockerfile -t coarea-better-auth .
+#   docker build -f backend/better-auth/Dockerfile -t kemago-better-auth .
 
 FROM oven/bun:1-alpine
 WORKDIR /repo
@@ -16,7 +16,7 @@ COPY packages/email packages/email
 COPY packages/config packages/config
 COPY backend/better-auth backend/better-auth
 
-RUN pnpm install --frozen-lockfile --filter @gover-agent/better-auth-service...
+RUN pnpm install --frozen-lockfile --filter @kemago/better-auth-service...
 
 WORKDIR /repo/backend/better-auth
 EXPOSE 3002

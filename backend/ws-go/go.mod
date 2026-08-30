@@ -1,4 +1,4 @@
-module github.com/onebluesky882/coarea/backend/ws-go
+module github.com/onebluesky882/kemago/backend/ws-go
 
 go 1.26.3
 

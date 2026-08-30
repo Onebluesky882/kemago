@@ -127,13 +127,13 @@ Use **Anthropic Managed Agents** (`/v1/agents`, `/v1/sessions`) with a `github_r
 
 ⸻
 
-## Decision: Coarea Tech Stack
+## Decision: Kemago Tech Stack
 
 **Date:** 2026-08-23
 **Status:** ACCEPTED
 
 **Context:**
-Coarea is a greenfield, mobile-first, local social app (feed, community, events/missions). Setup was walked through via QUESTIONS.md. The client requested a Go backend and self-hosted infrastructure, which deviates from this template's default Hono-on-Cloudflare-Workers backend.
+Kemago is a greenfield, mobile-first, local social app (feed, community, events/missions). Setup was walked through via QUESTIONS.md. The client requested a Go backend and self-hosted infrastructure, which deviates from this template's default Hono-on-Cloudflare-Workers backend.
 
 **Decision:**
 
