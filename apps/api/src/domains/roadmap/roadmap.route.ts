@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { createDb, roadmapPhases, roadmapTasks, user, eq, asc } from '@gover-agent/db'
-import { createAuth } from '@gover-agent/auth'
+import { createDb, roadmapPhases, roadmapTasks, user, eq, asc } from '@kemago/db'
+import { createAuth } from '@kemago/auth'
 
 type Bindings = { DB: D1Database; ALLOWED_ORIGINS: string; OWNER_EMAIL: string }
 

@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { createAuth } from '@gover-agent/auth'
-import { createDb } from '@gover-agent/db'
+import { createAuth } from '@kemago/auth'
+import { createDb } from '@kemago/db'
 import { getMe } from './user.handler'
 
 type Bindings = { DB: D1Database; ALLOWED_ORIGINS: string }

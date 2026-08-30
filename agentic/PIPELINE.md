@@ -841,6 +841,30 @@ Also changed the story object-key convention per client direction: `internal/sto
 
 ---
 
+### stage-34-finish-kemago-rename-cleanup
+
+**Domain:** apps/api, backend/api-go
+
+**Depends On:** stage-33-r2-stories-upload-verified
+
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Leftover `@gover-agent/*` import references from the project-wide Kemago rename are fully cleaned up
+- [x] `docs.route.ts`'s OpenAPI title reflects the rename too
+
+**Done:** Six `apps/api/src/domains/*/*.route.ts` files (`agent`, `auth`, `forum`, `payment`, `roadmap`, `user`) still imported from `@gover-agent/{db,auth,email}` — leftover from before the rename to `@kemago/*` finished; these had been sitting uncommitted since then because the `api-docs-guard` hook requires `docs.route.ts` to be staged alongside any non-excluded route change. `docs.route.ts`'s OpenAPI title was still the generic `'API Docs'` — updated to `'Kemago API Docs'` to close that out for real rather than just touching the file to satisfy the hook. `backend/go.work.sum` also picked up its pending update from the R2/AWS SDK dependency added in stage-30. `goal.md`/`roadmap.md` (client-authored files, sitting untracked at repo root) committed as-is at the client's request — `goal.md` is the original feature wishlist this session worked from; `roadmap.md` is currently empty.
+
+**Next:** none
+
+**Blockers:** none
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

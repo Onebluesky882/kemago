@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { streamSSE } from 'hono/streaming'
 import AnthropicSDK from '@anthropic-ai/sdk'
-import { createAuth } from '@gover-agent/auth'
-import { createDb } from '@gover-agent/db'
+import { createAuth } from '@kemago/auth'
+import { createDb } from '@kemago/db'
 import { createVaultSchema, createSessionSchema, sendMessageSchema, streamQuerySchema, filesQuerySchema, deployNotifySchema, deployCompleteSchema, deployStatusQuerySchema, statsQuerySchema } from './agent.schema'
 import { createVault, createAgentSession, sendMessage, streamSession, listSessionFiles, estimateCostUsd } from './agent.handler'
 

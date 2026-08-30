@@ -26,7 +26,7 @@ const docs = new OpenAPIHono()
 docs.doc('/openapi.json', {
   openapi: '3.1.0',
   info: {
-    title: 'API Docs',
+    title: 'Kemago API Docs',
     version: '0.0.1',
   },
 })

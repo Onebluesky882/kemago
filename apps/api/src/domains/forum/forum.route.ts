@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
-import { createDb, forumPosts, forumReplies, user, eq, desc, FORUM_CATEGORIES } from '@gover-agent/db'
-import type { ForumCategory } from '@gover-agent/db'
-import { createAuth } from '@gover-agent/auth'
-import { sendNotificationEmail } from '@gover-agent/email'
+import { createDb, forumPosts, forumReplies, user, eq, desc, FORUM_CATEGORIES } from '@kemago/db'
+import type { ForumCategory } from '@kemago/db'
+import { createAuth } from '@kemago/auth'
+import { sendNotificationEmail } from '@kemago/email'
 
 type Bindings = { DB: D1Database; RESEND_API_KEY: string; FROM_EMAIL: string; ALLOWED_ORIGINS: string; OWNER_EMAIL: string; SITE_URL: string }
 

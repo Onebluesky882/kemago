@@ -2,8 +2,8 @@ import { Hono } from 'hono'
 import Stripe from 'stripe'
 import { createPaymentIntentSchema, createCheckoutSessionSchema } from './payment.schema'
 import { createPaymentIntent, createCheckoutSession, handleWebhook } from './payment.handler'
-import { createDb, purchases, eq } from '@gover-agent/db'
-import { createAuth } from '@gover-agent/auth'
+import { createDb, purchases, eq } from '@kemago/db'
+import { createAuth } from '@kemago/auth'
 
 const PRICE_PLAN_MAP: Record<string, { plan: 'starter' | 'pro' | 'business'; invites: number }> = {
   price_1TkM0Y43gXSTS96LQiaMPGXF: { plan: 'starter', invites: 1 },
