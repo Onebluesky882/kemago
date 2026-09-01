@@ -32,6 +32,18 @@ const cacheTTL = 60 * time.Second
 
 var cache *redis.Client
 
+// cappedCacheTTL never caches a session past its own expiry — otherwise a
+// session that naturally expires sooner than base after being cached would
+// keep authenticating from cache past its real expiry. A non-positive
+// result means the caller should skip caching entirely (the session is
+// already expired or expires immediately).
+func cappedCacheTTL(expiresAt, now time.Time, base time.Duration) time.Duration {
+	if remaining := expiresAt.Sub(now); remaining < base {
+		return remaining
+	}
+	return base
+}
+
 // SetCache wires a Redis client into authcheck for session-token caching.
 // Not calling it (rdb stays nil) just means every call hits Postgres
 // directly, same as before Redis existed — safe for local dev without
@@ -70,20 +82,24 @@ func UserForToken(ctx context.Context, db *bun.DB, token string) (User, bool) {
 	}
 
 	var u User
+	var expiresAt time.Time
 	err := db.NewRaw(`
-		SELECT u.id, u.name, u.email_verified
+		SELECT u.id, u.name, u.email_verified, s.expires_at
 		FROM session s
 		JOIN "user" u ON u.id = s.user_id
 		WHERE s.token = ? AND s.expires_at > now()
-	`, token).Scan(ctx, &u.ID, &u.Name, &u.Verified)
+	`, token).Scan(ctx, &u.ID, &u.Name, &u.Verified, &expiresAt)
 	if err != nil {
 		return User{}, false
 	}
 
 	if cache != nil {
-		if raw, err := json.Marshal(u); err == nil {
-			if err := cache.Set(ctx, cacheKey, raw, cacheTTL).Err(); err != nil {
-				log.Printf("authcheck: cache write failed: %v", err)
+		ttl := cappedCacheTTL(expiresAt, time.Now(), cacheTTL)
+		if ttl > 0 {
+			if raw, err := json.Marshal(u); err == nil {
+				if err := cache.Set(ctx, cacheKey, raw, ttl).Err(); err != nil {
+					log.Printf("authcheck: cache write failed: %v", err)
+				}
 			}
 		}
 	}

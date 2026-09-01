@@ -166,3 +166,50 @@ type Notification struct {
 	ReadAt    *time.Time `bun:"read_at"`
 	CreatedAt time.Time  `bun:"created_at,notnull,default:now()"`
 }
+
+// Conversation is either a 1:1 DM (Type == "dm", exactly 2
+// ConversationMember rows, DMKey set to the two user ids sorted and joined
+// with "|" so a partial unique index can prevent duplicate DMs between the
+// same pair) or a group chat (Type == "group", DMKey nil, any number of
+// members). See internal/chat.
+type Conversation struct {
+	bun.BaseModel `bun:"table:conversations"`
+
+	ID        string    `bun:"id,pk"`
+	Type      string    `bun:"type,notnull"`
+	Name      string    `bun:"name,notnull"`
+	DMKey     *string   `bun:"dm_key"`
+	CreatedBy string    `bun:"created_by,notnull"`
+	CreatedAt time.Time `bun:"created_at,notnull,default:now()"`
+}
+
+// ConversationMember's Role is "owner" or "member" — only relevant for
+// groups (a DM's two members are both plain "member"s, there's nothing to
+// hand off). Only a group's owner may invite/remove members.
+type ConversationMember struct {
+	bun.BaseModel `bun:"table:conversation_members"`
+
+	ConversationID string    `bun:"conversation_id,pk"`
+	UserID         string    `bun:"user_id,pk"`
+	Role           string    `bun:"role,notnull"`
+	JoinedAt       time.Time `bun:"joined_at,notnull,default:now()"`
+	LastReadAt     time.Time `bun:"last_read_at,notnull,default:now()"`
+}
+
+// Message.ImageKey is an R2 object key (never a URL — resolved to a
+// viewable URL at read time via storage.Client.PublicURL, same as
+// Story.MediaKey), nil for a text-only message. Content is nil-able at
+// the DB level in spirit but kept NOT NULL with '' as the sentinel for
+// "no text" so a plain string column works — a message must have a
+// non-empty Content or a non-nil ImageKey, enforced in internal/chat, not
+// here.
+type Message struct {
+	bun.BaseModel `bun:"table:messages"`
+
+	ID             string    `bun:"id,pk"`
+	ConversationID string    `bun:"conversation_id,notnull"`
+	SenderID       string    `bun:"sender_id,notnull"`
+	Content        string    `bun:"content,notnull"`
+	ImageKey       *string   `bun:"image_key"`
+	CreatedAt      time.Time `bun:"created_at,notnull,default:now()"`
+}

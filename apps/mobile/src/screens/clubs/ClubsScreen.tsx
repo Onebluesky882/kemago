@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ClubCard } from "../../components/clubs/ClubCard";
 import { EmptyState } from "../../components/ui/EmptyState";
 import {
@@ -62,19 +63,10 @@ export function ClubsScreen() {
       if (!token || busyId) return;
       setBusyId(club.id);
       try {
-        if (club.joined) {
-          await apiLeaveClub(token, club.id);
-          setClubs((prev) =>
-            prev.map((c) =>
-              c.id === club.id ? { ...c, joined: false, memberCount: Math.max(0, c.memberCount - 1) } : c,
-            ),
-          );
-        } else {
-          await apiJoinClub(token, club.id);
-          setClubs((prev) =>
-            prev.map((c) => (c.id === club.id ? { ...c, joined: true, memberCount: c.memberCount + 1 } : c)),
-          );
-        }
+        const updated = club.joined
+          ? await apiLeaveClub(token, club.id)
+          : await apiJoinClub(token, club.id);
+        setClubs((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
       } catch {
         // Leave state as-is (e.g. leader tried to leave and got rejected by
         // the backend) — no toast/alert pattern exists elsewhere in this app
@@ -109,7 +101,7 @@ export function ClubsScreen() {
   const canCreate = newClubName.trim().length > 0 && !creating;
 
   return (
-    <View className="flex-1 bg-bg">
+    <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
       <View className="px-4 pt-3 pb-2 bg-surface border-b border-border">
         <Text className="text-xl font-bold text-text">Clubs</Text>
       </View>
@@ -152,6 +144,6 @@ export function ClubsScreen() {
           <EmptyState title="No clubs yet" body="Clubs you join in the neighborhood will show up here." />
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { PrimaryButton } from "../../components/ui/PrimaryButton";
 import { AuthApiError, updateProfile } from "../../lib/api/authApi";
@@ -38,7 +39,7 @@ export function CompleteProfileScreen() {
   }
 
   return (
-    <View className="flex-1 bg-bg justify-center px-6">
+    <SafeAreaView className="flex-1 bg-bg justify-center px-6" edges={["top", "bottom"]}>
       <Text className="text-2xl font-bold text-text mb-1.5">Complete your profile</Text>
       <Text className="text-sm text-text-muted mb-8">
         Tell your neighbors who you are before you get started.
@@ -58,6 +59,6 @@ export function CompleteProfileScreen() {
       <View className="mt-4">
         <PrimaryButton label="Continue" onPress={handleSubmit} disabled={!canSubmit} loading={loading} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

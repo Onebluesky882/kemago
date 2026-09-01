@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BackButton } from "../../components/ui/BackButton";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { RoomCard } from "../../components/rooms/RoomCard";
@@ -81,7 +82,7 @@ export function RoomsScreen() {
   const canCreate = newRoomName.trim().length > 0 && !creating;
 
   return (
-    <View className="flex-1 bg-bg">
+    <SafeAreaView className="flex-1 bg-bg" edges={["top", "bottom"]}>
       <View className="flex-row items-center px-4 pt-3 pb-2 bg-surface border-b border-border">
         <BackButton />
         <Text className="text-lg font-bold text-text ml-3">Rooms</Text>
@@ -122,6 +123,6 @@ export function RoomsScreen() {
           ListEmptyComponent={<EmptyState title="No rooms yet" body="Rooms people create will show up here." />}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }

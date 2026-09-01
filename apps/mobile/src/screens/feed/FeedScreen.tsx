@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { CategoryChip } from "../../components/feed/CategoryChip";
 import { NotificationBell } from "../../components/ui/NotificationBell";
 import { ComposeBar } from "../../components/feed/ComposeBar";
@@ -17,6 +18,7 @@ import { useFeedRealtime } from "../../lib/realtime";
 import { formatRelativeTime } from "../../lib/time";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useFeedFilterStore, type FeedFilter } from "../../store/useFeedFilterStore";
+import { addPostIfNew as addPostIfNewToList } from "./feed.logic";
 
 const filters: FeedFilter[] = ["All", "General", "Recommendations", "Lost & Found", "Safety"];
 
@@ -84,32 +86,42 @@ export function FeedScreen() {
     };
   }, []);
 
+  // Shared between the websocket handler below and handlePost's own
+  // success path — see feed.logic.ts's addPostIfNew for why this dedup is
+  // needed.
+  const addPostIfNew = useCallback((post: Post) => {
+    setPosts((prev) => addPostIfNewToList(prev, post));
+  }, []);
+
   // Live updates from other people's activity — this device's own writes
   // already update `posts` directly (see handlePost/PostCard's like
   // button), so post_created de-dupes by id and the count events just
   // overwrite whatever's there, which is a no-op for the actor's own device.
   useFeedRealtime(
-    useCallback((event) => {
-      if (event.type === "post_created") {
-        setPosts((prev) => (prev.some((p) => p.id === event.post.id) ? prev : [toLocalPost(event.post), ...prev]));
-        return;
-      }
-      if (event.type === "comment_created") {
-        setPosts((prev) =>
-          prev.map((p) => (p.id === event.postId ? { ...p, replyCount: p.replyCount + 1 } : p)),
-        );
-        return;
-      }
-      if (event.type === "like_changed") {
-        setPosts((prev) =>
-          prev.map((p) => (p.id === event.postId ? { ...p, likeCount: event.likeCount } : p)),
-        );
-        return;
-      }
-      if (event.type === "poll_added") {
-        setPosts((prev) => prev.map((p) => (p.id === event.postId ? { ...p, hasPoll: true } : p)));
-      }
-    }, []),
+    useCallback(
+      (event) => {
+        if (event.type === "post_created") {
+          addPostIfNew(toLocalPost(event.post));
+          return;
+        }
+        if (event.type === "comment_created") {
+          setPosts((prev) =>
+            prev.map((p) => (p.id === event.postId ? { ...p, replyCount: p.replyCount + 1 } : p)),
+          );
+          return;
+        }
+        if (event.type === "like_changed") {
+          setPosts((prev) =>
+            prev.map((p) => (p.id === event.postId ? { ...p, likeCount: event.likeCount } : p)),
+          );
+          return;
+        }
+        if (event.type === "poll_added") {
+          setPosts((prev) => prev.map((p) => (p.id === event.postId ? { ...p, hasPoll: true } : p)));
+        }
+      },
+      [addPostIfNew],
+    ),
   );
 
   const visiblePosts = useMemo(
@@ -131,7 +143,7 @@ export function FeedScreen() {
           });
           const localPost = toLocalPost(created);
           await insertPost(localPost);
-          setPosts((prev) => [localPost, ...prev]);
+          addPostIfNew(localPost);
           return;
         } catch {
           // Fall through to the offline-only path below.
@@ -151,64 +163,70 @@ export function FeedScreen() {
         replyCount: 0,
       };
       await insertPost(newPost);
-      setPosts((prev) => [newPost, ...prev]);
+      addPostIfNew(newPost);
     },
-    [filter, selectedRoomId],
+    [filter, selectedRoomId, addPostIfNew],
   );
 
   return (
+    // Full-bleed outer View (no safe-area insets) so StoryViewer's
+    // absolute inset-0 overlay covers the whole physical screen, including
+    // the status bar area — the SafeAreaView below only protects the
+    // header/list content, not this overlay.
     <View className="flex-1 bg-bg">
-      <View className="flex-row items-center justify-between px-4 pt-3 pb-2 bg-surface border-b border-border">
-        <Text className="text-xl font-bold text-text">Elm Street</Text>
-        <NotificationBell />
-      </View>
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <View className="flex-row items-center justify-between px-4 pt-3 pb-2 bg-surface border-b border-border">
+          <Text className="text-xl font-bold text-text">Elm Street</Text>
+          <NotificationBell />
+        </View>
 
-      <StoriesBar
-        stories={stories}
-        onOpenStory={setViewingStory}
-        onUploaded={(story) => setStories((prev) => [story, ...prev])}
-      />
+        <StoriesBar
+          stories={stories}
+          onOpenStory={setViewingStory}
+          onUploaded={(story) => setStories((prev) => [story, ...prev])}
+        />
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="px-4 py-3 bg-surface border-b border-border"
-      >
-        {filters.map((f) => (
-          <CategoryChip key={f} label={f} active={filter === f} onPress={() => setFilter(f)} />
-        ))}
-      </ScrollView>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="px-4 py-3 bg-surface border-b border-border"
+        >
+          {filters.map((f) => (
+            <CategoryChip key={f} label={f} active={filter === f} onPress={() => setFilter(f)} />
+          ))}
+        </ScrollView>
 
-      <FlatList
-        data={visiblePosts}
-        keyExtractor={(item) => item.id}
-        contentContainerClassName="px-4 pt-4 pb-8"
-        ListHeaderComponent={
-          <View>
-            {rooms.length > 0 ? (
-              <View>
-                <Text className="text-xs font-semibold text-text-muted uppercase mb-2">Posting to</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
-                  <RoomChip label="General" active={selectedRoomId === null} onPress={() => setSelectedRoomId(null)} />
-                  {rooms.map((room) => (
-                    <RoomChip
-                      key={room.id}
-                      label={room.name}
-                      active={selectedRoomId === room.id}
-                      onPress={() => setSelectedRoomId(room.id)}
-                    />
-                  ))}
-                </ScrollView>
-              </View>
-            ) : null}
-            <ComposeBar onPost={handlePost} />
-          </View>
-        }
-        renderItem={({ item }) => <PostCard post={item} />}
-        ListEmptyComponent={
-          <EmptyState title="No posts yet" body="Be the first to share something in this category." />
-        }
-      />
+        <FlatList
+          data={visiblePosts}
+          keyExtractor={(item) => item.id}
+          contentContainerClassName="px-4 pt-4 pb-8"
+          ListHeaderComponent={
+            <View>
+              {rooms.length > 0 ? (
+                <View>
+                  <Text className="text-xs font-semibold text-text-muted uppercase mb-2">Posting to</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
+                    <RoomChip label="General" active={selectedRoomId === null} onPress={() => setSelectedRoomId(null)} />
+                    {rooms.map((room) => (
+                      <RoomChip
+                        key={room.id}
+                        label={room.name}
+                        active={selectedRoomId === room.id}
+                        onPress={() => setSelectedRoomId(room.id)}
+                      />
+                    ))}
+                  </ScrollView>
+                </View>
+              ) : null}
+              <ComposeBar onPost={handlePost} />
+            </View>
+          }
+          renderItem={({ item }) => <PostCard post={item} />}
+          ListEmptyComponent={
+            <EmptyState title="No posts yet" body="Be the first to share something in this category." />
+          }
+        />
+      </SafeAreaView>
 
       {viewingStory ? <StoryViewer story={viewingStory} onClose={() => setViewingStory(null)} /> : null}
     </View>

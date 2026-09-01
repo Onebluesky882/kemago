@@ -954,6 +954,149 @@ Endpoints: `GET /api/notifications` (last 50, newest first, `unreadCount`), `POS
 
 ---
 
+### stage-38-redis-notifications-review-and-tests
+
+**Domain:** backend/api-go, apps/mobile
+
+**Depends On:** stage-35-redis-cache-ratelimit-pubsub, stage-37-notifications-ui
+
+**Status:** `COMPLETE`
+
+**Acceptance Criteria:**
+- [x] Code review of stage-35/36/37's diff (`/code-review`), findings verified against source, not just taken on faith
+- [x] Every confirmed finding fixed
+- [x] Regression tests added for each fix that has testable logic
+
+**Done:** Ran `/code-review` on the Redis-wiring commit; it returned 10 findings. Verified all 10 against the actual source before acting (read each file, confirmed line numbers and behavior) and fixed all of them:
+- `internal/ratelimit`: `INCR`+`EXPIRE` were two separate round-trips — if `EXPIRE` failed right after the first `INCR`, the key never got a TTL and permanently rate-limited that actor. Replaced with one atomic Lua script (`INCR` then conditional `EXPIRE`, both server-side).
+- `internal/feed`: `likePost` pushed a notification even when the like `INSERT ... ON CONFLICT DO NOTHING` affected zero rows (already-liked post, double-tap/retry) — now gated on `RowsAffected() > 0` (extracted as `isNewLike`, unit tested). `unlikePost` had no rate limit while its sibling write endpoints did — now shares `likePost`'s 30/min bucket.
+- `internal/authcheck`: session cache used a flat 60s TTL regardless of the session's real `expires_at`, so a session expiring sooner than 60s after being cached kept authenticating past its real expiry. TTL is now capped to `min(60s, time until expires_at)` (extracted as `cappedCacheTTL`, unit tested).
+- `docker-compose.yml`: `ws` had `depends_on: redis: condition: service_healthy`, contradicting the documented "Redis is optional" design — if Redis ever failed its healthcheck, `ws` would never start at all. Changed to `condition: service_started` (waits for the container to start, not pass healthchecks).
+- `internal/notifications`: added `GET /api/notifications/unread-count` (lightweight `COUNT(*)`) so the mobile bell doesn't have to fetch and serialize the full 50-row list just to read one number.
+- `apps/mobile` `NotificationBell`: switched to the new unread-count endpoint and now refetches on screen focus (`useFocusEffect`) instead of only on mount/friend-events — fixes the badge staying stale after mark-all-read on `NotificationsScreen` (the bell stays mounted underneath that pushed route, so it never remounted on its own to pick up the change).
+- `apps/mobile` `NotificationsScreen`: `handlePress` closed over a stale `n` snapshot from render — two rapid taps on the same row before a re-render both passed the `n.read === false` guard and double-decremented the unread count. Extracted the read/list-update logic into a pure `markLocalRead` helper that checks the latest state inside the `setNotifications` updater instead. Also gave `messageFor` a `default` case so a future/unrecognized notification `kind` renders a fallback string instead of a blank line.
+- One finding (`internal/hub`'s `subscribeLoop`, claimed to die permanently on a dropped Redis connection) turned out to be a **false positive** on the first pass — verified empirically (killed and restarted a real Redis process against the bare original code with no retry logic) that go-redis's `PubSub.Channel()` already reconnects and resubscribes internally, only closing on an explicit `.Close()`. The speculative retry-loop fix was reverted; a comment now documents why none is needed, backed by `TestBroadcast_SurvivesRedisRestart`.
+
+Added test infrastructure that didn't exist before this stage: `github.com/alicebob/miniredis/v2` for in-memory Redis in Go tests (16 new Go tests across `ratelimit`, `hub`, `authcheck`, `feed` — all passing, `go build`/`go vet` clean), and `vitest` wired into `apps/mobile` for pure-logic tests with zero React Native rendering (7 new tests for `messageFor`/`markLocalRead`, including a direct regression test for the double-tap race). `apps/mobile`'s `tsc --noEmit` stays clean.
+
+**Verified**: `go build ./...`, `go vet ./...`, `go test ./...` (16/16 pass) in `backend/api-go`; `pnpm exec tsc --noEmit` and `pnpm test` (7/7 pass) in `apps/mobile`. Not yet run in a live device/simulator or against the real dev Postgres this pass.
+
+**Next:** `likePost`/`unlikePost`'s HTTP-handler-level behavior (the actual `RowsAffected`/rate-limit wiring, not just the extracted pure logic) isn't covered by an automated test — would need a real Postgres, since bun's raw SQL here (`now()`, `ON CONFLICT`) isn't portable to an in-memory SQLite substitute. Docker is available in this environment (an ephemeral, disposable Postgres container could be spun up for this specifically, without touching the running dev database) — worth doing if this area sees more bug-prone changes.
+
+**Blockers:** none — committed alongside stage-39 through stage-43 below
+
+**Dispatch-In:** none — direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-39-club-membercount-bug-fix
+
+**Domain:** backend/api-go, apps/mobile
+
+**Status:** `COMPLETE`
+
+**Done:** Club owner reported a club showing "2 members" while the leader-handoff panel said "No other members yet" (screenshot in `apps/mobile/note_todo.md`). Root cause, confirmed against the live dev Postgres: `joinClub`/`leaveClub` are idempotent server-side (`ON CONFLICT DO NOTHING` / delete-if-exists) but the mobile client blindly did `memberCount ± 1` on any 200 response — a retry/double-tap on an already-joined club inflated the displayed count without a real row ever being added (the "Hi" club had exactly 1 `club_members` row, not 2). Fixed by having `joinClub`/`leaveClub` (`backend/api-go/internal/clubs/clubs.go`) re-read and return the real club (`getClubByID`) instead of a bare `{"joined": bool}`; `apps/mobile/src/lib/api/clubsApi.ts` and `ClubsScreen.tsx` now apply the server's returned club instead of doing their own arithmetic.
+
+**Verified:** `go build`/`go test` pass, `tsc --noEmit` passes. Reproduced the exact double-join scenario against the live local Postgres (a no-op `ON CONFLICT DO NOTHING` retry insert) and confirmed `member_count` stays correct afterward.
+
+**Next:** none — closed.
+
+**Blockers:** none
+
+**Dispatch-In:** direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-40-dark-light-theme
+
+**Domain:** apps/mobile
+
+**Status:** `COMPLETE`
+
+**Done:** Added a light/dark color theme with a Profile-screen toggle (`useThemeStore.ts`, mmkv-persisted `light`/`dark`/`system` preference; `global.css` gained a full dark palette). Two real bugs surfaced and were fixed along the way, both now documented in root `CLAUDE.md`'s "Mobile (Expo/React Native)" section so they aren't rediscovered the hard way: (1) `className` on `SafeAreaView` (`react-native-safe-area-context`) is a silent no-op under uniwind — any classes there are dropped; background/layout classes belong on the actual child (`ScrollView`/`KeyboardAvoidingView`) instead. (2) uniwind discovers themes by scanning `@variant <name> {}` blocks specifically — the base `@theme {}` block does not implicitly count as "light", so without an explicit `@variant light {}` block (added) it logged "Theme light is missing variable X" for every token.
+
+**Verified:** Visually confirmed in the iOS simulator across multiple passes — OS `prefers-color-scheme` fallback, a live OS-appearance flip re-rendering the open screen with no reload, and (after the uniwind fix) a clean Metro log with both themes screenshotted correctly.
+
+**Next:** 15 files still import the static light-only `colors` object directly (icons, tab bar tint) instead of the new `useThemeColors()` hook — they won't re-theme until moved over. Listed in `ROADMAP.md`'s Next Steps in plain language.
+
+**Blockers:** none
+
+**Dispatch-In:** direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-41-keyboard-test-screen
+
+**Domain:** apps/mobile
+
+**Status:** `COMPLETE`
+
+**Done:** Added a diagnostic screen (`screens/dev/KeyboardTestScreen.tsx`, reachable from Profile → "Keyboard typing test") for manually verifying keyboard/touch behavior on iOS — four input types, live focus state + char count, and a spacer forcing a bottom-of-scroll field to prove `KeyboardAvoidingView` actually clears the keyboard. Found and fixed a real bug while building it: `className="flex-1"` on a `KeyboardAvoidingView` that directly wraps a `ScrollView` renders the entire subtree as nothing (solid black) — confirmed pixel-level via simulator screenshots. Documented in `CLAUDE.md`.
+
+**Verified:** Visually verified in the iOS simulator (deep-linked, screenshotted, confirmed both the black-screen bug and the fix). Not verified: actual on-screen keyboard appearance/avoidance via real taps (no tap-automation tool available in this environment).
+
+**Next:** a manual tap-in check on a real run, when convenient.
+
+**Blockers:** none
+
+**Dispatch-In:** direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-42-chat-1on1-and-group
+
+**Domain:** backend/api-go, apps/mobile
+
+**Status:** `COMPLETE`
+
+**Done:** Built 1:1 DM + group chat under one unified schema (a DM is just a conversation with exactly 2 members) — deliberately not the ScyllaDB/Cassandra denormalized design from the client's `my-chat-app` reference project, since this backend uses Postgres+bun everywhere else. New `backend/api-go/internal/chat` package: `conversations`/`conversation_members`/`messages` tables (`dm_key` partial-unique index dedups repeat DM creation between the same pair), REST endpoints for list/create conversations, list/send messages, list members, invite, leave, and a presigned-URL image-upload endpoint mirroring `internal/stories`'s pattern. Mobile: `lib/api/chatApi.ts`, `ChatScreen.tsx` (was mock data), new `ConversationScreen.tsx` (thread, dm+group, image picker) and `NewConversationScreen.tsx` (start a DM or group from the Friends list), routed via `app/chat/[id].tsx` + `chat/new.tsx`.
+
+Three bugs found and fixed during live verification, all now documented in `CLAUDE.md`: (1) the same dead `SafeAreaView` `className` as stage-40/41. (2) **`FlatList` with `onRefresh`/`refreshing` or with `inverted` silently fails to render its entire content on-device** (no crash, just an empty gap) — a plain `FlatList` with neither (e.g. `FeedScreen`) is unaffected and untouched. Rewrote both new screens to `ScrollView` + `.map()`. (3) Turning `ConversationScreen`'s `FlatList` into a literal `ScrollView` tag re-triggered stage-41's `KeyboardAvoidingView`+`flex-1` black-screen bug as a side effect — fixed the same way.
+
+**Verified:** `go build`/`vet`/`test` and `tsc --noEmit` clean. Rebuilt and restarted the actual `coarea-ws-1` docker container (was running a stale pre-chat image). Created a disposable second user + real DM via the live API, sent messages both directions, viewed both the conversation list and the message thread live in the iOS simulator as the real signed-in user — confirmed correct rendering, theme, bubble alignment, timestamps — then fully deleted all disposable data afterward (verified zero residue). Not verified live: actual image sending via a real tap + photo picker (no touch-automation available), and the invite/leave/group-owner flows (covered by the backend's own HTTP round-trip testing during development, not re-verified in the running app).
+
+**Next:** a real device/simulator tap-through of image sending and group invite/leave, when convenient.
+
+**Blockers:** none
+
+**Dispatch-In:** direct interactive session with the client (split across two parallel subagents — backend and mobile UI — built against one API contract fixed in advance so they didn't block each other)
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
+### stage-43-chat-realtime-and-read-receipts
+
+**Domain:** backend/api-go, apps/mobile
+
+**Depends On:** stage-42-chat-1on1-and-group
+
+**Status:** `COMPLETE`
+
+**Done:** Client asked whether chat used Redis pub/sub and WebSockets. Redis pub/sub was already wired (stage-42's `chat.go` broadcast already published through the shared `Hub`), but two real gaps existed: the mobile app never opened a socket for chat at all (REST-only, no live delivery), and the only generic join path (`main.go`'s `/ws?room=<room>`) had zero auth/membership check — a `TODO(stage-10-chat)` comment had flagged this exact gap and it was never closed. Added `GET /ws/chat/{id}?token=` (`chat.go`'s `joinChatSocket`) which verifies the token *and* that the caller is an actual `conversation_members` row before joining; `main.go`'s `/ws` comment updated to point chat at this instead of the generic relay. Mobile: `lib/realtime.ts` gained `useConversationRealtime` (same reconnect-on-close pattern as the existing feed/friend hooks), wired into `ConversationScreen.tsx`.
+
+Read receipts (single check = sent, double check = read in DMs; "Read by N" in groups) added in the same pass, using the same socket: `conversation_members` gained a `last_read_at` column (retrofitted via `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` since the table predates this stage) rather than tracking reads per-message-per-user, which would be one row per member per message — expensive for groups with real history. A message counts as "read by" a member once that member's `last_read_at` passes the message's `created_at`. New `POST /api/conversations/{id}/read` advances the caller's cursor and broadcasts a `read_receipt` event over the same chat room; `GET .../members` now returns `lastReadAt` per member. Mobile: `ConversationScreen.tsx` marks read on load, on app-foreground, and on any incoming message while open; listens for `read_receipt` events to update checkmarks live.
+
+**Verified:** Wrote a throwaway Node WS test script confirming a non-member's join attempt is rejected with no data leak, and that a member's socket receives `message_created`/`read_receipt` events in real time when the other side acts via REST. Re-verified live in the iOS simulator end to end: sent a message as the real signed-in user via the API while the thread was open — appeared instantly with a single checkmark, no reload; the other (disposable) user then called the read endpoint — the open thread's checkmark flipped to double, live, with zero reload (screenshotted at each step). All disposable test data deleted afterward. Not separately live-tested: the group "Read by N" text render branch specifically (only had a DM to test against) — it shares the identical, already-verified `readersFor()`/members data path as the DM checkmark.
+
+**Next:** live-verify the group "Read by N" branch once there's a real group conversation to test against.
+
+**Blockers:** none
+
+**Dispatch-In:** direct interactive session with the client
+**Gate-Out:** n/a
+**Merge-Approval:** n/a
+
+---
+
 <!-- Add one section per stage -->
 
 ## Deploy Checklist (run after every stage)

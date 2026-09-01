@@ -115,6 +115,45 @@ import Link from 'next/link'
 
 ---
 
+## Mobile (Expo/React Native) — Every Screen Root Must Be Wrapped in SafeAreaView
+
+Every screen's top-level container — `ScrollView`, `KeyboardAvoidingView`, or plain `View` — must render inside a `SafeAreaView` wrapper, never as the outermost element on its own.
+
+```tsx
+// ❌ wrong — ScrollView/KeyboardAvoidingView is the root, no SafeAreaView
+<ScrollView>
+  ...
+</ScrollView>
+
+<KeyboardAvoidingView behavior="padding">
+  ...
+</KeyboardAvoidingView>
+
+// ✅ correct
+<SafeAreaView edges={["top"]}>
+  <ScrollView>
+    ...
+  </ScrollView>
+</SafeAreaView>
+
+<SafeAreaView edges={["top", "bottom"]}>
+  <KeyboardAvoidingView behavior="padding">
+    ...
+  </KeyboardAvoidingView>
+</SafeAreaView>
+```
+
+**Rules:**
+- `SafeAreaView` must be the outermost element; the scroll/keyboard/layout container is its direct/near child.
+- **`className` on `SafeAreaView` (from `react-native-safe-area-context`) is a no-op under uniwind — uniwind does not patch that library's `SafeAreaView`.** Confirmed on-device: any classes there (`flex-1`, `bg-bg`, anything) are silently dropped. Put `className` on `SafeAreaView` only for the `edges` prop's sake — for background/layout, apply it to the actual child (`ScrollView`, `KeyboardAvoidingView`) instead, which uniwind does patch.
+- Do **not** add `className="flex-1"` to `ScrollView` — leave it unset.
+- Do **not** add `className="flex-1"` to a `KeyboardAvoidingView` that directly wraps a `ScrollView` — confirmed on-device this renders the entire subtree as nothing (solid black, not even the theme background). Give it `className="bg-bg"` (or the relevant surface token) instead, with no `flex-1`.
+- Without `SafeAreaView`, content renders under the status bar/notch instead of within the safe area — this can look identical to "content missing" even when it technically rendered.
+
+**`FlatList` with `onRefresh`/`refreshing` or with `inverted` has silently failed to render on-device in this app — avoid both, use `ScrollView` + `.map()` instead for those cases.** A plain `FlatList` with neither (see `FeedScreen.tsx` — no `onRefresh`, no `inverted`) renders correctly and is fine to keep using. But `ChatScreen.tsx`'s conversation list (`FlatList` + `onRefresh`/`refreshing`) and `ConversationScreen.tsx`'s message thread (`FlatList` + `inverted`) both had their entire content area — `renderItem` rows and `ListEmptyComponent` alike — silently fail to render on-device: no error, no crash, just an empty native-default-colored gap. Tried and ruled out as the cause: `className`, inline `style={{flex:1}}`, an explicit `backgroundColor` via `style`, wrapping it in a colored parent `View` — none of it made a visual difference, meaning the list's own render tree wasn't mounting, not just a styling/background gap. Switching both to `ScrollView` mapping over the array directly fixed both immediately. For an inverted chat-style list, reverse the array before mapping and use a `ref` + `onContentSizeChange={() => ref.current?.scrollToEnd({ animated: false })}` instead of `inverted` + `onRefresh`. Root cause (uniwind bug vs. RN version vs. New Architecture interaction) was not isolated — if a future screen needs a `FlatList` with either prop (e.g. a very long list needing virtualization plus pull-to-refresh), treat it as an open risk and verify it actually renders on a real device/simulator before trusting it, rather than assuming correctness from the JSX.
+
+---
+
 ## Icons
 
 Never use emoji in UI code. Use inline SVG only.

@@ -55,20 +55,24 @@ export async function createClub(
   return body.club;
 }
 
-export async function joinClub(token: string, id: string): Promise<void> {
+export async function joinClub(token: string, id: string): Promise<ApiClub> {
   const res = await fetch(`${API_BASE_URL}/api/clubs/${id}/join`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) await parseError(res);
+  const body = (await res.json()) as { club: ApiClub };
+  return body.club;
 }
 
-export async function leaveClub(token: string, id: string): Promise<void> {
+export async function leaveClub(token: string, id: string): Promise<ApiClub> {
   const res = await fetch(`${API_BASE_URL}/api/clubs/${id}/leave`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) await parseError(res);
+  const body = (await res.json()) as { club: ApiClub };
+  return body.club;
 }
 
 export async function changeLeader(token: string, id: string, userId: string): Promise<ApiClub> {

@@ -46,6 +46,14 @@ export async function listNotifications(
   return res.json();
 }
 
+export async function getUnreadNotificationCount(token: string): Promise<{ unreadCount: number }> {
+  const res = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) await parseError(res);
+  return res.json();
+}
+
 export async function markNotificationRead(token: string, id: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/api/notifications/${id}/read`, {
     method: "POST",

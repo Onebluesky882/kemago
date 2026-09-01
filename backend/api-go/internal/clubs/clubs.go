@@ -224,7 +224,20 @@ func (h *Handlers) joinClub(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]bool{"joined": true})
+
+	// Re-read the club rather than trusting "no error" to mean "a row was
+	// added" — the insert above is a no-op (ON CONFLICT DO NOTHING) on a
+	// retry/double-tap by someone already a member, and the client needs
+	// the real memberCount, not a blind +1 (see clubsApi.ts/ClubsScreen.tsx
+	// — this was the cause of the memberCount/leader-handoff-list mismatch
+	// bug, e.g. a club showing "2 members" while only 1 row actually exists
+	// in club_members).
+	updated, err := h.getClubByID(ctx, clubID, user.ID)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"club": updated})
 }
 
 // leaveClub is deliberately simple: a club leader who wants to leave must
@@ -261,7 +274,15 @@ func (h *Handlers) leaveClub(w http.ResponseWriter, r *http.Request) {
 		writeInternalError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]bool{"joined": false})
+
+	// Same reasoning as joinClub: return the real, re-read memberCount
+	// instead of letting the client guess with -1.
+	updated, err := h.getClubByID(ctx, clubID, user.ID)
+	if err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"club": updated})
 }
 
 func (h *Handlers) changeLeader(w http.ResponseWriter, r *http.Request) {

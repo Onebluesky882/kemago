@@ -47,6 +47,11 @@ func New(rdb *redis.Client) *Hub {
 	return h
 }
 
+// subscribeLoop holds one long-lived pub/sub subscription for the life of
+// the process. go-redis's PubSub reconnects and resubscribes internally on
+// connection errors (Redis restart, network blip) — sub.Channel() only
+// closes once sub.Close() is called — so no outer retry loop is needed
+// here.
 func (h *Hub) subscribeLoop(ctx context.Context) {
 	sub := h.rdb.PSubscribe(ctx, channelPrefix+"*")
 	defer sub.Close()

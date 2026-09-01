@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { API_BASE_URL } from "./api/config";
 import type { ApiComment, ApiPost } from "./api/postsApi";
+import type { ApiMessage } from "./api/chatApi";
 import { useAuthStore } from "../store/useAuthStore";
 
 // backend/api-go's websocket hub (internal/hub) pushes these as JSON text
@@ -19,6 +20,12 @@ export type FeedEvent =
 export type FriendEvent =
   | { type: "friend_request"; from: { userId: string; name: string } }
   | { type: "friend_accepted"; by: { userId: string; name: string } };
+
+// backend/api-go's internal/chat package pushes these to "chat:<conversationId>"
+// — see chat.go's broadcast calls in createMessage and markRead.
+export type ChatEvent =
+  | { type: "message_created"; conversationId: string; message: ApiMessage }
+  | { type: "read_receipt"; conversationId: string; userId: string; readAt: string };
 
 function wsBase(): string {
   return API_BASE_URL.replace(/^http/, "ws");
@@ -74,4 +81,17 @@ export function useFeedRealtime(onEvent: (event: FeedEvent) => void) {
 export function useFriendRealtime(onEvent: (event: FriendEvent) => void) {
   const token = useAuthStore((s) => s.token);
   useChannel<FriendEvent>(token ? `${wsBase()}/ws?token=${encodeURIComponent(token)}` : null, onEvent);
+}
+
+// New messages/read-receipts for one open conversation — uses the
+// membership-gated GET /ws/chat/{id}?token= route (internal/chat's
+// joinChatSocket), not the generic /ws?room= relay the other hooks above
+// use, since a chat room isn't meant to be joinable by guessing its id.
+// Does nothing while signed out or no conversationId is given yet.
+export function useConversationRealtime(conversationId: string | undefined, onEvent: (event: ChatEvent) => void) {
+  const token = useAuthStore((s) => s.token);
+  useChannel<ChatEvent>(
+    token && conversationId ? `${wsBase()}/ws/chat/${conversationId}?token=${encodeURIComponent(token)}` : null,
+    onEvent,
+  );
 }

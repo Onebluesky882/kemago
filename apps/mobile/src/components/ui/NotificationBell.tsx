@@ -1,48 +1,41 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
-import { listNotifications } from "../../lib/api/notificationsApi";
+import { getUnreadNotificationCount } from "../../lib/api/notificationsApi";
 import { useFriendRealtime } from "../../lib/realtime";
 import { useAuthStore } from "../../store/useAuthStore";
 import { colors } from "../../theme/colors";
 
 // Comment/like notifications only arrive via GET /api/notifications
 // (feed:all's realtime events aren't scoped per-recipient, unlike friend
-// events) — so the badge count is fetched on mount/sign-in and nudged by
+// events) — so the badge count is refetched on focus/sign-in and nudged by
 // useFriendRealtime for the two event types that do have a personal
 // channel. Not live-live for every kind, but close enough without adding
-// new server-side event scoping for this pass.
+// new server-side event scoping for this pass. Refetching on focus (rather
+// than just on mount) is what picks up reads made on NotificationsScreen —
+// this component stays mounted underneath that pushed route, so it never
+// remounts on its own.
 export function NotificationBell() {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     if (!token) {
       setUnreadCount(0);
       return;
     }
-    let cancelled = false;
-    listNotifications(token)
-      .then((res) => {
-        if (!cancelled) setUnreadCount(res.unreadCount);
-      })
+    getUnreadNotificationCount(token)
+      .then((res) => setUnreadCount(res.unreadCount))
       .catch(() => {
         // Backend unreachable — leave the last known count rather than
         // resetting to 0, same spirit as the Feed's offline fallback.
       });
-    return () => {
-      cancelled = true;
-    };
   }, [token]);
 
-  useFriendRealtime(() => {
-    if (!token) return;
-    listNotifications(token)
-      .then((res) => setUnreadCount(res.unreadCount))
-      .catch(() => {});
-  });
+  useFocusEffect(refresh);
+  useFriendRealtime(refresh);
 
   if (!token) return null;
 

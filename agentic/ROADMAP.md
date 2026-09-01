@@ -102,6 +102,10 @@ Success Indicators:
 - The app now has a fast-memory layer (Redis) behind the scenes: signing in feels snappier, spam posting/commenting/liking is now capped, and the live-update system is ready to run on more than one server at once as the app grows
 - Notifications now save permanently — friend requests, comments, and likes on your posts are recorded so you don't miss them if you weren't in the app at the time
 - The app now shows a notification bell with an unread count, and a screen to view and read them, right on the Feed tab
+- Had the recent speed-and-reliability work (the fast-memory layer and notifications) independently double-checked, then fixed everything found: liking a post twice in a row no longer sends duplicate "someone liked your post" alerts, the notification bell now updates right away after you read your notifications instead of staying stuck on the old number, and a few behind-the-scenes reliability gaps were closed so the app holds up better under real use. Added automated checks so these specific problems can't quietly come back later.
+- Fixed a bug where a club could show the wrong number of members (e.g. "2 members" when only the leader had actually joined) — tapping Join when you're already a member no longer inflates the count
+- Added a light/dark color theme, switchable right from the Profile screen, and remembered the next time you open the app
+- Chat is now fully working: message a friend one-on-one or create a group, send photos, and messages arrive instantly with no need to refresh the screen. You can also see when the other person has read your message (or, in a group, how many people have read it) — the double-checkmark most messaging apps use
 
 ---
 
@@ -117,7 +121,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 | M-004 | Feed working | People can post and browse local updates | IN_PROGRESS |
 | M-005 | Events working | People can find, create, and join local events | PLANNING |
 | M-006 | Profile working | People can view and edit their profile | PLANNING |
-| M-007 | Chat working | People can message each other | PLANNING |
+| M-007 | Chat working | People can message each other | DONE — one-on-one and group chat, photo sending, instant delivery, and read receipts are all live |
 | M-008 | Comments and likes | People can comment on and like posts | IN_PROGRESS (comments and likes both work now — no like button on screen yet) |
 | M-009 | Running story with location tag | Post a short running story/reel tagged to a place, with a choice of who sees it: friends only, only you, or everyone | PLANNING |
 | M-010 | Private/public profile | An account can be set to private so only friends can see it | DONE (toggle works and saves for real; "only friends can see" enforcement isn't built yet — anyone can currently still see a private profile, the setting isn't acted on outside the toggle itself) |
@@ -147,6 +151,7 @@ Milestones may be added, removed, reordered, or refined by the Conductor.
 - Build the basic app screens: Feed, Events, Profile, Chat
 - Add login and account creation
 - New feature ideas captured this round (M-008 through M-021 above) are queued behind the current work — they'll move to PLANNING → IN_PROGRESS once the core app (Feed/Events/Profile/Chat + login) is working end to end
+- Roll the new light/dark color theme out to the handful of screens that don't follow it yet (a few icons and the bottom tab bar are still light-only)
 
 ---
 

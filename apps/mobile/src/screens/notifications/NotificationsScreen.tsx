@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BackButton } from "../../components/ui/BackButton";
 import { EmptyState } from "../../components/ui/EmptyState";
 import {
@@ -11,19 +12,7 @@ import {
 } from "../../lib/api/notificationsApi";
 import { formatRelativeTime } from "../../lib/time";
 import { useAuthStore } from "../../store/useAuthStore";
-
-function messageFor(n: ApiNotification): string {
-  switch (n.kind) {
-    case "friend_request":
-      return `${n.actorName} sent you a friend request`;
-    case "friend_accepted":
-      return `${n.actorName} accepted your friend request`;
-    case "comment":
-      return `${n.actorName} commented on your post`;
-    case "like":
-      return `${n.actorName} liked your post`;
-  }
-}
+import { markLocalRead, messageFor } from "./notifications.logic";
 
 function NotificationRow({ notification, onPress }: { notification: ApiNotification; onPress: () => void }) {
   return (
@@ -69,10 +58,19 @@ export function NotificationsScreen() {
 
   const handlePress = useCallback(
     async (n: ApiNotification) => {
-      if (!token || n.read) return;
+      if (!token) return;
       // Optimistic — a failed mark-read just means it stays bold until the
-      // next load, no need to block the tap on the round trip.
-      setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
+      // next load, no need to block the tap on the round trip. markLocalRead
+      // checks read status against the latest state inside the updater (not
+      // the `n` closed over from render) so two rapid taps on the same row,
+      // before React re-renders between them, only decrement once.
+      let alreadyRead = true;
+      setNotifications((prev) => {
+        const result = markLocalRead(prev, n.id);
+        alreadyRead = result.alreadyRead;
+        return result.notifications;
+      });
+      if (alreadyRead) return;
       setUnreadCount((prev) => Math.max(0, prev - 1));
       try {
         await markNotificationRead(token, n.id);
@@ -95,7 +93,7 @@ export function NotificationsScreen() {
   }, [token, unreadCount]);
 
   return (
-    <View className="flex-1 bg-bg">
+    <SafeAreaView className="flex-1 bg-bg" edges={["top", "bottom"]}>
       <View className="flex-row items-center justify-between px-4 pt-3 pb-2 bg-surface border-b border-border">
         <View className="flex-row items-center gap-3">
           <BackButton />
@@ -118,6 +116,6 @@ export function NotificationsScreen() {
           ) : null
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }

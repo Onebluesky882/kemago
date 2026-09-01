@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 import { Slot, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useUniwind } from "uniwind";
 import { getSession } from "../lib/api/authApi";
 import { useAuthStore } from "../store/useAuthStore";
+// Side-effect import: instantiating the store re-applies the persisted
+// theme preference to uniwind on cold start (see onRehydrateStorage in
+// useThemeStore.ts) — nothing here reads from it directly.
+import "../store/useThemeStore";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(useAuthStore.persist.hasHydrated());
@@ -65,12 +70,13 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 export default function Layout() {
+  const { theme } = useUniwind();
   return (
     <SafeAreaProvider>
       <AuthGate>
         <Slot />
       </AuthGate>
-      <StatusBar style="dark" />
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
     </SafeAreaProvider>
   );
 }

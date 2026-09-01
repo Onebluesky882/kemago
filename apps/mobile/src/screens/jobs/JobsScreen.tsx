@@ -1,11 +1,12 @@
 import { FlatList, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { JobCard } from "../../components/jobs/JobCard";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { jobPosts } from "../../lib/mockData";
 
 export function JobsScreen() {
   return (
-    <View className="flex-1 bg-bg">
+    <SafeAreaView className="flex-1 bg-bg" edges={["top"]}>
       <View className="px-4 pt-3 pb-2 bg-surface border-b border-border">
         <Text className="text-xl font-bold text-text">Jobs & Announcements</Text>
       </View>
@@ -19,6 +20,6 @@ export function JobsScreen() {
           <EmptyState title="Nothing posted yet" body="Job listings and neighborhood announcements will show up here." />
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }

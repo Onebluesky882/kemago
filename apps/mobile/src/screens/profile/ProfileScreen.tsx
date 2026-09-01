@@ -4,8 +4,11 @@ import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { ProfileHeader } from "../../components/profile/ProfileHeader";
 import { StatItem } from "../../components/profile/StatItem";
 import { signOutRequest, updatePrivacy } from "../../lib/api/authApi";
+import { useUniwind } from "uniwind";
 import { useAuthStore } from "../../store/useAuthStore";
-import { colors } from "../../theme/colors";
+import { useThemeStore } from "../../store/useThemeStore";
+import { colors, useThemeColors } from "../../theme/colors";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export function ProfileScreen() {
   const router = useRouter();
@@ -17,6 +20,15 @@ export function ProfileScreen() {
 
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const isPublic = profilePublic ?? true;
+
+  const setThemePreference = useThemeStore((state) => state.setPreference);
+  // Reads the *resolved* theme (uniwind resolves "system" against the OS
+  // setting itself) rather than the raw stored preference — otherwise the
+  // switch would show "Light mode"/off while preference is still "system"
+  // and the OS is actually in dark mode, contradicting what's on screen.
+  const { theme } = useUniwind();
+  const isDark = theme === "dark";
+  const themeColors = useThemeColors();
 
   // Optimistic-ish: flips the switch immediately, then reconciles with the
   // real persisted value once the server responds. Reverts on failure —
@@ -52,70 +64,93 @@ export function ProfileScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-bg">
-      <View className="px-4 pt-3 pb-2 bg-surface border-b border-border">
-        <Text className="text-xl font-bold text-text">Profile</Text>
-      </View>
-
-      <ProfileHeader user={user} />
-
-      <View className="flex-row bg-surface border-b border-border py-4">
-        <StatItem label="Posts" value={user.postCount} />
-        <StatItem label="Events" value={user.eventCount} />
-      </View>
-
-      <View className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border">
-        <View className="flex-1 pr-3">
-          <Text className="text-sm font-semibold text-text">
-            {isPublic ? "Public profile" : "Private profile"}
-          </Text>
-          <Text className="text-xs text-text-muted mt-0.5">
-            {isPublic
-              ? "Anyone nearby can see your profile and posts."
-              : "Only neighbors you approve can see your profile."}
-          </Text>
+    <SafeAreaView edges={["top"]}>
+      <ScrollView className="bg-bg">
+        <View className="px-4 pt-3 pb-2 bg-surface border-b border-border">
+          <Text className="text-xl font-bold text-text">Profile</Text>
         </View>
-        <Switch
-          value={isPublic}
-          onValueChange={handleTogglePublic}
-          disabled={savingPrivacy}
-          trackColor={{ false: colors.border, true: colors.brand }}
-          thumbColor="#ffffff"
-        />
-      </View>
 
-      <Pressable
-        onPress={() => router.push("/friends")}
-        className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
-      >
-        <Text className="text-sm font-semibold text-text">Friends</Text>
-        <Text className="text-xs text-text-muted">View</Text>
-      </Pressable>
+        <ProfileHeader user={user} />
 
-      <Pressable
-        onPress={() => router.push("/rooms")}
-        className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
-      >
-        <Text className="text-sm font-semibold text-text">Rooms</Text>
-        <Text className="text-xs text-text-muted">View</Text>
-      </Pressable>
+        <View className="flex-row bg-surface border-b border-border py-4">
+          <StatItem label="Posts" value={user.postCount} />
+          <StatItem label="Events" value={user.eventCount} />
+        </View>
 
-      <Pressable
-        onPress={() => router.push("/blocked-users")}
-        className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
-      >
-        <Text className="text-sm font-semibold text-text">Blocked users</Text>
-        <Text className="text-xs text-text-muted">View</Text>
-      </Pressable>
+        <View className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border">
+          <View className="flex-1 pr-3">
+            <Text className="text-sm font-semibold text-text">
+              {isPublic ? "Public profile" : "Private profile"}
+            </Text>
+            <Text className="text-xs text-text-muted mt-0.5">
+              {isPublic
+                ? "Anyone nearby can see your profile and posts."
+                : "Only neighbors you approve can see your profile."}
+            </Text>
+          </View>
+          <Switch
+            value={isPublic}
+            onValueChange={handleTogglePublic}
+            disabled={savingPrivacy}
+            trackColor={{ false: colors.border, true: colors.brand }}
+            thumbColor="#ffffff"
+          />
+        </View>
 
-      <View className="px-4 py-4">
+        <View className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border">
+          <View className="flex-1 pr-3">
+            <Text className="text-sm font-semibold text-text">{isDark ? "Dark mode" : "Light mode"}</Text>
+            <Text className="text-xs text-text-muted mt-0.5">Switch the app's color theme.</Text>
+          </View>
+          <Switch
+            value={isDark}
+            onValueChange={(next) => setThemePreference(next ? "dark" : "light")}
+            trackColor={{ false: themeColors.border, true: themeColors.brand }}
+            thumbColor="#ffffff"
+          />
+        </View>
+
         <Pressable
-          onPress={handleLogout}
-          className="items-center rounded-full px-4 py-3 border border-accent"
+          onPress={() => router.push("/friends")}
+          className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
         >
-          <Text className="text-sm font-semibold text-accent">Log out</Text>
+          <Text className="text-sm font-semibold text-text">Friends</Text>
+          <Text className="text-xs text-text-muted">View</Text>
         </Pressable>
-      </View>
-    </ScrollView>
+
+        <Pressable
+          onPress={() => router.push("/rooms")}
+          className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
+        >
+          <Text className="text-sm font-semibold text-text">Rooms</Text>
+          <Text className="text-xs text-text-muted">View</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/blocked-users")}
+          className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
+        >
+          <Text className="text-sm font-semibold text-text">Blocked users</Text>
+          <Text className="text-xs text-text-muted">View</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => router.push("/keyboard-test")}
+          className="flex-row items-center justify-between px-4 py-4 bg-surface border-b border-border"
+        >
+          <Text className="text-sm font-semibold text-text">Keyboard typing test</Text>
+          <Text className="text-xs text-text-muted">View</Text>
+        </Pressable>
+
+        <View className="px-4 py-4">
+          <Pressable
+            onPress={handleLogout}
+            className="items-center rounded-full px-4 py-3 border border-accent"
+          >
+            <Text className="text-sm font-semibold text-accent">Log out</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

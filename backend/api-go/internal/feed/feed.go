@@ -527,6 +527,14 @@ func (h *Handlers) createComment(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, map[string]any{"comment": created})
 }
 
+// isNewLike reports whether an insert with ON CONFLICT DO NOTHING actually
+// inserted a row. A double-tap/retry on an already-liked post affects zero
+// rows, and shouldn't spam the author with a duplicate notification.
+func isNewLike(res sql.Result) bool {
+	n, _ := res.RowsAffected()
+	return n > 0
+}
+
 func (h *Handlers) likePost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, ok := authcheck.RequireUser(ctx, h.DB, r)
@@ -549,15 +557,18 @@ func (h *Handlers) likePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := h.DB.NewInsert().
+	res, err := h.DB.NewInsert().
 		Model(&dbpkg.Like{PostID: postID, UserID: user.ID}).
 		On("CONFLICT (post_id, user_id) DO NOTHING").
-		Exec(ctx); err != nil {
+		Exec(ctx)
+	if err != nil {
 		writeInternalError(w, err)
 		return
 	}
 	h.broadcastLikeChanged(ctx, postID)
-	notifications.Push(ctx, h.DB, post.AuthorID, "like", user.ID, user.Name, &postID)
+	if isNewLike(res) {
+		notifications.Push(ctx, h.DB, post.AuthorID, "like", user.ID, user.Name, &postID)
+	}
 	writeJSON(w, http.StatusOK, map[string]bool{"liked": true})
 }
 
@@ -578,6 +589,9 @@ func (h *Handlers) unlikePost(w http.ResponseWriter, r *http.Request) {
 	user, ok := authcheck.RequireUser(ctx, h.DB, r)
 	if !ok {
 		writeError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+	if h.rateLimited(w, ctx, "like", user.ID, 30, time.Minute) {
 		return
 	}
 

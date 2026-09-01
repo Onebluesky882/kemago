@@ -118,6 +118,41 @@ func Migrate(ctx context.Context, db *bun.DB) error {
 		)`,
 		`CREATE INDEX IF NOT EXISTS notifications_user_id_created_at_idx
 			ON notifications (user_id, created_at DESC)`,
+		`CREATE TABLE IF NOT EXISTS conversations (
+			id TEXT PRIMARY KEY,
+			type TEXT NOT NULL,
+			name TEXT NOT NULL DEFAULT '',
+			dm_key TEXT,
+			created_by TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		)`,
+		`CREATE UNIQUE INDEX IF NOT EXISTS conversations_dm_key_uniq
+			ON conversations (dm_key) WHERE dm_key IS NOT NULL`,
+		`CREATE TABLE IF NOT EXISTS conversation_members (
+			conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+			user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			role TEXT NOT NULL DEFAULT 'member',
+			joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			last_read_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			PRIMARY KEY (conversation_id, user_id)
+		)`,
+		// Retrofits last_read_at onto conversation_members for any DB where
+		// the table already existed before read receipts — CREATE TABLE
+		// above only takes effect on a fresh table. Defaults new rows to
+		// join time so a member never sees messages sent before they joined
+		// counted as unread.
+		`ALTER TABLE conversation_members
+			ADD COLUMN IF NOT EXISTS last_read_at TIMESTAMPTZ NOT NULL DEFAULT now()`,
+		`CREATE TABLE IF NOT EXISTS messages (
+			id TEXT PRIMARY KEY,
+			conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+			sender_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+			content TEXT NOT NULL DEFAULT '',
+			image_key TEXT,
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+		)`,
+		`CREATE INDEX IF NOT EXISTS messages_conversation_id_created_at_idx
+			ON messages (conversation_id, created_at DESC)`,
 	}
 
 	for _, stmt := range statements {

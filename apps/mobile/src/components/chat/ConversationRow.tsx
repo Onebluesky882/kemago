@@ -1,24 +1,36 @@
 import { Pressable, Text, View } from "react-native";
 import { Avatar } from "../ui/Avatar";
-import type { Conversation } from "../../lib/mockData";
+import type { ApiConversation } from "../../lib/api/chatApi";
+import { formatRelativeTime } from "../../lib/time";
 
-export function ConversationRow({ conversation }: { conversation: Conversation }) {
+export function ConversationRow({
+  conversation,
+  onPress,
+}: {
+  conversation: ApiConversation;
+  onPress: (conversation: ApiConversation) => void;
+}) {
+  const title = conversation.type === "dm" ? (conversation.otherUser?.name ?? "Unknown") : conversation.name;
+
   return (
-    <Pressable className="flex-row items-center px-4 py-3 border-b border-border active:bg-bg">
-      <Avatar initials={initialsOf(conversation.name)} />
+    <Pressable
+      onPress={() => onPress(conversation)}
+      className="flex-row items-center px-4 py-3 border-b border-border active:bg-bg"
+    >
+      <Avatar initials={initialsOf(title)} />
       <View className="ml-3 flex-1">
         <View className="flex-row items-center justify-between mb-0.5">
-          <Text className="text-sm font-semibold text-text">{conversation.name}</Text>
-          <Text className="text-xs text-text-muted">{conversation.timeLabel}</Text>
+          <Text className="text-sm font-semibold text-text" numberOfLines={1}>
+            {title}
+          </Text>
+          {conversation.lastMessageAt ? (
+            <Text className="text-xs text-text-muted">{formatRelativeTime(conversation.lastMessageAt)}</Text>
+          ) : null}
         </View>
-        <Text
-          numberOfLines={1}
-          className={`text-sm ${conversation.unread ? "text-text font-medium" : "text-text-muted"}`}
-        >
-          {conversation.lastMessage}
+        <Text numberOfLines={1} className="text-sm text-text-muted">
+          {conversation.lastMessage ?? (conversation.type === "group" ? `${conversation.memberCount} members` : "No messages yet")}
         </Text>
       </View>
-      {conversation.unread ? <View className="w-2 h-2 rounded-full bg-brand ml-2" /> : null}
     </Pressable>
   );
 }

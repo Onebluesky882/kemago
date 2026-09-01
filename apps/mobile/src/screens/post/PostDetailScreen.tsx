@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BackButton } from "../../components/ui/BackButton";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -62,7 +63,7 @@ export function PostDetailScreen() {
   );
 
   return (
-    <View className="flex-1 bg-bg">
+    <SafeAreaView className="flex-1 bg-bg" edges={["top", "bottom"]}>
       <View className="flex-row items-center px-4 pt-3 pb-2 bg-surface border-b border-border">
         <BackButton />
         <Text className="text-lg font-bold text-text ml-3">Post</Text>
@@ -100,6 +101,6 @@ export function PostDetailScreen() {
           ListFooterComponent={token ? <CommentComposer onSubmit={handleComment} /> : null}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }

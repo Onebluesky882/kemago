@@ -28,6 +28,7 @@ type Handlers struct {
 func Register(mux *http.ServeMux, database *bun.DB) {
 	h := &Handlers{DB: database}
 	mux.HandleFunc("GET /api/notifications", h.list)
+	mux.HandleFunc("GET /api/notifications/unread-count", h.unreadCount)
 	mux.HandleFunc("POST /api/notifications/{id}/read", h.markRead)
 	mux.HandleFunc("POST /api/notifications/read-all", h.markAllRead)
 }
@@ -116,6 +117,29 @@ func (h *Handlers) list(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"notifications": out, "unreadCount": unread})
+}
+
+// unreadCount is a lightweight companion to list for callers (the mobile
+// notification bell) that only need the badge number, not the full
+// history — avoids fetching and serializing up to 50 rows on every
+// mount/realtime nudge just to read one field off the response.
+func (h *Handlers) unreadCount(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	user, ok := authcheck.RequireUser(ctx, h.DB, r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	var count int
+	if err := h.DB.NewRaw(
+		`SELECT COUNT(*) FROM notifications WHERE user_id = ? AND read_at IS NULL`,
+		user.ID,
+	).Scan(ctx, &count); err != nil {
+		writeInternalError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]int{"unreadCount": count})
 }
 
 func (h *Handlers) markRead(w http.ResponseWriter, r *http.Request) {

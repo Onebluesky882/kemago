@@ -11,6 +11,7 @@ import (
 
 	"github.com/onebluesky882/kemago/backend/api-go/internal/authcheck"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/blocks"
+	"github.com/onebluesky882/kemago/backend/api-go/internal/chat"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/clubs"
 	dbpkg "github.com/onebluesky882/kemago/backend/api-go/internal/db"
 	"github.com/onebluesky882/kemago/backend/api-go/internal/feed"
@@ -91,12 +92,16 @@ func main() {
 	notifications.Register(mux, database)
 
 	// Optional — R2/Stories isn't required to run everything else. Skips
-	// registration entirely (POST/GET /api/stories* just 404) rather than
-	// log.Fatal, since a fresh environment without an R2 bucket set up yet
-	// shouldn't be unable to start the whole service over one unfinished
-	// feature.
+	// stories registration entirely (POST/GET /api/stories* just 404)
+	// rather than log.Fatal, since a fresh environment without an R2
+	// bucket set up yet shouldn't be unable to start the whole service
+	// over one unfinished feature. chat.Register always runs (core
+	// messaging doesn't need R2) — storageClient stays nil when R2 isn't
+	// configured, and chat's upload-url endpoint degrades to a 503 for
+	// just that one route (see internal/chat's getUploadURL).
+	var storageClient *storage.Client
 	if r2AccountID := os.Getenv("R2_ACCOUNT_ID"); r2AccountID != "" {
-		storageClient := storage.New(storage.Config{
+		storageClient = storage.New(storage.Config{
 			AccountID:       r2AccountID,
 			AccessKeyID:     os.Getenv("R2_ACCESS_KEY_ID"),
 			SecretAccessKey: os.Getenv("R2_SECRET_ACCESS_KEY"),
@@ -108,6 +113,7 @@ func main() {
 	} else {
 		log.Println("stories: R2_ACCOUNT_ID not set, /api/stories* disabled")
 	}
+	chat.Register(mux, database, h, storageClient)
 
 	// Two ways to connect:
 	//   /ws?token=<bearer>   — personal channel, server-derived as
@@ -117,10 +123,17 @@ func main() {
 	//                          via hub.Broadcast (new posts/comments/likes
 	//                          on "feed:all", friend requests/accepts on
 	//                          "user:<id>").
-	//   /ws?room=<room>      — TODO(stage-10-chat): unauthenticated raw
-	//                          relay for open group chat rooms, unchanged
-	//                          from before. Verify the token here too once
-	//                          real chat-room membership exists.
+	//   /ws?room=<room>      — unauthenticated raw relay, intentionally so
+	//                          for the one legitimate use of it today
+	//                          (?room=feed:all, which GET /api/posts also
+	//                          serves with no login wall). Do NOT point
+	//                          anything membership-gated at this — for
+	//                          per-conversation chat rooms, use
+	//                          GET /ws/chat/{id}?token=<bearer> instead
+	//                          (internal/chat's joinChatSocket), which
+	//                          verifies both the token and that the caller
+	//                          is actually a conversation member before
+	//                          joining "chat:<id>".
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		var room string
 		if token := r.URL.Query().Get("token"); token != "" {

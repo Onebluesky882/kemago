@@ -9,22 +9,23 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "type-check": "tsc --noEmit",
-    "lint": "biome check ."
+    "lint": "biome check .",
+    "test": "vitest run"
   },
   "dependencies": {
-    "expo": "^57.0.15",
+    "expo": "^57.0.18",
     "expo-image-picker": "~57.0.14",
-    "expo-router": "~57.0.15",
+    "expo-router": "~57.0.17",
     "expo-status-bar": "~57.0.0",
     "expo-video": "~57.0.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-native": "0.86.2",
+    "react-native": "0.86.3",
     "react-native-mmkv": "^4.3.2",
     "react-native-nitro-modules": "^0.37.1",
     "react-native-nitro-sqlite": "^9.7.0",
-    "react-native-safe-area-context": "~5.9.1",
-    "react-native-svg": "~15.15.5",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-svg": "~15.15.4",
     "react-native-web": "^0.21.2",
     "tailwindcss": "~4.3.3",
     "uniwind": "~1.10.0",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.14",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vitest": "latest"
   }
 }

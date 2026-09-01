@@ -15,6 +15,9 @@
     "slug": "mobile",
     "ios": {
       "bundleIdentifier": "com.wansing05.mobile"
+    },
+    "android": {
+      "package": "com.wansing05.mobile"
     }
   }
 }
