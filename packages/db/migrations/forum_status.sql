@@ -1,1 +1,0 @@
-ALTER TABLE forum_posts ADD COLUMN status TEXT NOT NULL DEFAULT 'open';

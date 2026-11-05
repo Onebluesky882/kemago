@@ -1,1 +1,0 @@
-ALTER TABLE agent_logs ADD COLUMN cost_usd REAL DEFAULT 0;

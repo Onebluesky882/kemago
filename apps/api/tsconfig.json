@@ -1,8 +1,0 @@
-{
-  "extends": "../../packages/config/tsconfig/cloudflare.json",
-  "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo",
-    "jsx": "react-jsx"
-  },
-  "include": ["src", "vitest.config.ts"]
-}

@@ -1,1 +1,0 @@
-ALTER TABLE forum_posts ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0;

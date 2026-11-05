@@ -1,7 +1,0 @@
-{
-  "extends": "../config/tsconfig/nextjs.json",
-  "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo"
-  },
-  "include": ["src"]
-}

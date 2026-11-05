@@ -1,5 +1,0 @@
-# Domains the developer has explicitly confirmed are OK to document
-# publicly in docs.route.ts (one domain name per line).
-#
-# Written to automatically by the conductor after asking the developer,
-# per new-domain-privacy-check.sh. Do not need to edit this by hand.

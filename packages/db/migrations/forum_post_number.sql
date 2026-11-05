@@ -1,1 +1,0 @@
-ALTER TABLE forum_posts ADD COLUMN post_number INTEGER NOT NULL DEFAULT 0;
