@@ -51,3 +51,4 @@ next-env.d.ts
 coverage/
 apps/.DS_Store
 apps/kemago/.expo/*
+apps/kemago/ios/*
