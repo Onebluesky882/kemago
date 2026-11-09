@@ -3,14 +3,33 @@
     "scheme": "acme",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
+    "icon": "./assets/images/KinaRai_logo.png",
+    "experiments": {
+      "typedRoutes": true
+    },
     "web": {
       "output": "static"
     },
     "plugins": [
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash_icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FEDE65"
+        }
+      ]
     ],
     "name": "kemago",
-    "slug": "kemago"
+    "slug": "kemago",
+    "ios": {
+      "bundleIdentifier": "com.wansing05.kemago"
+    },
+    "android": {
+      "package": "com.wansing05.kemago"
+    }
   }
 }

@@ -23,7 +23,16 @@ export function AppText({
   ...props
 }: AppTextProps) {
   return (
-    <Text {...props} style={[{ fontFamily: fontFamilies[weight] }, style]}>
+    <Text
+      {...props}
+      style={[
+        {
+          fontFamily: fontFamilies[weight],
+          includeFontPadding: false,
+        },
+        style,
+      ]}
+    >
       {children}
     </Text>
   );

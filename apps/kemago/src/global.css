@@ -1,2 +1,56 @@
 @import "tailwindcss";
 @import "uniwind";
+
+@theme {
+  /* sport  */
+  --color-sport-neon: #95fc0d;
+  --color-sport-neon-light: #6bbff8;
+
+  /* Brand */
+
+  --color-primary: #f97316;
+
+  --color-primary-light: #fff0e5;
+
+  --color-primary-dark: #ea580c;
+
+  --color-secondary: #fed7aa;
+
+  /* Background */
+
+  --color-background: #fffbf7;
+
+  --color-card: #ffffff;
+
+  --color-card-secondary: #fff7ed;
+
+  /* Text */
+
+  --color-foreground: #292524;
+
+  --color-muted: #78716c;
+
+  --color-placeholder: #a8a29e;
+
+  /* Border */
+
+  --color-border: #f0e7df;
+
+  /* Status */
+
+  --color-success: #16a34a;
+
+  --color-warning: #f59e0b;
+
+  --color-error: #dc2626;
+
+  /* Fitness */
+
+  --color-running: #f97316;
+
+  --color-cycling: #0d9488;
+
+  --color-fitness: #8b5cf6;
+
+  --color-yoga: #ec4899;
+}
