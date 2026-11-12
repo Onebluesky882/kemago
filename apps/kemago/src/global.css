@@ -1,56 +1,108 @@
 @import "tailwindcss";
 @import "uniwind";
 
-@theme {
-  /* sport  */
-  --color-sport-neon: #95fc0d;
-  --color-sport-neon-light: #6bbff8;
+@layer theme {
+  :root {
+    /* ========================================
+       LIGHT THEME
+       ======================================== */
+    @variant light {
+      /* Sport */
+      --color-sport-neon: #95fc0d;
+      --color-sport-neon-light: #6bbff8;
 
-  /* Brand */
+      /* Brand */
+      --color-primary: #f97316;
+      --color-primary-light: #fff0e5;
+      --color-primary-dark: #ea580c;
+      --color-secondary: #fed7aa;
 
-  --color-primary: #f97316;
+      /* Background */
+      --color-background: #97c279;
+      --color-background-secondary: #fff7ed;
+      --color-background-tertiary: #ffedd5;
 
-  --color-primary-light: #fff0e5;
+      /* Card */
+      --color-card: #ffffff;
+      --color-card-secondary: #fff7ed;
+      --color-card-tertiary: #ffedd5;
 
-  --color-primary-dark: #ea580c;
+      /* Surface */
+      --color-surface: #ffffff;
+      --color-surface-secondary: #faf5f0;
+      --color-surface-tertiary: #f5ebe2;
 
-  --color-secondary: #fed7aa;
+      /* Text */
+      --color-foreground: #292524;
+      --color-muted: #78716c;
+      --color-placeholder: #a8a29e;
 
-  /* Background */
+      /* Border */
+      --color-border: #f0e7df;
+      --color-border-secondary: #e7dcd2;
 
-  --color-background: #fffbf7;
+      /* Status */
+      --color-success: #16a34a;
+      --color-warning: #f59e0b;
+      --color-error: #dc2626;
+      --color-info: #0284c7;
 
-  --color-card: #ffffff;
+      /* Fitness */
+      --color-running: #f97316;
+      --color-cycling: #0d9488;
+      --color-fitness: #8b5cf6;
+      --color-yoga: #ec4899;
+    }
 
-  --color-card-secondary: #fff7ed;
+    /* ========================================
+       DARK THEME
+       ======================================== */
+    @variant dark {
+      /* Sport */
+      --color-sport-neon: #95fc0d;
+      --color-sport-neon-light: #6bbff8;
 
-  /* Text */
+      /* Brand */
+      --color-primary: #fb923c;
+      --color-primary-light: #431f0b;
+      --color-primary-dark: #fdba74;
+      --color-secondary: #7c2d12;
 
-  --color-foreground: #292524;
+      /* Background */
+      --color-background: #38353a;
+      --color-background-secondary: #181818;
+      --color-background-tertiary: #222222;
 
-  --color-muted: #78716c;
+      /* Card */
+      --color-card: #1e1e1e;
+      --color-card-secondary: #292524;
+      --color-card-tertiary: #33302e;
 
-  --color-placeholder: #a8a29e;
+      /* Surface */
+      --color-surface: #242424;
+      --color-surface-secondary: #2d2d2d;
+      --color-surface-tertiary: #383432;
 
-  /* Border */
+      /* Text */
+      --color-foreground: #fafaf9;
+      --color-muted: #a8a29e;
+      --color-placeholder: #78716c;
 
-  --color-border: #f0e7df;
+      /* Border */
+      --color-border: #3a3633;
+      --color-border-secondary: #4a4541;
 
-  /* Status */
+      /* Status */
+      --color-success: #4ade80;
+      --color-warning: #fbbf24;
+      --color-error: #f87171;
+      --color-info: #38bdf8;
 
-  --color-success: #16a34a;
-
-  --color-warning: #f59e0b;
-
-  --color-error: #dc2626;
-
-  /* Fitness */
-
-  --color-running: #f97316;
-
-  --color-cycling: #0d9488;
-
-  --color-fitness: #8b5cf6;
-
-  --color-yoga: #ec4899;
+      /* Fitness */
+      --color-running: #fb923c;
+      --color-cycling: #2dd4bf;
+      --color-fitness: #a78bfa;
+      --color-yoga: #f472b6;
+    }
+  }
 }

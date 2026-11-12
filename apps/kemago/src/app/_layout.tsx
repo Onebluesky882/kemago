@@ -1,7 +1,7 @@
 import { useFonts } from "expo-font";
 import "../global.css";
 
-import { Slot } from "expo-router";
+import { Slot, Tabs } from "expo-router";
 
 export default function Layout() {
   const [loaded] = useFonts({
