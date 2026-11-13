@@ -1,8 +1,13 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View, Text, Pressable } from "react-native";
 import { AppText } from "../AppText";
 
-const Greeting = () => {
+type LocationProp = {
+  city: string;
+  country: string;
+  onPress?: () => void;
+};
+
+const Greeting = ({ city, country, onPress }: LocationProp) => {
   const mockUser = "Risa";
   return (
     <View>
@@ -15,10 +20,11 @@ const Greeting = () => {
         <AppText className=" pt-2 text-2xl text-gray-700" weight="text">
           Hi {mockUser}
         </AppText>
-
-        <AppText className="mt-1 text-sm text-orange-500">
-          📍 Lampang, Thailand
-        </AppText>
+        <Pressable onPress={onPress}>
+          <AppText className="mt-1 text-sm text-orange-500">
+            📍 {city}, {country}
+          </AppText>
+        </Pressable>
       </View>
     </View>
   );

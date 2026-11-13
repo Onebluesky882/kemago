@@ -8,7 +8,12 @@ import ReelsNerby from "@/components/homepage/ReelsNerby";
 import Search from "@/components/homepage/Search";
 import Categories from "@/components/homepage/Categories";
 import Activities from "@/components/homepage/Activities";
+import { useState } from "react";
+import LocationModal from "@/components/location/LocationModal";
 export default function HomeScreen() {
+  const [openLocationModal, setopenLocationModal] = useState(false);
+
+  console.log("openLocationModal :", openLocationModal);
   return (
     <ScrollView className="  bg-[#FFFDF8]" showsVerticalScrollIndicator={false}>
       <View className="px-5   pb-10">
@@ -26,7 +31,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Greeting */}
-        <Greeting />
+        <Greeting
+          city={""}
+          country={""}
+          onPress={() => setopenLocationModal(true)}
+        />
 
         {/* reels nerby */}
         <ReelsNerby users={users} />
@@ -56,6 +65,7 @@ export default function HomeScreen() {
           </AppText>
         </View>
       </View>
+      {openLocationModal && <LocationModal openLocationModal={setopenLocationModal} />}
     </ScrollView>
   );
 }
