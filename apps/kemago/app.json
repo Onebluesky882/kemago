@@ -21,6 +21,15 @@
         }
       ],
       [
+        "react-native-maps",
+        {
+          "requestLocationPermission": true,
+          "locationPermission": "Allow $(PRODUCT_NAME) to use your location",
+          "androidGoogleMapsApiKey": "AIzaSyDvfZ-yheMhqlFr2jpM6p8G_X_NUykwglw",
+          "iosGoogleMapsApiKey": "AIzaSyDvfZ-yheMhqlFr2jpM6p8G_X_NUykwglw"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash_icon.png",
