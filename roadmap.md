@@ -8,3 +8,4 @@
 
 - profile
 - community
+- location
