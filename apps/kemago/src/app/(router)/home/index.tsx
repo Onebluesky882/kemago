@@ -11,62 +11,56 @@ import Activities from "@/components/homepage/Activities";
 import { useState } from "react";
 import LocationModal from "@/components/location/LocationModal";
 export default function HomeScreen() {
-  const [openLocationModal, setopenLocationModal] = useState(false);
+	const [openLocationModal, setopenLocationModal] = useState(false);
 
-  return (
-    <ScrollView className="  bg-[#FFFDF8]" showsVerticalScrollIndicator={false}>
-      <View className="px-5   pb-10">
-        {/* Header */}
-        <View className="flex-row items-center justify-between">
-          <View>
-            <AppText className="text-2xl text-sport-neon" weight="bold">
-              KEMAGO.
-            </AppText>
-          </View>
+	return (
+		<ScrollView className="  bg-[#FFFDF8]" showsVerticalScrollIndicator={false}>
+			<View className="px-5   pb-10">
+				{/* Header */}
+				<View className="flex-row items-center justify-between">
+					<View>
+						<AppText className="text-2xl text-sport-neon" weight="bold">
+							KEMAGO.
+						</AppText>
+					</View>
 
-          <Pressable className="h-11 w-11 items-center justify-center rounded-full bg-orange-100">
-            <AppText className="text-xl">🔔</AppText>
-          </Pressable>
-        </View>
+					<Pressable className="h-11 w-11 items-center justify-center rounded-full bg-orange-100">
+						<AppText className="text-xl">🔔</AppText>
+					</Pressable>
+				</View>
 
-        {/* Greeting */}
-        <Greeting
-          city={""}
-          country={""}
-          onPress={() => setopenLocationModal(true)}
-        />
+				{/* Greeting */}
+				<Greeting city={""} country={""} onPress={() => setopenLocationModal(true)} />
 
-        {/* reels nerby */}
-        <ReelsNerby users={users} />
+				{/* reels nerby */}
+				<ReelsNerby users={users} />
 
-        {/* Search */}
-        <Search />
+				{/* Search */}
+				<Search />
 
-        {/* Categories */}
-        <Categories categories={categories} />
+				{/* Categories */}
+				<Categories categories={categories} />
 
-        {/* Activities */}
-        <Activities activities={activities} />
+				{/* Activities */}
+				<Activities activities={activities} />
 
-        {/* Events */}
-        <EventComming events={events} />
+				{/* Events */}
+				<EventComming events={events} />
 
-        {/* Bottom Message */}
-        <View className="mt-10 items-center rounded-3xl bg-orange-100 p-6">
-          <AppText className="text-2xl">💪</AppText>
+				{/* Bottom Message */}
+				<View className="mt-10 items-center rounded-3xl bg-orange-100 p-6">
+					<AppText className="text-2xl">💪</AppText>
 
-          <AppText className="mt-2 text-lg text-gray-900" weight="bold">
-            Better Together
-          </AppText>
+					<AppText className="mt-2 text-lg text-gray-900" weight="bold">
+						Better Together
+					</AppText>
 
-          <AppText className="mt-2 text-center text-sm text-gray-600">
-            ออกกำลังกายกับเพื่อน สนุกกว่าออกกำลังกายคนเดียว
-          </AppText>
-        </View>
-      </View>
-      {openLocationModal && (
-        <LocationModal openLocationModal={setopenLocationModal} />
-      )}
-    </ScrollView>
-  );
+					<AppText className="mt-2 text-center text-sm text-gray-600">
+						ออกกำลังกายกับเพื่อน สนุกกว่าออกกำลังกายคนเดียว
+					</AppText>
+				</View>
+			</View>
+			{openLocationModal && <LocationModal openLocationModal={setopenLocationModal} />}
+		</ScrollView>
+	);
 }

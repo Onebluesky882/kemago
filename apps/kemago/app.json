@@ -1,51 +1,51 @@
 {
-  "expo": {
-    "scheme": "acme",
-    "userInterfaceStyle": "automatic",
-    "orientation": "default",
-    "icon": "./assets/images/KinaRai_logo.png",
-    "experiments": {
-      "typedRoutes": true
-    },
-    "web": {
-      "output": "static"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-status-bar",
-      [
-        "expo-location",
+	"expo": {
+		"scheme": "acme",
+		"userInterfaceStyle": "automatic",
+		"orientation": "default",
+		"icon": "./assets/images/KinaRai_logo.png",
+		"experiments": {
+			"typedRoutes": true
+		},
+		"web": {
+			"output": "static"
+		},
+		"plugins": [
+			"expo-router",
+			"expo-status-bar",
+			[
+				"expo-location",
 
-        {
-          "locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to access your location."
-        }
-      ],
-      [
-        "react-native-maps",
-        {
-          "requestLocationPermission": true,
-          "locationPermission": "Allow $(PRODUCT_NAME) to use your location",
-          "androidGoogleMapsApiKey": "AIzaSyDvfZ-yheMhqlFr2jpM6p8G_X_NUykwglw",
-          "iosGoogleMapsApiKey": "AIzaSyDvfZ-yheMhqlFr2jpM6p8G_X_NUykwglw"
-        }
-      ],
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash_icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#FEDE65"
-        }
-      ]
-    ],
-    "name": "kemago",
-    "slug": "kemago",
-    "ios": {
-      "bundleIdentifier": "com.wansing05.kemago"
-    },
-    "android": {
-      "package": "com.wansing05.kemago"
-    }
-  }
+				{
+					"locationWhenInUsePermission": "Allow $(PRODUCT_NAME) to access your location."
+				}
+			],
+			[
+				"react-native-maps",
+				{
+					"requestLocationPermission": true,
+					"locationPermission": "Allow $(PRODUCT_NAME) to use your location",
+					"androidGoogleMapsApiKey": "AIzaSyDvfZ-yheMhqlFr2jpM6p8G_X_NUykwglw",
+					"iosGoogleMapsApiKey": "AIzaSyDvfZ-yheMhqlFr2jpM6p8G_X_NUykwglw"
+				}
+			],
+			[
+				"expo-splash-screen",
+				{
+					"image": "./assets/images/splash_icon.png",
+					"imageWidth": 200,
+					"resizeMode": "contain",
+					"backgroundColor": "#FEDE65"
+				}
+			]
+		],
+		"name": "kemago",
+		"slug": "kemago",
+		"ios": {
+			"bundleIdentifier": "com.wansing05.kemago"
+		},
+		"android": {
+			"package": "com.wansing05.kemago"
+		}
+	}
 }
