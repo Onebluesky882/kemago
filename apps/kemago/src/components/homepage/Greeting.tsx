@@ -8,7 +8,7 @@ type LocationProp = {
 };
 
 const Greeting = ({ city, country, onPress }: LocationProp) => {
-  const mockUser = "Risa";
+  const mockUser = "John Doe"; // Replace with actual user data when available
   return (
     <View>
       <View className="mt-2">

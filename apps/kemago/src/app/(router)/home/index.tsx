@@ -13,7 +13,6 @@ import LocationModal from "@/components/location/LocationModal";
 export default function HomeScreen() {
   const [openLocationModal, setopenLocationModal] = useState(false);
 
-  console.log("openLocationModal :", openLocationModal);
   return (
     <ScrollView className="  bg-[#FFFDF8]" showsVerticalScrollIndicator={false}>
       <View className="px-5   pb-10">
@@ -65,7 +64,9 @@ export default function HomeScreen() {
           </AppText>
         </View>
       </View>
-      {openLocationModal && <LocationModal openLocationModal={setopenLocationModal} />}
+      {openLocationModal && (
+        <LocationModal openLocationModal={setopenLocationModal} />
+      )}
     </ScrollView>
   );
 }

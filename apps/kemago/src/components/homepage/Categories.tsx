@@ -28,7 +28,6 @@ const Categories = ({ categories }: Props) => {
             className="mr-3 items-center rounded-2xl bg-orange-50 px-4 py-4"
           >
             <AppText className="text-3xl">{item.emoji}</AppText>
-
             <AppText className="mt-2 text-xs text-gray-700">
               {item.name}
             </AppText>

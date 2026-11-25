@@ -17,7 +17,6 @@ const Location = ({
 }) => {
   const { location, loading, getCurrentLocation, address } = useLocation();
   const [visible, setVisible] = useState(true);
-  console.log("visible", visible);
 
   const handleModelsClose = () => {
     setVisible(false);
